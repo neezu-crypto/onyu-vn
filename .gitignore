@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+*.swo

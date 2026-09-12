@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>당신이 여기에 온 이유</title>
+<style>
+  :root{
+    --paper: #f8f0ec;
+    --paper-raised: #ffffff;
+    --ink: #3d3436;
+    --muted: #8d7f7a;
+    --rose: #c9808c;
+    --rose-strong: #b06874;
+    --rose-soft: #f2dee0;
+    --line: #e8dcd3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper: #201a19; --paper-raised: #2a2321; --ink: #f1e8e3; --muted: #b6a69f;
+      --rose: #e0a1ab; --rose-strong: #eab5bd; --rose-soft: #3c2a2c; --line: #3a312e;
+    }
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    background: var(--paper); color: var(--ink);
+    font-family: "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic", -apple-system, sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding: 24px;
+  }
+  .card{
+    max-width: 480px; width:100%; background: var(--paper-raised); border:1px solid var(--line);
+    border-radius: 20px; padding: 40px 36px; text-align:center;
+    box-shadow: 0 1px 2px rgba(61,52,54,0.06), 0 8px 24px rgba(61,52,54,0.08);
+  }
+  .kicker{ font-size:11.5px; font-weight:700; letter-spacing:0.14em; color: var(--muted); text-transform:uppercase; margin:0 0 14px; }
+  h1{ font-size: clamp(22px, 5vw, 30px); font-weight:800; margin: 0 0 12px; line-height:1.35; }
+  h1 .accent{ color: var(--rose-strong); }
+  p{ font-size: 14px; color: var(--muted); line-height:1.7; margin: 0; }
+  .badge{ display:inline-block; margin-top:22px; font-size:12px; font-weight:700; color: var(--rose-strong); background: var(--rose-soft); padding:6px 14px; border-radius:999px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <p class="kicker">힐링 비주얼노벨</p>
+    <h1>당신이 여기에 <span class="accent">온 이유</span></h1>
+    <p>고등학교 1학년, 같은 반이지만 초면인 두 사람. 3년의 계절을 함께 지난다.</p>
+    <span class="badge">제작 준비 중</span>
+  </div>
+</body>
+</html>
