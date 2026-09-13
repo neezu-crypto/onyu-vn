@@ -214,7 +214,7 @@ button { font-family: inherit; }
 .subtab-nav { display: flex; gap: 8px; margin-bottom: 16px; }
 .subtab-btn { font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 999px; background: var(--paper-strong); color: var(--muted); cursor: pointer; box-shadow: 0 1px 2px rgba(61, 52, 54, 0.08); border: none; }
 .subtab-btn.is-active { background: var(--ink); color: var(--paper); }
-.gallery-panel[hidden] { display: none; }
+.gallery-panel.cg-grid[hidden], .gallery-panel.ending-grid[hidden] { display: none; }
 .gallery-panel.cg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 @media (max-width: 640px) { .gallery-panel.cg-grid { grid-template-columns: repeat(3, 1fr); } }
 .cg-thumb {

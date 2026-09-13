@@ -21,6 +21,24 @@ function onyuShowScreen(name) {
   if (name === 'gallery' && typeof onyuRenderGallery === 'function') onyuRenderGallery();
   if (name === 'save' && typeof onyuRenderSaveScreen === 'function') onyuRenderSaveScreen();
   if (name === 'settings' && typeof onyuRenderSettingsScreen === 'function') onyuRenderSettingsScreen();
+
+  onyuUpdateBackButtonLabels();
+}
+
+// 저장·설정 화면은 타이틀뿐 아니라 플레이 중에도 진입 가능해서, "뒤로" 버튼이
+// 실제로 어디로 돌아가는지가 매번 다르다 — 문구를 "타이틀로"로 고정해두면
+// 플레이 중 진입했을 때 실제로는 플레이로 돌아가면서 문구만 "타이틀로"라고
+// 나와 사용자가 오해할 수 있다(실사용 피드백으로 발견). 화면을 보여줄 때마다
+// 지금 onyuReturnScreen 값에 맞춰 문구를 다시 맞춘다(챕터선택·갤러리는 항상
+// title에서만 들어오므로 이 값이 항상 'title'로 계산돼 기존 문구와 동일하다).
+function onyuUpdateBackButtonLabels() {
+  var target = (onyuReturnScreen === 'play') ? '플레이' : '타이틀';
+  document.querySelectorAll('.sub-back[data-back]').forEach(function (btn) {
+    btn.textContent = '← ' + target + '로';
+  });
+  document.querySelectorAll('.settings-danger-btn[data-back]').forEach(function (btn) {
+    btn.textContent = target + '로 돌아가기';
+  });
 }
 
 // 챕터선택/갤러리/저장/설정으로 들어갈 때 이 함수로 진입 — 지금 활성 화면이 play면
