@@ -50,7 +50,7 @@ button { font-family: inherit; }
 #rotate-overlay { display: none; }
 @media (orientation: portrait) {
   body.onyu-in-game #rotate-overlay {
-    display: flex; position: fixed; inset: 0; z-index: 999;
+    display: flex; position: fixed; inset: 0; z-index: 999; cursor: pointer;
     flex-direction: column; align-items: center; justify-content: center; gap: 14px;
     background: var(--ink); color: var(--paper); text-align: center; padding: 24px;
   }
@@ -61,6 +61,7 @@ button { font-family: inherit; }
   50% { transform: rotate(90deg); }
 }
 @media (prefers-reduced-motion: reduce) { .rotate-icon { animation: none; } }
+.rotate-hint { font-size: 12px; opacity: 0.6; margin-top: -6px; }
 
 /* ================= 타이틀 ================= */
 #screen-title { background: linear-gradient(150deg, var(--paper-strong), var(--paper) 60%); }

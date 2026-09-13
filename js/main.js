@@ -77,6 +77,12 @@ document.addEventListener('DOMContentLoaded', function () {
     onyuStartChapter(snap.currentChapterId);
   });
 
+  // 회전 안내 화면을 탭하면 그 탭 자체(유효한 사용자 제스처)로 전체화면 재시도 —
+  // 일부 모바일 브라우저는 새 게임/이어하기 클릭 시점의 requestFullscreen이 조용히
+  // 실패하는 경우가 있어(주소창이 그대로 남음), 세로 화면일 때 계속 떠 있는 이
+  // 오버레이가 다시 시도할 자연스러운 탭 지점이 되어준다.
+  document.getElementById('rotate-overlay').addEventListener('click', onyuRequestFullscreen);
+
   ['title-chapters', 'title-gallery', 'title-settings'].forEach(function (id) {
     var btn = document.getElementById(id);
     if (btn) btn.addEventListener('click', function () { alert('이 화면은 아직 준비 중입니다.'); });
