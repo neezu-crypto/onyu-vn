@@ -1509,4 +1509,392 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '멀어지는 그녀의 뒷모습 위로 매미 울음소리가 다시 크게 번졌다. 여름 특강은 아직 절반도 채 지나지 않았다.' },
     ],
   },
+
+  {
+    id: 'ch21', order: 21, grade: 3, season: 'summer', title: '지친 그녀',
+    script: [
+      { type: 'narration', text: '특강이 후반부로 접어들자 그녀의 얼굴에서 웃음이 눈에 띄게 줄었다. 메시지 답장도 하루씩 늦어지기 시작했고, 통화 중에도 목소리에 힘이 빠져 있었다. 늦여름 매미 소리만 변함없이 시끄럽게 울렸다.' },
+      { type: 'line', speaker: 'player', text: '오늘도 늦게 끝났어?' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(하품을 삼키며) 어... 괜찮아. 별거 아니야.' },
+      { type: 'narration', text: '"괜찮다"는 말과 달리, 눈 밑 그늘은 하루하루 짙어지고 있었다. 대화 중간중간 말이 끊기고, 같은 질문에 두 번 답하는 일도 잦아졌다. 늘 단정하던 필체마저 요 며칠은 눈에 띄게 흐트러져 있었다.' },
+      {
+        type: 'choice',
+        situation: '애써 괜찮은 척하는 그녀의 모습을 알아챈 순간',
+        options: [
+          {
+            branch: 'pos', text: '무리하지 말라고 솔직하게 걱정을 전한다', affection: 2, tag: 'L41',
+            script: [
+              { type: 'line', speaker: 'player', text: '괜찮다는 말, 나한테까지 안 해도 돼. 힘들면 힘들다고 해.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(잠시 침묵하다) ...사실 요즘 진짜 힘들어. 근데 이 정도로 힘들다고 하기도 좀 그래서.' },
+              { type: 'line', speaker: 'player', text: '힘든 데 정도가 어디 있어. 힘들면 그냥 힘든 거지.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 웃으며) ...그렇게 말해주니까 조금은 숨통 트이네.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '눈치채지 못한 척 평소처럼 대한다', affection: -1, tag: 'D41',
+            script: [
+              { type: 'line', speaker: 'player', text: '그래? 그럼 다행이고. 아무튼 오늘 뭐 했는데?' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(무미건조하게) ...그냥, 뭐. 매일 똑같지.' },
+              { type: 'narration', text: '대화는 겉돌았고, 그녀의 목소리엔 감정이 실리지 않았다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '며칠 뒤 저녁, 오랜만에 만난 자리에서 사소한 계획 변경을 이야기하던 중이었다. 노을이 붉게 지는 골목 어귀, 그녀의 표정이 갑자기 굳었다.' },
+      { type: 'line', speaker: 'player', text: '어, 그럼 그날 말고 다른 날로 옮길까?' },
+      { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(날카롭게) 아 진짜, 그냥 좀 한 번에 정하면 안 돼?' },
+      { type: 'narration', text: '평소의 그녀답지 않은 말투에 순간 정적이 흘렀다. 그녀 스스로도 놀란 듯 눈이 커졌다.' },
+      {
+        type: 'choice',
+        situation: '갑자기 예민하게 반응하고 후회하는 그녀',
+        options: [
+          {
+            branch: 'pos', text: '서운해하지 않고 이해한다는 태도를 보인다', affection: 2, tag: 'L42',
+            script: [
+              { type: 'line', speaker: 'player', text: '괜찮아, 요즘 많이 지쳤나 보다.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(당황하며) ...미안. 나도 모르게 그런 말이 나왔어. 너한테 할 말은 아니었는데.' },
+              { type: 'line', speaker: 'player', text: '그럴 수도 있지, 나도 신경 안 써.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(눈을 마주치며) ...받아줘서 고마워. 요즘 내가 나 같지 않네.' },
+              { type: 'line', speaker: 'player', text: '너한테만 특별히 관대한 거야, 알지?' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(살짝 웃으며 시선을 피하며) ...그런 말은 왜 꼭 이럴 때 하는 건데.' },
+              { type: 'narration', text: '웃음을 감추려는 듯 괜히 딴 곳을 바라보는 그녀의 귀가 발갛게 물들어 있었다.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '왜 그렇게까지 화를 내냐며 맞받아친다', affection: -1, tag: 'D42',
+            script: [
+              { type: 'line', speaker: 'player', text: '뭘 그렇게까지 화를 내? 나도 어이없네.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 떨구며) ...미안해. 근데 그렇게 받아치면 나도 할 말이 없다.' },
+              { type: 'narration', text: '먼저 사과했음에도 분위기는 쉽게 풀리지 않았다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '한참 말없이 앉아 있던 그녀가 먼저 입을 열었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '요즘 계속 이런 식이네. 나도 내가 왜 이러는지 모르겠어.' },
+      { type: 'line', speaker: 'player', text: '피곤해서 그런 거지, 별거 아니야.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게 한숨을 쉬며) ...그래도 이런 나까지 참아주는 거, 당연한 건 아닌데.' },
+      { type: 'narration', text: '밤바람이 선선하게 불어왔다. 낮 동안의 열기가 조금씩 식어가듯, 지친 하루의 끝에서 그녀는 조금씩 다시 평소의 표정을 되찾아가고 있었다.' },
+    ],
+  },
+
+  {
+    id: 'ch22', order: 22, grade: 3, season: 'autumn', title: '작은 오해',
+    script: [
+      { type: 'narration', text: '선선한 가을바람이 불기 시작한 어느 하굣길, 낙엽이 발밑에서 바스락거렸다. 입시가 코앞으로 다가오면서 교실 분위기도 어딘가 팽팽했다.', sheAbsent: true },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '있잖아, 나 요즘 계속 생각하던 게 있는데.' },
+      { type: 'line', speaker: 'player', text: '뭔데?' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '수시로 넣을 학교 말이야. 사실 1지망을 확 바꿔볼까 고민 중이거든.' },
+      { type: 'narration', text: '평소와 달리 말투에 조심스러움이 묻어났다. 오래 고민한 티가 역력했다.' },
+      {
+        type: 'choice',
+        situation: '진로 고민을 조심스럽게 털어놓는 그녀',
+        options: [
+          {
+            branch: 'pos', text: '끝까지 차분히 듣고 나서 진지하게 답한다', affection: 2, tag: 'L43',
+            script: [
+              { type: 'line', speaker: 'player', text: '왜 바꾸고 싶어졌는데? 끝까지 얘기해봐.' },
+              { type: 'line', speaker: 'onyu', expr: 'calm', text: '포트폴리오 방향이 거기랑 더 잘 맞는 것 같아서. 그리고... (한참 이야기를 이어간다)' },
+              { type: 'line', speaker: 'player', text: '다 듣고 보니까, 그쪽이 너한테 더 맞는 것 같긴 하다.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(옅게 웃으며) 끝까지 들어줘서 고마워. 정리가 좀 되네.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '제대로 듣지도 않고 성급하게 조언부터 한다', affection: -1, tag: 'D43',
+            script: [
+              { type: 'line', speaker: 'player', text: '어차피 다 거기서 거기 아니야? 그냥 원래 생각한 대로 가.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(말을 멈추며) ...아직 다 얘기도 안 했는데.' },
+              { type: 'line', speaker: 'player', text: '어, 미안. 계속 해봐.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게) ...됐어, 별로 중요한 얘기도 아니었어.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '그날 이후로 며칠간, 그녀와의 대화는 눈에 띄게 짧아졌다. 먼저 말을 걸어도 단답으로 끝나는 일이 많았고, 쉬는 시간에도 괜히 다른 자리에 앉는 날이 늘었다. 이틀째 되던 날엔 인사조차 짧게 고개만 끄덕이고 지나쳤다.' },
+      { type: 'line', speaker: 'player', text: '오늘 하교 같이 할까?' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(눈을 마주치지 않고) 오늘은 먼저 갈게. 할 거 있어서.' },
+      { type: 'narration', text: '사흘째였다. 무슨 말을 걸어도 대화가 자꾸 겉돌았고, 예전 같으면 웃어넘겼을 농담에도 반응이 없었다. 서먹함이 매일 조금씩 두꺼워지는 게 눈에 보였다.' },
+      {
+        type: 'choice',
+        situation: '그 뒤로 며칠간 서먹해진 분위기',
+        options: [
+          {
+            branch: 'pos', text: '손편지에 그때의 진심을 담아 전한다', affection: 2, tag: 'L44',
+            script: [
+              { type: 'narration', text: '말로는 풀기 어려울 것 같아, 편지지를 사서 그날 못 다 들은 미안함과 진심을 꾹꾹 눌러 적었다. 다음 날, 그녀의 책상 위에 조용히 편지를 올려두었다.' },
+              { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(편지를 발견하고 멈칫하며) ...이게 뭐야.' },
+              { type: 'line', speaker: 'player', text: '그냥, 하고 싶은 말이 있어서. 읽어봐.' },
+              { type: 'narration', text: '그녀는 편지를 조심스럽게 집어 들고는, 대답 없이 가방 속에 넣었다.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '아무 일 없었다는 듯 가볍게 넘어가려 한다', affection: -1, tag: 'D44',
+            script: [
+              { type: 'line', speaker: 'player', text: '왜 요즘 그렇게 새침해? 그냥 원래대로 지내자.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 피하며) ...나는 딱히 티 낸 적 없는데.' },
+              { type: 'line', speaker: 'player', text: '티 났으니까 하는 말이지.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게) ...그렇게 대충 덮으려고 하지 좀 마.' },
+              { type: 'narration', text: '가볍게 넘기려 했지만, 그녀의 목소리엔 여전히 서운함이 배어 있었다. 서먹함은 쉽게 가시지 않았다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '노을이 낮아진 오후, 텅 빈 복도에 발소리만 울렸다. 창밖으로 마른 낙엽 하나가 유리창에 부딪혔다 떨어졌다. 그녀가 편지에 뭐라고 답할지, 혹은 답하지 않을지는 아직 알 수 없었다.' },
+    ],
+  },
+
+  {
+    id: 'ch23', order: 23, grade: 3, season: 'autumn', title: '화해',
+    script: [
+      { type: 'narration', text: '편지를 건넨 다음 날, 교실 문을 열자마자 그녀의 자리부터 눈이 갔다. 평소와 다르게, 그녀도 이쪽을 슬쩍 돌아보고 있었다. 눈이 마주치자 그녀는 황급히 고개를 돌렸다.' },
+      { type: 'narration', text: '쉬는 시간이 되어도 선뜻 다가가지 못하고 망설였다. 어떤 말부터 꺼내야 할지, 며칠 내내 머릿속으로 되뇌었지만 막상 눈앞에 서니 아무 말도 떠오르지 않았다.' },
+      {
+        type: 'choice',
+        situation: '어떻게 먼저 말을 걸지 고민하는 순간',
+        options: [
+          {
+            branch: 'pos', text: '그날의 진심을 담아 솔직하게 사과한다', affection: 2, tag: 'L45',
+            script: [
+              { type: 'line', speaker: 'player', text: '그때 제대로 안 듣고 성급하게 말해서 미안해. 편지에 못다 한 말도 있는데, 지금 직접 하고 싶어서.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠시 눈을 마주치다) ...편지, 다 읽었어. 몇 번을 다시 읽었는지 몰라.' },
+              { type: 'line', speaker: 'player', text: '다행이다. 전해지긴 한 거네.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 웃으며) ...그렇게 진지하게 사과할 줄은 몰랐어. 놀랐잖아.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '아무 일 없었다는 듯 어물쩍 넘어가려 한다', affection: -1, tag: 'D45',
+            script: [
+              { type: 'line', speaker: 'player', text: '어제 일은 그냥 잊자. 우리 사이에 뭘 그런 걸로.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 내리며) ...그렇게 넘어가면, 편지는 왜 준 거야?' },
+              { type: 'narration', text: '얼버무리려던 말이 오히려 그녀를 더 서운하게 만든 듯했다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '방과 후, 늘 지나치던 공원 벤치에 나란히 앉았다. 낙엽이 바람에 쓸려 다니는 소리만 두 사람 사이를 채웠다. 그녀는 가방에서 그 편지를 살짝 꺼내 보이더니, 다시 조심스레 집어넣었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '사실 며칠 동안 계속 편지 생각만 했어. 근데 막상 뭐라고 답해야 할지 모르겠더라.' },
+      {
+        type: 'choice',
+        situation: '조심스럽게 마음을 여는 그녀의 반응',
+        options: [
+          {
+            branch: 'pos', text: '서두르지 않고 그녀의 속도에 맞춰 기다린다', affection: 2, tag: 'L46',
+            script: [
+              { type: 'line', speaker: 'player', text: '답 안 해도 돼. 그냥 마음 편해지면 그걸로 됐어.' },
+              { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(놀란 듯 바라보며) ...재촉 안 해?' },
+              { type: 'line', speaker: 'player', text: '재촉할 일이야, 이게?' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(옅게 웃으며) ...그렇게 기다려주는 거, 사실 제일 고마운 거야.' },
+              { type: 'line', speaker: 'player', text: '그럼 답 대신 딴 거 하나만 해줘. 나 보고 웃어줘.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(피식 웃으며) ...뭐야 그게. 대신 딱 한 번만이야.' },
+              { type: 'narration', text: '잠깐 스친 그 미소가, 생각보다 오래 마음에 남았다.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '화해했으니 됐다며 성급하게 넘어가려 한다', affection: -1, tag: 'D46',
+            script: [
+              { type: 'line', speaker: 'player', text: '이제 화해했으니까 됐네. 다음 얘기 하자.' },
+              { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(당황하며) ...나 아직 하고 싶은 말 다 못 했는데.' },
+              { type: 'narration', text: '서둘러 넘어가려는 태도에, 그녀는 다시 입을 다물었다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '한동안 말없이 앉아 있던 그녀가 조심스레 손을 들어 앞머리를 정리하며 입을 열었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '편지에 적혀 있던 거, 나도 똑같이 느꼈어. 그때 내가 말을 끝까지 못 해서 답답했던 거.' },
+      { type: 'line', speaker: 'player', text: '이제라도 알았으니까 됐지.' },
+      { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 숨을 내쉬며) ...응. 이제 좀 풀린 것 같아.' },
+      { type: 'narration', text: '노을빛이 두 사람의 그림자를 길게 늘어뜨렸다. 며칠간 팽팽했던 공기가 그제야 조금씩 풀려가고 있었다. 벤치 옆에 쌓인 낙엽 더미가 바람에 살짝 흩어졌다 다시 모였다.' },
+    ],
+  },
+
+  {
+    id: 'ch24', order: 24, grade: 3, season: 'autumn', title: '둘만의 하루',
+    script: [
+      { type: 'narration', text: '화해 이후 처음 맞는 주말, 오랜만에 부담 없는 하루였다. 입시 준비도, 서먹함도 잠시 내려놓은 채, 그녀는 평소보다 한결 가벼운 얼굴로 약속 장소에 나왔다. 하늘까지 맑아서 오랜만에 여유로운 공기가 느껴졌다.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '오랜만에 진짜 자유시간이다. 오늘 뭐 하고 싶어?' },
+      {
+        type: 'choice',
+        situation: '오랜만에 무얼 하고 싶은지 물어보는 순간',
+        options: [
+          {
+            branch: 'pos', text: '그녀가 평소 좋아하던 걸 기억해 제안한다', affection: 2, tag: 'L47',
+            script: [
+              { type: 'line', speaker: 'player', text: '너 롤 좋아하잖아. 오랜만에 피시방 가서 같이 하는 거 어때?' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 확 밝아지며) 진짜? 완전 좋지!' },
+              { type: 'line', speaker: 'player', text: '표정 봐, 완전 신났네.' },
+              { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(새침하게) ...티 났어? 뭐, 오랜만이니까 그런 거지.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '정한 것 없이 즉흥적으로 여기저기 끌고 다닌다', affection: -1, tag: 'D47',
+            script: [
+              { type: 'line', speaker: 'player', text: '일단 여기부터 가보자. 정하고 말고 할 것도 없지.' },
+              { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(끌려가며) ...나한테 물어본 의미가 없잖아.' },
+              { type: 'narration', text: '정처 없이 돌아다니는 사이, 그녀의 표정엔 슬쩍 지친 기색이 비쳤다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '피시방 구석 자리에 나란히 앉아 헤드셋을 나눠 썼다. 오랜만에 잡아보는 마우스에 그녀는 손목을 몇 번 풀더니 이내 화면에 완전히 몰입했다. 옆자리 소음도, 밖에서 기다리던 일들도 그 순간만큼은 전혀 신경 쓰이지 않는 듯했다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '(집중한 채로) 잠깐, 거기 조심해. 갱킹 온다.' },
+      { type: 'line', speaker: 'player', text: '이럴 때 보면 완전 다른 사람 같아.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '(모니터에서 눈도 안 떼고) 이게 진짜 내 모습이지.' },
+      { type: 'line', speaker: 'player', text: '그 모습도 나쁘지 않은데.' },
+      { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(그제야 힐끗 쳐다보며) ...지금 그런 말 할 타이밍이야? 갱킹 온다니까.' },
+      { type: 'narration', text: '몇 판을 내리 하고 나서야 둘은 자판기 앞에 서서 이온음료 캔을 하나씩 뽑았다. 창밖으로는 어느새 노을이 지고 있었다. 캔을 건네받다 손끝이 살짝 스쳤는데, 그 잠깐이 이상하게 오래 남았다.' },
+      { type: 'line', speaker: 'onyu', expr: 'shy', text: '오늘 진짜 오랜만에 숨통 트인다. 고맙다는 말, 괜히 안 하고 싶었는데 결국 하게 되네.' },
+      {
+        type: 'choice',
+        situation: '하루를 마무리하며 서로에게 솔직해지는 순간',
+        options: [
+          {
+            branch: 'pos', text: '가볍지 않게, 진지한 마음을 그대로 전한다', affection: 2, tag: 'L48',
+            script: [
+              { type: 'line', speaker: 'player', text: '나도 오늘 진짜 좋았어. 요즘 계속 이런 시간이 그리웠거든.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠시 눈을 마주치다) ...나도, 사실. 요즘 너무 나만 힘든 척했나 싶기도 하고.' },
+              { type: 'line', speaker: 'player', text: '그런 척 안 해도 돼, 이제.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 웃으며) ...오늘 하루, 오래 기억할 것 같아.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '분위기가 어색해 농담으로 얼버무린다', affection: -1, tag: 'D48',
+            script: [
+              { type: 'line', speaker: 'player', text: '고맙긴, 오늘 내가 캐리했지.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(어색하게 웃으며) ...그렇게 넘기는 거야?' },
+              { type: 'narration', text: '진지해질 뻔했던 순간은 농담 한마디에 슬쩍 지나가버렸다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '캔을 다 비울 때쯤, 하늘은 완전히 어두워져 있었다. 가로등 불빛이 하나둘 켜지기 시작했다. 별다를 것 없는 하루였지만, 그래서 더 오래 남을 것 같은 저녁이었다. 다가올 겨울과 그 너머의 시험 같은 건, 오늘만큼은 잠시 잊어도 좋았다.' },
+    ],
+  },
+
+  {
+    id: 'ch25', order: 25, grade: 3, season: 'winter', title: '수능',
+    script: [
+      { type: 'narration', text: '이른 새벽, 아직 어둑한 하늘 아래 칼바람이 옷깃 사이를 파고들었다. 시험장 정문 앞은 이미 각종 플래카드와 후배들의 응원 소리로 북적였다.', sheAbsent: true },
+      { type: 'line', speaker: 'player', text: '어제 잠은 좀 잤어?' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(눈 밑이 거뭇한 채로) 거의 못 잤어. 평소엔 눈만 감아도 잘 자는데, 오늘따라 왜 이러나 몰라.' },
+      { type: 'narration', text: '평소답지 않게 목도리를 몇 번이나 고쳐 매는 손끝이 미세하게 떨리고 있었다.' },
+      {
+        type: 'choice',
+        situation: '시험장 앞에서 무슨 말을 건넬지',
+        options: [
+          {
+            branch: 'pos', text: '부담 주지 않는 담백한 응원의 말을 건넨다', affection: 2, tag: 'L49',
+            script: [
+              { type: 'line', speaker: 'player', text: '지금까지 해온 대로만 하고 와. 그거면 충분해.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 숨을 내쉬며) ...그 말이 딱 필요했어. 고마워.' },
+              { type: 'line', speaker: 'player', text: '끝나고 여기서 기다리고 있을게.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(옅게 웃으며) ...어, 이따 보자.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '긴장하게 만드는 거창한 말을 늘어놓는다', affection: -1, tag: 'D49',
+            script: [
+              { type: 'line', speaker: 'player', text: '오늘 진짜 인생 걸린 날이잖아. 후회 없이 다 쏟아붓고 와!' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(표정이 굳으며) ...안 그래도 떨리는데, 그런 말은 좀.' },
+              { type: 'narration', text: '응원이랍시고 건넨 말이 오히려 어깨를 더 무겁게 만든 듯했다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '정문 안으로 사라지는 뒷모습을 한참 지켜보았다. 하루 종일 마음 한구석이 붕 뜬 채로 시간을 흘려보냈다. 휴대폰을 몇 번이고 들여다봤지만, 당연하게도 연락은 오지 않았다.' },
+      { type: 'narration', text: '해가 저물 무렵, 시험장 문이 열리고 학생들이 하나둘 쏟아져 나오기 시작했다. 얼마 지나지 않아 지친 얼굴의 그녀가 보였다.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(멍한 얼굴로) ...끝났다.' },
+      {
+        type: 'choice',
+        situation: '시험이 끝나고 지쳐 나온 그녀를 맞이하는 순간',
+        options: [
+          {
+            branch: 'pos', text: '결과를 묻지 않고 먼저 고생했다고 다독인다', affection: 2, tag: 'L50',
+            script: [
+              { type: 'line', speaker: 'player', text: '진짜 고생 많았어. 오늘 하루 종일 힘들었을 텐데.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(눈시울이 붉어지며) ...그 말이 왜 이렇게 눈물 나게 하지.' },
+              { type: 'line', speaker: 'player', text: '결과는 나중에 생각하고, 오늘은 그냥 푹 쉬어.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 웃으며) ...응. 오늘만큼은 아무 생각도 안 하고 싶어.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '시험이 어땠는지부터 다급하게 캐묻는다', affection: -1, tag: 'D50',
+            script: [
+              { type: 'line', speaker: 'player', text: '어땠어? 잘 봤어? 시간은 안 모자랐어?' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(지친 목소리로) ...지금 그것부터 묻는 거야?' },
+              { type: 'narration', text: '쏟아지는 질문에, 안 그래도 지친 그녀의 표정이 더 어두워졌다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '돌아가는 버스 안, 창에 기댄 그녀의 어깨가 완전히 풀려 있었다. 몇 달간 팽팽했던 긴장이 그제야 조금씩 빠져나가는 듯했다.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게) ...진짜 끝났다는 게 아직도 실감이 안 나.' },
+      { type: 'line', speaker: 'player', text: '실감 안 나도 끝난 건 끝난 거야.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(창밖을 보며) ...그러네. 이제 뭘 해야 할지도 모르겠어.' },
+      { type: 'narration', text: '버스가 흔들릴 때마다, 그녀의 어깨가 슬며시 이쪽으로 기울어졌다. 잠든 건지 아닌지 알 수 없었지만, 굳이 깨우지 않았다.' },
+      { type: 'narration', text: '창밖으로 저무는 겨울 오후의 풍경이 스쳐 지나갔다. 길고 길었던 하루가, 그렇게 조용히 저물고 있었다.' },
+    ],
+  },
+
+  {
+    id: 'ch26', order: 26, grade: 3, season: 'winter', title: '마지막 겨울',
+    script: [
+      { type: 'narration', text: '수능이 끝나고 나니 학교는 이상하리만치 여유로워졌다. 정해진 일과도, 쫓기던 마음도 사라진 자리에 낯선 한가함이 들어찼다. 교실 안 분위기도 한결 느슨해져 있었다.', sheAbsent: true },
+      { type: 'narration', text: '하굣길, 흐린 하늘에서 뭔가 하얀 것이 하나둘 떨어지기 시작했다. 그녀가 먼저 걸음을 멈추고 하늘을 올려다보았다.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '어, 눈이다. 이번 겨울 첫눈이네.' },
+      {
+        type: 'choice',
+        situation: '3학년의 첫눈이 내리는 날',
+        options: [
+          {
+            branch: 'pos', text: '잠깐 멈춰 서서 첫눈을 같이 맞이한다', affection: 2, tag: 'L51',
+            script: [
+              { type: 'line', speaker: 'player', text: '그러네, 잠깐 서서 좀 보고 가자.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 반짝이며) 역시, 이런 건 그냥 지나치면 안 되지.' },
+              { type: 'narration', text: '둘은 한동안 말없이 서서 눈이 내리는 걸 바라보았다. 그녀의 표정이 아이처럼 환해졌다.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(작게) ...나 첫눈 진짜 좋아하거든. 매년 이 순간만 기다려.' },
+              { type: 'line', speaker: 'player', text: '올해는 혼자 안 봐도 되네.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(눈을 마주치며 조용히) ...그러게. 옆에 누가 있으니까 확실히 다르다.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '춥다며 갑자기 다른 곳으로 이끈다', affection: -1, tag: 'D51',
+            script: [
+              { type: 'line', speaker: 'player', text: '춥다, 얼른 들어가자.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(아쉬운 얼굴로 끌려가며) ...조금만 더 보면 안 됐을까.' },
+              { type: 'narration', text: '첫눈은 금방 등 뒤로 멀어졌고, 그녀는 못내 아쉬운 표정을 숨기지 못했다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '그날 밤, 자정이 다 돼가는 시간까지 통화가 이어졌다. 창밖엔 여전히 눈발이 흩날리고 있었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '이렇게 3학년도 다 끝나가네. 생각해보면 벚꽃 필 때 처음 같은 반 됐던 거잖아.' },
+      { type: 'line', speaker: 'player', text: '그러고 보니 그때부터 벌써 3년이네.' },
+      {
+        type: 'choice',
+        situation: '지난 3년을 돌아보게 되는 밤',
+        options: [
+          {
+            branch: 'pos', text: '함께 쌓아온 순간들을 하나하나 꺼내본다', affection: 2, tag: 'L52',
+            script: [
+              { type: 'line', speaker: 'player', text: '처음 만났을 때 기억나? 그때 완전 낯가렸잖아.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃음 섞인 목소리로) 야, 그건 너도 마찬가지였거든? 근데 진짜 많은 일이 있었네.' },
+              { type: 'line', speaker: 'player', text: '축제도 있었고, 싸웠다 화해도 하고, 수능도 같이 견뎠고.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(조용히) ...이렇게 하나씩 꺼내놓으니까 진짜 벚꽃부터 눈까지, 계절 한 바퀴를 다 돈 기분이다.' },
+            ],
+          },
+          {
+            branch: 'neg', text: '"그냥 지나간 거지 뭐" 하고 가볍게 웃어넘긴다', affection: -1, tag: 'D52',
+            script: [
+              { type: 'line', speaker: 'player', text: '뭐, 3년이야 다 그냥 지나간 거지.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(살짝 서운한 티를 내며) ...그렇게 간단하게 정리할 일인가.' },
+              { type: 'narration', text: '가볍게 넘긴 말에, 통화 너머 그녀의 목소리가 조금 가라앉았다.' },
+            ],
+          },
+        ],
+      },
+      { type: 'narration', text: '전화를 끊고도 한참, 창밖의 눈은 그치지 않고 소복이 쌓여갔다. 가로등 불빛 아래 눈송이가 천천히 흩날렸다. 벚꽃으로 시작했던 한 해가 이렇게 눈으로 저물어가고 있었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게) ...곧 있으면 졸업이네. 그다음엔 우리 어떻게 되는 걸까.' },
+      { type: 'narration', text: '답을 정하지 않은 채로, 그 물음은 하얗게 쌓이는 눈처럼 밤새 조용히 남아 있었다. 창밖 세상이 온통 하얗게 뒤덮이는 동안, 두 사람의 3년도 마지막 페이지를 향해 조용히 넘어가고 있었다.' },
+    ],
+  },
 ];
