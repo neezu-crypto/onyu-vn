@@ -148,6 +148,13 @@ function onyuRenderCurrentNode() {
     onyuEl.nameInput.value = '';
     onyuEl.nameError.textContent = '';
     onyuEl.nameInput.focus();
+  } else if (node.type === 'setAddressStage') {
+    // 화면에 아무것도 안 띄우는 순수 상태 변경 노드(호칭 단계 전환 등) — 값을
+    // 반영하고 그 자리에서 곧장 다음 노드로 넘어간다. 재귀 호출이지만 화면
+    // 갱신 없이 동기적으로 끝나서 브라우저가 이 중간 상태를 그릴 일이 없다.
+    window.ONYU_STATE.addressStage = node.value;
+    if (onyuStepToNextNode()) onyuRenderCurrentNode();
+    else onyuFinishChapter();
   }
 }
 
