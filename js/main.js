@@ -25,6 +25,7 @@ for (var onyuBgI = 1; onyuBgI <= 13; onyuBgI++) {
 
 document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();
+  onyuBootLoadSettings();
 
   onyuEl.chapterTag = document.getElementById('play-chapter-tag');
   onyuEl.spriteWrap = document.getElementById('play-sprite-wrap');
@@ -83,10 +84,23 @@ document.addEventListener('DOMContentLoaded', function () {
   // 오버레이가 다시 시도할 자연스러운 탭 지점이 되어준다.
   document.getElementById('rotate-overlay').addEventListener('click', onyuRequestFullscreen);
 
-  ['title-chapters', 'title-gallery', 'title-settings'].forEach(function (id) {
-    var btn = document.getElementById(id);
-    if (btn) btn.addEventListener('click', function () { alert('이 화면은 아직 준비 중입니다.'); });
+  document.getElementById('title-chapters').addEventListener('click', function () { onyuNavigateTo('chapters'); });
+  document.getElementById('title-gallery').addEventListener('click', function () { onyuNavigateTo('gallery'); });
+  document.getElementById('title-save').addEventListener('click', function () { onyuNavigateTo('save'); });
+  document.getElementById('title-settings').addEventListener('click', function () { onyuNavigateTo('settings'); });
+
+  // 플레이 화면 상단바 아이콘 — 저장/설정은 플레이 중에도 접근 가능. 같은 'save'
+  // 화면이 title-save를 통해서도 열리지만, onyuReturnScreen이 'play'인지 'title'인지에
+  // 따라 menus.js가 슬롯 클릭 동작을 저장/불러오기로 다르게 배선한다.
+  document.getElementById('play-save-btn').addEventListener('click', function () { onyuNavigateTo('save'); });
+  document.getElementById('play-settings-btn').addEventListener('click', function () { onyuNavigateTo('settings'); });
+
+  document.querySelectorAll('[data-back]').forEach(function (btn) {
+    btn.addEventListener('click', onyuNavigateBack);
   });
+
+  onyuInitGallerySubtabs();
+  onyuInitSettingsControls();
 
   onyuShowScreen('title');
 });

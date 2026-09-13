@@ -8,6 +8,7 @@
 var onyuFrameStack = [];
 var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
 var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
+var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 
 var onyuEl = {}; // DOM 참조는 main.js가 부팅 시 채운다
 
@@ -93,6 +94,7 @@ function onyuStepToNextNode() {
 }
 
 function onyuRenderCurrentNode() {
+  clearTimeout(onyuAutoAdvanceTimer); // 새 노드로 넘어갈 땐 이전 노드용 자동진행 예약을 항상 취소
   onyuEl.choiceList.innerHTML = '';
   onyuEl.situation.textContent = '';
   onyuEl.nameForm.hidden = true;
@@ -166,6 +168,7 @@ function onyuRenderCurrentNode() {
       return score >= min && score <= max;
     })[0];
     if (branch) {
+      if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       onyuFrameStack.push({ list: branch.script, i: 0 });
       onyuRenderCurrentNode();
     } else if (onyuStepToNextNode()) {
@@ -176,11 +179,32 @@ function onyuRenderCurrentNode() {
   }
 }
 
+function onyuScheduleAutoAdvance(text) {
+  // 설정 "진행 방식: 자동"일 때만 예약 — 글자 수에 비례해 대기(대략 읽는 시간)한 뒤
+  // 다음 노드로 스스로 넘어간다. 새 노드가 렌더될 때마다 onyuRenderCurrentNode
+  // 맨 앞에서 항상 취소되므로, 클릭으로 먼저 넘어가도 중복 실행되지 않는다.
+  if (!window.ONYU_STATE.settings.autoPlay) return;
+  var delay = 500 + text.length * 40;
+  onyuAutoAdvanceTimer = setTimeout(onyuHandleDialogueClick, delay);
+}
+
 function onyuStartTypewriter(text, slowMultiplier) {
   onyuTyping.fullText = text;
   onyuTyping.shown = 0;
-  onyuTyping.active = true;
   onyuEl.dialogueLine.textContent = '';
+
+  // "이미 읽은 텍스트 스킵" — 타임머신으로 이미 완주한 챕터를 다시 훑을 때 타자기
+  // 애니메이션 자체를 생략(줄 단위가 아니라 챕터 단위 판단, 아래 스키마 주석 참고).
+  var skipThisChapter = window.ONYU_STATE.settings.skipRead
+    && !!window.ONYU_STATE.completedChapters[window.ONYU_STATE.currentChapterId];
+  if (skipThisChapter) {
+    onyuTyping.active = false;
+    onyuEl.dialogueLine.textContent = text;
+    onyuScheduleAutoAdvance(text);
+    return;
+  }
+
+  onyuTyping.active = true;
   var baseMs = onyuTextSpeedMs() * (slowMultiplier || 1);
 
   function tick() {
@@ -189,6 +213,7 @@ function onyuStartTypewriter(text, slowMultiplier) {
     onyuEl.dialogueLine.textContent = onyuTyping.fullText.slice(0, onyuTyping.shown);
     if (onyuTyping.shown >= onyuTyping.fullText.length) {
       onyuTyping.active = false;
+      onyuScheduleAutoAdvance(text);
       return;
     }
     var ch = onyuTyping.fullText[onyuTyping.shown - 1];
@@ -279,6 +304,9 @@ function onyuSubmitName() {
 }
 
 function onyuFinishChapter() {
+  var finishedId = window.ONYU_STATE.currentChapterId;
+  window.ONYU_STATE.completedChapters[finishedId] = true; // "이미 읽은 텍스트 스킵" 판단용
+  if (finishedId !== 'ch27') onyuUnlockGalleryItem('cg', finishedId); // CH27은 CG가 아니라 엔딩으로 언락됨
   onyuSaveAutosave();
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var next = window.ONYU_CHAPTERS[idx + 1];

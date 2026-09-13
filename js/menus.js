@@ -1,0 +1,237 @@
+/*
+ * 챕터선택(타임머신) · 갤러리 · 저장·불러오기 · 설정 4개 화면의 렌더링/조작 로직.
+ * 전부 title 화면에서만 진입한다(플레이 중엔 저장·설정만 상단바 아이콘으로 진입).
+ */
+
+var ONYU_SEASON_COLORS = {
+  spring: { accent: '#b8607e', soft: '#fbe7ee' },
+  summer: { accent: '#3f8177', soft: '#e1f0ec' },
+  autumn: { accent: '#a8632b', soft: '#f5e6d3' },
+  winter: { accent: '#5d7f95', soft: '#e8eef2' },
+};
+
+var ONYU_ENDING_DEFS = [
+  { id: 'friend', name: '곁에 남은 사람' },
+  { id: 'crush', name: '여백' },
+  { id: 'lover', name: '온 이유' },
+];
+
+function onyuFormatDate(ts) {
+  try { return new Date(ts).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+  catch (e) { return ''; }
+}
+
+/* ---------------- 챕터 선택 · 타임머신 ---------------- */
+
+function onyuRenderChapterList() {
+  // 진행상황(어디까지 도달했는지)은 자동저장 기록 기준 — "이어하기"와 같은 데이터.
+  // 저장 기록이 있으면 그걸 현재 상태에 반영해서 목록에 그대로 보여준다.
+  var snap = onyuLoadAutosave();
+  if (snap) onyuApplySnapshot(snap);
+
+  var reached = window.ONYU_STATE.chapterCheckpoints || {};
+  var currentId = window.ONYU_STATE.currentChapterId;
+  var container = document.getElementById('chapters-list');
+  container.innerHTML = '';
+
+  [1, 2, 3].forEach(function (grade) {
+    var chapters = window.ONYU_CHAPTERS.filter(function (c) { return c.grade === grade; });
+    if (!chapters.length) return;
+
+    var row = document.createElement('div');
+    row.className = 'year-row';
+    var label = document.createElement('p');
+    label.className = 'year-row-label';
+    label.textContent = grade + '학년';
+    row.appendChild(label);
+
+    var grid = document.createElement('div');
+    grid.className = 'chip-grid';
+    chapters.forEach(function (ch) {
+      var unlocked = !!reached[ch.id] || ch.order === 1;
+      var isCurrent = ch.id === currentId;
+      var btn = document.createElement('button');
+      btn.className = 'ch-card' + (isCurrent ? ' is-current' : '') + (unlocked ? '' : ' is-locked');
+      var colors = ONYU_SEASON_COLORS[ch.season];
+      btn.style.setProperty('--season-accent', colors.accent);
+      btn.style.setProperty('--season-soft', colors.soft);
+      var numLabel = String(ch.order).padStart(2, '0');
+      btn.innerHTML = '<span class="ch-no num">' + numLabel + '</span><span class="ch-name">' + ch.title + '</span>'
+        + (unlocked ? '' : '<span class="ch-lock">🔒</span>');
+      if (unlocked) {
+        btn.addEventListener('click', function () { onyuJumpToChapter(ch.id); });
+      } else {
+        btn.disabled = true;
+      }
+      grid.appendChild(btn);
+    });
+    row.appendChild(grid);
+    container.appendChild(row);
+  });
+}
+
+function onyuJumpToChapter(chapterId) {
+  // 타임머신 — 그 챕터 "시작 시점" 호감도로 되돌려서 실제로 다시 플레이한다.
+  var checkpoint = window.ONYU_STATE.chapterCheckpoints[chapterId];
+  window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
+  onyuRequestFullscreen();
+  onyuStartChapter(chapterId);
+}
+
+/* ---------------- 갤러리 ---------------- */
+
+function onyuRenderGallery() {
+  var record = onyuLoadGalleryRecord();
+
+  var cgPanel = document.getElementById('gallery-panel-cg');
+  cgPanel.innerHTML = '';
+  window.ONYU_CHAPTERS.filter(function (c) { return c.id !== 'ch27'; }).forEach(function (ch) {
+    var unlocked = !!(record.cg && record.cg[ch.id]);
+    var div = document.createElement('div');
+    div.className = 'cg-thumb' + (unlocked ? '' : ' is-locked');
+    div.innerHTML = unlocked
+      ? '<span class="cg-label num">CH' + String(ch.order).padStart(2, '0') + '</span>'
+      : '<span class="cg-lock">🔒</span>';
+    cgPanel.appendChild(div);
+  });
+
+  var endingPanel = document.getElementById('gallery-panel-endings');
+  endingPanel.innerHTML = '';
+  ONYU_ENDING_DEFS.forEach(function (ed) {
+    var unlocked = !!(record.endings && record.endings[ed.id]);
+    var div = document.createElement('div');
+    div.className = 'ending-thumb' + (unlocked ? ' is-unlocked' : '');
+    div.innerHTML = unlocked
+      ? '<span class="ending-name">' + ed.name + '</span>'
+      : '<span class="ending-lock">🔒</span><span class="ending-name">???</span>';
+    endingPanel.appendChild(div);
+  });
+}
+
+function onyuInitGallerySubtabs() {
+  var buttons = document.querySelectorAll('[data-gallery-tab]');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+      var tab = btn.dataset.galleryTab;
+      document.getElementById('gallery-panel-cg').hidden = (tab !== 'cg');
+      document.getElementById('gallery-panel-endings').hidden = (tab !== 'endings');
+    });
+  });
+}
+
+/* ---------------- 저장 · 불러오기 ---------------- */
+
+function onyuRenderSaveScreen() {
+  var autosaveContainer = document.getElementById('autosave-slot');
+  var snap = onyuLoadAutosave();
+  if (snap) {
+    var ch = window.ONYU_CHAPTERS[onyuChapterIndexById(snap.currentChapterId)];
+    autosaveContainer.innerHTML =
+      '<div class="autosave-card"><div class="autosave-thumb"></div><div class="autosave-info">'
+      + '<div class="autosave-name-row"><span class="autosave-badge">자동</span>'
+      + '<p class="autosave-name">CH.' + String(ch.order).padStart(2, '0') + ' · ' + ch.title + '</p></div>'
+      + '<p class="autosave-date num">' + onyuFormatDate(snap.savedAt) + '</p></div></div>';
+  } else {
+    autosaveContainer.innerHTML = '<p class="autosave-empty">아직 자동저장 기록이 없습니다.</p>';
+  }
+
+  var grid = document.getElementById('manual-slot-grid');
+  grid.innerHTML = '';
+  var fromPlay = (onyuReturnScreen === 'play');
+
+  for (var i = 1; i <= 5; i++) {
+    (function (slotIndex) {
+      var slotSnap = onyuLoadManualSlot(slotIndex);
+      var btn = document.createElement('button');
+      btn.className = 'save-slot' + (slotSnap ? '' : ' is-empty');
+      if (slotSnap) {
+        var sch = window.ONYU_CHAPTERS[onyuChapterIndexById(slotSnap.currentChapterId)];
+        btn.innerHTML =
+          '<div class="save-slot-thumb"><span class="save-slot-chapter num">CH.' + String(sch.order).padStart(2, '0') + '</span></div>'
+          + '<div class="save-slot-meta"><p class="save-slot-name">' + sch.title + '</p>'
+          + '<p class="save-slot-date num">' + onyuFormatDate(slotSnap.savedAt) + '</p></div>';
+      } else {
+        btn.innerHTML =
+          '<div class="save-slot-thumb"><span class="save-slot-empty-label">빈 슬롯</span></div>'
+          + '<div class="save-slot-meta"><p class="save-slot-name">—</p><p class="save-slot-date">사용 안 함</p></div>';
+      }
+      if (fromPlay) {
+        // 플레이 중 진입 — 어느 슬롯이든 클릭하면 지금 진행 상황을 그 자리에 저장.
+        btn.addEventListener('click', function () {
+          onyuSaveManualSlot(slotIndex);
+          onyuRenderSaveScreen();
+        });
+      } else if (slotSnap) {
+        // 타이틀에서 진입 — 채워진 슬롯만 불러오기 가능.
+        btn.addEventListener('click', function () {
+          var loaded = onyuLoadManualSlot(slotIndex);
+          onyuApplySnapshot(loaded);
+          onyuRequestFullscreen();
+          onyuStartChapter(loaded.currentChapterId);
+        });
+      } else {
+        btn.disabled = true;
+      }
+      grid.appendChild(btn);
+    })(i);
+  }
+}
+
+/* ---------------- 설정 ---------------- */
+
+function onyuRenderSettingsScreen() {
+  var s = window.ONYU_STATE.settings;
+  var bgmPct = Math.round(s.bgmVolume * 100);
+  var sfxPct = Math.round(s.sfxVolume * 100);
+  document.getElementById('setting-bgm').value = bgmPct;
+  document.getElementById('setting-bgm-pct').textContent = bgmPct + '%';
+  document.getElementById('setting-sfx').value = sfxPct;
+  document.getElementById('setting-sfx-pct').textContent = sfxPct + '%';
+
+  document.querySelectorAll('#setting-autoplay button').forEach(function (b) {
+    b.classList.toggle('is-active', b.dataset.value === (s.autoPlay ? 'auto' : 'manual'));
+  });
+  document.querySelectorAll('#setting-textspeed button').forEach(function (b) {
+    b.classList.toggle('is-active', b.dataset.value === s.textSpeed);
+  });
+  document.getElementById('setting-skipread').classList.toggle('is-on', s.skipRead);
+  document.getElementById('setting-reducemotion').classList.toggle('is-on', s.reduceMotion);
+}
+
+function onyuInitSettingsControls() {
+  document.getElementById('setting-bgm').addEventListener('input', function (e) {
+    window.ONYU_STATE.settings.bgmVolume = Number(e.target.value) / 100;
+    document.getElementById('setting-bgm-pct').textContent = e.target.value + '%';
+    onyuSaveSettings();
+  });
+  document.getElementById('setting-sfx').addEventListener('input', function (e) {
+    window.ONYU_STATE.settings.sfxVolume = Number(e.target.value) / 100;
+    document.getElementById('setting-sfx-pct').textContent = e.target.value + '%';
+    onyuSaveSettings();
+  });
+  document.querySelectorAll('#setting-autoplay button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      window.ONYU_STATE.settings.autoPlay = (b.dataset.value === 'auto');
+      onyuRenderSettingsScreen();
+      onyuSaveSettings();
+    });
+  });
+  document.querySelectorAll('#setting-textspeed button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      window.ONYU_STATE.settings.textSpeed = b.dataset.value;
+      onyuRenderSettingsScreen();
+      onyuSaveSettings();
+    });
+  });
+  document.getElementById('setting-skipread').addEventListener('click', function () {
+    window.ONYU_STATE.settings.skipRead = !window.ONYU_STATE.settings.skipRead;
+    onyuRenderSettingsScreen();
+    onyuSaveSettings();
+  });
+  document.getElementById('setting-reducemotion').addEventListener('click', function () {
+    window.ONYU_STATE.settings.reduceMotion = !window.ONYU_STATE.settings.reduceMotion;
+    onyuRenderSettingsScreen();
+    onyuSaveSettings();
+  });
+}

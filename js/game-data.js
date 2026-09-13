@@ -24,9 +24,10 @@
  * choice.options[].branch: 'pos' | 'neg' — 각 옵션 안의 script가 해당 분기의 전개
  * setAddressStage.value: 화면 출력 없이 addressStage만 바꾸고 곧장 다음 노드로
  *   진행하는 순수 상태 노드(CH13 첫 데이트 후 0→1, CH27 연인 엔딩 1→2에 사용).
- * scoreGate.branches: [{ min, max, script }] — CH27 전용, 선택지 없이 최종
+ * scoreGate.branches: [{ id, min, max, script }] — CH27 전용, 선택지 없이 최종
  *   호감도(window.ONYU_STATE.affection)만으로 그 구간에 맞는 script를 프레임으로
  *   push한다(min/max 생략 시 -Infinity/Infinity). 우정≤8 / 썸 9~64 / 연인≥65.
+ *   id는 갤러리 엔딩 언락 키로 쓰인다(onyuUnlockGalleryItem('endings', id)).
  * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(예: 'cg-02.png', assets/cg/ 기준).
  *   engine.js가 챕터 시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다 — 실제
  *   CG 32장이 생성되고 각 챕터에 배정되면(Phase 2) 채워 넣을 것, 지금은 비워둠.
@@ -1925,7 +1926,7 @@ window.ONYU_CHAPTERS = [
         branches: [
           {
             // 우정 엔딩 — 곁에 남은 사람 (호감도 8 이하)
-            max: 8,
+            id: 'friend', max: 8,
             script: [
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(가방에서 스케치북을 꺼내며) 이거, 마지막 페이지 뜯은 거야. 너 주려고.' },
               { type: 'line', speaker: 'player', text: '갑자기 웬 선물이야?' },
@@ -1944,7 +1945,7 @@ window.ONYU_CHAPTERS = [
           },
           {
             // 썸 엔딩 — 여백 (호감도 9~64)
-            min: 9, max: 64,
+            id: 'crush', min: 9, max: 64,
             script: [
               { type: 'narration', text: '노을이 낮게 깔린 교문 앞, 두 사람은 나란히 서 있었지만 그 사이엔 여전히 채워지지 않은 거리감이 남아 있었다.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '있잖아... 아니야, 됐다.' },
@@ -1963,7 +1964,7 @@ window.ONYU_CHAPTERS = [
           },
           {
             // 연인 엔딩 — 온 이유 (호감도 65 이상)
-            min: 65,
+            id: 'lover', min: 65,
             script: [
               { type: 'narration', text: '그녀는 잠시 망설이다 가방에서 스케치북을 꺼내 마지막 장을 펼쳤다. 거기엔 지난 3년간 몰래 그려온, 플레이어가 담긴 그림들이 페이지마다 빼곡했다.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '사실 처음 만났을 때부터 지금까지, 계속 그려왔어. 들키면 어쩌나 매번 조마조마했는데.' },

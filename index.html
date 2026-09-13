@@ -22,6 +22,7 @@
         <button class="title-menu-item" id="title-continue">이어하기</button>
         <button class="title-menu-item" id="title-chapters">챕터 선택 (타임머신)</button>
         <button class="title-menu-item" id="title-gallery">갤러리</button>
+        <button class="title-menu-item" id="title-save">저장 · 불러오기</button>
         <button class="title-menu-item" id="title-settings">설정</button>
         <p class="title-hint">새 게임 시작 시 전체화면으로 전환됩니다</p>
       </div>
@@ -35,6 +36,10 @@
 
     <div class="play-topbar">
       <span class="play-chapter-tag" id="play-chapter-tag">CH.01</span>
+      <div class="play-icons">
+        <button class="play-icon-btn" id="play-save-btn" aria-label="저장">💾</button>
+        <button class="play-icon-btn" id="play-settings-btn" aria-label="설정">⚙️</button>
+      </div>
     </div>
 
     <div class="play-layout">
@@ -56,6 +61,145 @@
     </div>
   </section>
 
+  <!-- ============ 챕터 선택 · 타임머신 ============ -->
+  <section class="screen" data-screen="chapters" id="screen-chapters">
+    <div class="sub-topbar">
+      <button class="sub-back" data-back>← 타이틀로</button>
+      <span class="sub-topbar-title">챕터 선택 (타임머신)</span>
+    </div>
+    <div class="scroll-inner">
+      <div class="scroll-head">
+        <p class="scroll-title">지난 챕터 다시보기</p>
+        <p class="scroll-sub">선택한 챕터의 시작 시점으로 돌아가 다시 진행합니다. 이후 진행은 새로 시작돼요.</p>
+      </div>
+      <div id="chapters-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ 갤러리 ============ -->
+  <section class="screen" data-screen="gallery" id="screen-gallery">
+    <div class="sub-topbar">
+      <button class="sub-back" data-back>← 타이틀로</button>
+      <span class="sub-topbar-title">갤러리</span>
+    </div>
+    <div class="scroll-inner">
+      <div class="scroll-head">
+        <p class="scroll-title">갤러리</p>
+        <p class="scroll-sub">스토리 진행에 따라 순차적으로 열립니다. 잠긴 항목은 미리보기 없이 자물쇠만 표시.</p>
+      </div>
+      <nav class="subtab-nav">
+        <button class="subtab-btn is-active" data-gallery-tab="cg">이벤트 CG</button>
+        <button class="subtab-btn" data-gallery-tab="endings">엔딩</button>
+      </nav>
+      <div class="gallery-panel cg-grid" id="gallery-panel-cg"></div>
+      <div class="gallery-panel ending-grid" id="gallery-panel-endings" hidden></div>
+    </div>
+  </section>
+
+  <!-- ============ 저장 · 불러오기 ============ -->
+  <section class="screen" data-screen="save" id="screen-save">
+    <div class="sub-topbar">
+      <button class="sub-back" data-back>← 타이틀로</button>
+      <span class="sub-topbar-title">저장 · 불러오기</span>
+    </div>
+    <div class="scroll-inner">
+      <div class="scroll-head">
+        <p class="scroll-title">저장 · 불러오기</p>
+        <p class="scroll-sub">자동저장은 매 챕터가 끝날 때마다 갱신됩니다. 수동 저장 5칸은 원하는 시점을 직접 남겨두는 용도예요.</p>
+      </div>
+      <div id="autosave-slot"></div>
+      <p class="slot-grid-label">수동 저장 (5칸)</p>
+      <div class="slot-grid" id="manual-slot-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 설정 ============ -->
+  <section class="screen" data-screen="settings" id="screen-settings">
+    <div class="sub-topbar">
+      <button class="sub-back" data-back>← 타이틀로</button>
+      <span class="sub-topbar-title">설정</span>
+    </div>
+    <div class="scroll-inner">
+      <div class="scroll-head">
+        <p class="scroll-title">설정</p>
+        <p class="scroll-sub">사운드와 텍스트 진행 방식을 취향에 맞게 조정합니다.</p>
+      </div>
+
+      <p class="settings-section-title">사운드</p>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">배경음악</p>
+          <p class="settings-row-sub">챕터별 BGM 음량</p>
+        </div>
+        <div class="settings-row-control">
+          <input type="range" id="setting-bgm" min="0" max="100" value="70" class="settings-slider">
+          <span class="slider-pct" id="setting-bgm-pct">70%</span>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">효과음</p>
+          <p class="settings-row-sub">선택 · 알림 · 전환음</p>
+        </div>
+        <div class="settings-row-control">
+          <input type="range" id="setting-sfx" min="0" max="100" value="85" class="settings-slider">
+          <span class="slider-pct" id="setting-sfx-pct">85%</span>
+        </div>
+      </div>
+
+      <p class="settings-section-title">텍스트 진행</p>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">진행 방식</p>
+          <p class="settings-row-sub">자동 진행 시 대사가 끝나면 자동으로 다음 줄로 넘어감</p>
+        </div>
+        <div class="settings-row-control">
+          <div class="segmented" id="setting-autoplay">
+            <button data-value="manual" class="is-active">수동</button>
+            <button data-value="auto">자동</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">텍스트 속도</p>
+          <p class="settings-row-sub">글자가 한 번에 나타나는 속도</p>
+        </div>
+        <div class="settings-row-control">
+          <div class="segmented" id="setting-textspeed">
+            <button data-value="slow">느림</button>
+            <button data-value="normal" class="is-active">보통</button>
+            <button data-value="fast">빠름</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">이미 읽은 텍스트 스킵</p>
+          <p class="settings-row-sub">타임머신으로 되돌아왔을 때 이전에 완주한 챕터를 빠르게 건너뜀</p>
+        </div>
+        <div class="settings-row-control">
+          <button class="toggle is-on" id="setting-skipread"></button>
+        </div>
+      </div>
+
+      <p class="settings-section-title">화면</p>
+      <div class="settings-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">모션 줄이기</p>
+          <p class="settings-row-sub">꽃잎 · 빗방울 등 배경 파티클, 선택지 애니메이션 최소화</p>
+        </div>
+        <div class="settings-row-control">
+          <button class="toggle" id="setting-reducemotion"></button>
+        </div>
+      </div>
+
+      <div class="settings-danger-row">
+        <button class="settings-danger-btn" data-back>타이틀로 돌아가기</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ 회전 안내(모바일 세로 화면일 때만 CSS로 표시) ============ -->
   <div id="rotate-overlay">
     <div class="rotate-icon">📱</div>
@@ -69,6 +213,7 @@
   <script src="js/particles.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/screens.js"></script>
+  <script src="js/menus.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,17 +1,38 @@
 /*
- * 화면 전환. 지금은 타이틀 · 플레이 두 화면만 실제로 존재한다(Phase 3에서 챕터선택 ·
- * 갤러리 · 저장 · 설정 추가 예정). 목업은 라디오+CSS로 화면을 껐지만, 실제 게임은
- * 챕터 잠금 상태 등 동적 데이터가 필요해서 JS로 전환한다.
+ * 화면 전환. 타이틀 · 플레이 · 챕터선택 · 갤러리 · 저장 · 설정 6개 화면 전부 실제로
+ * 존재한다. 목업은 라디오+CSS로 화면을 껐지만, 실제 게임은 챕터 잠금 상태 등 동적
+ * 데이터가 필요해서 JS로 전환한다.
  */
+
+// 챕터선택/갤러리/저장/설정 화면의 "← 타이틀로" 버튼이 어디로 돌아가야 하는지 —
+// 타이틀에서 들어왔으면 타이틀로, 플레이 중 상단바 아이콘으로 들어왔으면 플레이로.
+var onyuReturnScreen = 'title';
 
 function onyuShowScreen(name) {
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.toggle('is-active', el.dataset.screen === name);
   });
-  // 타이틀은 세로로 봐도 무방하지만, 실제 플레이 화면(과 앞으로 추가될 챕터선택·
-  // 갤러리 등)은 좌우 분할 레이아웃이라 세로 화면에선 안 돌아간다 — 회전 안내
-  // 오버레이는 이 클래스 + CSS의 (orientation: portrait) 미디어쿼리 조합으로 뜬다.
+  // 타이틀은 세로로 봐도 무방하지만, 나머지 화면은 전부 이 게임 고유의 좌우 분할/
+  // 가로 전용 레이아웃이라 세로 화면에선 안 돌아간다 — 회전 안내 오버레이는 이
+  // 클래스 + CSS의 (orientation: portrait) 미디어쿼리 조합으로 뜬다.
   document.body.classList.toggle('onyu-in-game', name !== 'title');
+
+  if (name === 'chapters' && typeof onyuRenderChapterList === 'function') onyuRenderChapterList();
+  if (name === 'gallery' && typeof onyuRenderGallery === 'function') onyuRenderGallery();
+  if (name === 'save' && typeof onyuRenderSaveScreen === 'function') onyuRenderSaveScreen();
+  if (name === 'settings' && typeof onyuRenderSettingsScreen === 'function') onyuRenderSettingsScreen();
+}
+
+// 챕터선택/갤러리/저장/설정으로 들어갈 때 이 함수로 진입 — 지금 활성 화면이 play면
+// "뒤로" 눌렀을 때 play로 돌아가고, 그 외(title)에서 들어왔으면 title로 돌아간다.
+function onyuNavigateTo(name) {
+  var current = document.querySelector('.screen.is-active');
+  onyuReturnScreen = (current && current.dataset.screen === 'play') ? 'play' : 'title';
+  onyuShowScreen(name);
+}
+
+function onyuNavigateBack() {
+  onyuShowScreen(onyuReturnScreen);
 }
 
 function onyuTryLockLandscape() {
