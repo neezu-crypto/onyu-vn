@@ -1,9 +1,8 @@
 /*
  * 챕터 스크립트 데이터.
- * 대본 원본: onyu-vn-script.html (Artifact). 지금은 수직 슬라이스 검증 단계라
- * CH01~CH02만 옮겨져 있다. 이후 챕터는 같은 스키마로 이어서 추가한다.
+ * 대본 원본: onyu-vn-script.html (Artifact). CH01~CH27 전체 이식 완료(Phase 2).
  *
- * 줄 타입: 'narration' | 'line' | 'choice' | 'nameInput'
+ * 줄 타입: 'narration' | 'line' | 'choice' | 'nameInput' | 'setAddressStage' | 'scoreGate'
  * line.speaker: 'player' | 'onyu' | 'teacher' 등 SPEAKER_LABELS의 키
  * line.expr: speaker가 'onyu'일 때만 의미 있음 — 스탠딩 표정 6종
  *   (calm/smile/surprised/shy/worried/pouty) 중 하나. 생략하면 직전 표정을 유지.
@@ -23,6 +22,11 @@
  *   여러 나레이션 노드가 연속으로 부재 상태를 유지해야 하면 그 노드 각각에
  *   개별적으로 달아야 한다(엔진이 노드 단위로만 판단, 상태를 이어서 기억하지 않음).
  * choice.options[].branch: 'pos' | 'neg' — 각 옵션 안의 script가 해당 분기의 전개
+ * setAddressStage.value: 화면 출력 없이 addressStage만 바꾸고 곧장 다음 노드로
+ *   진행하는 순수 상태 노드(CH13 첫 데이트 후 0→1, CH27 연인 엔딩 1→2에 사용).
+ * scoreGate.branches: [{ min, max, script }] — CH27 전용, 선택지 없이 최종
+ *   호감도(window.ONYU_STATE.affection)만으로 그 구간에 맞는 script를 프레임으로
+ *   push한다(min/max 생략 시 -Infinity/Infinity). 우정≤8 / 썸 9~64 / 연인≥65.
  * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(예: 'cg-02.png', assets/cg/ 기준).
  *   engine.js가 챕터 시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다 — 실제
  *   CG 32장이 생성되고 각 챕터에 배정되면(Phase 2) 채워 넣을 것, 지금은 비워둠.
@@ -34,6 +38,7 @@ window.SPEAKER_LABELS = {
   teacher: '담임',
   club: '부장',
   visitor: '구경 온 학생',
+  ending: '엔딩',
 };
 
 window.ONYU_CHAPTERS = [
@@ -1895,6 +1900,92 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '전화를 끊고도 한참, 창밖의 눈은 그치지 않고 소복이 쌓여갔다. 가로등 불빛 아래 눈송이가 천천히 흩날렸다. 벚꽃으로 시작했던 한 해가 이렇게 눈으로 저물어가고 있었다.' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '(작게) ...곧 있으면 졸업이네. 그다음엔 우리 어떻게 되는 걸까.' },
       { type: 'narration', text: '답을 정하지 않은 채로, 그 물음은 하얗게 쌓이는 눈처럼 밤새 조용히 남아 있었다. 창밖 세상이 온통 하얗게 뒤덮이는 동안, 두 사람의 3년도 마지막 페이지를 향해 조용히 넘어가고 있었다.' },
+    ],
+  },
+
+  {
+    id: 'ch27', order: 27, grade: 3, season: 'winter', title: '졸업식',
+    script: [
+      // ── 공통 구간 — 졸업식 ──
+      { type: 'narration', text: '마지막 조회 날, 담임은 평소보다 말수가 적었다. "다들 고생 많았다"는 짧은 한마디를 끝으로, 교실은 3년 치 흔적을 정리하는 손길로 부산해졌다.', sheAbsent: true },
+      { type: 'narration', text: '강당에 모인 학생들 사이로 한 명씩 이름이 불렸다. 졸업장을 받아 든 학생들의 표정은 저마다 달랐지만, 온이유의 차례가 되었을 때만큼은 자연스레 그쪽으로 눈이 갔다. 단상 위에서 살짝 이쪽을 바라보며 웃는 얼굴이 유독 눈에 밟혔다.' },
+      { type: 'narration', text: '식이 끝나고 반 전체가 우르르 모여 사진을 찍었다. 누가 뭐라고 소리치는지도 모를 만큼 소란스러운 와중, 카메라 셔터가 눌리는 그 짧은 순간 그녀와 눈이 마주쳤다.' },
+      { type: 'narration', text: '사람들이 하나둘 흩어지고, 저마다 다른 방향으로 걸음을 옮겼다. 마지막으로 교문을 향해 걷는 발걸음이 이상하게 느리게 느껴졌다.' },
+
+      // ── 분기점 — 교문 밖에서 다시 만난 순간 ──
+      { type: 'narration', text: '교문을 나서자, 인파가 다 빠져나간 자리에 그녀가 혼자 서서 기다리고 있었다. 3년을 함께한 두 사람만 남은 조용한 순간이었다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '다 끝났네. 진짜로.' },
+      { type: 'line', speaker: 'player', text: '그러게. 실감이 잘 안 난다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '나도. 근데 이상하게 후련하기도 하고.' },
+      { type: 'narration', text: '그녀가 먼저 입을 열었다. 지난 3년간 쌓아온 모든 순간이 이 한마디 뒤에 조용히 무게를 싣고 있었다.' },
+
+      // ── 최종 호감도로 우정/썸/연인 중 하나를 고른다(선택지 없음) ──
+      {
+        type: 'scoreGate',
+        branches: [
+          {
+            // 우정 엔딩 — 곁에 남은 사람 (호감도 8 이하)
+            max: 8,
+            script: [
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(가방에서 스케치북을 꺼내며) 이거, 마지막 페이지 뜯은 거야. 너 주려고.' },
+              { type: 'line', speaker: 'player', text: '갑자기 웬 선물이야?' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '그냥. 3년간 고마웠다는 표시 정도로 생각해.' },
+              { type: 'narration', text: '건네받은 종이엔 두 사람이 함께 웃고 있는 작은 그림이 담겨 있었다. 특별할 것 없는 일상의 한 장면이었지만, 그래서 더 온이유다운 선물이었다.' },
+              { type: 'line', speaker: 'player', text: '이런 걸 언제 다 그렸대.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃으며) 짬짬이. 이제 다른 학교 가도 종종 연락하고 지내자. 전시회 같은 거 하면 부를게.' },
+              { type: 'line', speaker: 'player', text: '당연하지. 새로 뭐 그리면 제일 먼저 보여줘.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(가볍게 웃으며) 그건 약속. 대신 너도 연락 씹지 마.' },
+              { type: 'line', speaker: 'player', text: '그건 네가 더 심하지 않았어?' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃으며) 그건 그렇네. 아무튼, 잘 지내자.' },
+              { type: 'narration', text: '두 사람은 각자의 방향으로 손을 흔들며 돌아섰다. 거창한 인사도, 무거운 말도 없었지만 그걸로 충분했다.' },
+              { type: 'narration', text: '그 후로도 계절이 몇 번 바뀌는 동안, 종종 안부를 주고받았다. 대단할 것 없는 사이였지만, 오래도록 편하게 남을 수 있는 사이라는 걸 둘 다 알고 있었다.' },
+              { type: 'line', speaker: 'ending', text: '곁에 남은 사람' },
+            ],
+          },
+          {
+            // 썸 엔딩 — 여백 (호감도 9~64)
+            min: 9, max: 64,
+            script: [
+              { type: 'narration', text: '노을이 낮게 깔린 교문 앞, 두 사람은 나란히 서 있었지만 그 사이엔 여전히 채워지지 않은 거리감이 남아 있었다.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '있잖아... 아니야, 됐다.' },
+              { type: 'line', speaker: 'player', text: '왜, 말해봐.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(고개를 저으며) 나중에. 지금은 그냥, 이 정도가 딱 좋은 것 같아서.' },
+              { type: 'line', speaker: 'player', text: '나중에 언제?' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(살짝 웃으며) ...글쎄, 그건 나도 아직 몰라.' },
+              { type: 'narration', text: '플레이어도 그 이상은 묻지 않았다. 확실한 답을 유보한 채, 두 사람 사이엔 말로 하지 않아도 되는 온도가 남아 있었다.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '다음에 또 보자. 언제가 될진 모르겠지만.' },
+              { type: 'line', speaker: 'player', text: '그래, 또 보자.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게) ...연락은 할 거지?' },
+              { type: 'line', speaker: 'player', text: '당연하지, 걱정 마.' },
+              { type: 'narration', text: '서로를 향한 눈빛에 담긴 말은 끝내 소리가 되지 않았다. 미래를 확정 짓지 않은 채로, 그 여백만이 두 사람 사이에 오래 남았다.' },
+              { type: 'line', speaker: 'ending', text: '여백' },
+            ],
+          },
+          {
+            // 연인 엔딩 — 온 이유 (호감도 65 이상)
+            min: 65,
+            script: [
+              { type: 'narration', text: '그녀는 잠시 망설이다 가방에서 스케치북을 꺼내 마지막 장을 펼쳤다. 거기엔 지난 3년간 몰래 그려온, 플레이어가 담긴 그림들이 페이지마다 빼곡했다.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '사실 처음 만났을 때부터 지금까지, 계속 그려왔어. 들키면 어쩌나 매번 조마조마했는데.' },
+              { type: 'narration', text: '한 장 한 장 넘길 때마다, 그 계절 그 순간들이 고스란히 되살아났다. 그녀는 마지막 장을 넘기기 직전, 잠시 숨을 골랐다.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(조심스럽게) 있잖아. 네가 여기 온 이유가... 나였으면 좋겠어.' },
+              { type: 'narration', text: '그 말이 끝나는 순간, 세상의 소리가 잠시 멀어졌다. 흩날리던 눈송이만 유난히 크고 느리게 떨어지고 있었다.' },
+              { type: 'narration', text: '긴 정적 끝에, 그녀가 다시 입을 열었다. 그 한마디는 지금까지와는 다른 이름을 부르고 있었다.' },
+              { type: 'setAddressStage', value: 2 },
+              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', slow: 2, text: '(눈을 마주치며) ...그동안 이 말, 진짜 하고 싶었어.' },
+              { type: 'line', speaker: 'player', text: '...방금 뭐라고 부른 거야?' },
+              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', text: '(살짝 웃으며) 1픽. 나한테 제일 먼저였던 사람이니까. 이상해?' },
+              { type: 'line', speaker: 'player', text: '아니, 마음에 들어.' },
+              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', text: '(눈시울이 붉어지며) ...다행이다. 앞으로 계속 이렇게 부를 거니까.' },
+              { type: 'line', speaker: 'player', text: '그럼 나는 뭐라고 불러야 돼?' },
+              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'smile', text: '(장난스럽게) 그건 천천히 생각해봐. 시간은 이제 많으니까.' },
+              { type: 'narration', text: '두 사람은 눈이 소복이 쌓여가는 교문 앞에서, 오래도록 손을 맞잡고 서 있었다. 벚꽃으로 시작된 이야기가, 이렇게 눈 속에서 가장 다정한 결말을 맞이하고 있었다.' },
+              { type: 'line', speaker: 'ending', text: '온 이유' },
+              { type: 'narration', text: '엔딩 화면이 저물고, 화면 위로 지난 3년의 순간들이 조용히 흘러갔다 — 벚꽃 아래 첫 만남, 축제의 소란, 눈싸움 같던 다툼과 화해, 함께 웃던 피시방의 밤. 그 모든 순간이 갤러리에 남아있던 CG들로 하나씩 되살아나는, 짧은 크레딧이었다.' },
+            ],
+          },
+        ],
+      },
     ],
   },
 ];

@@ -155,6 +155,24 @@ function onyuRenderCurrentNode() {
     window.ONYU_STATE.addressStage = node.value;
     if (onyuStepToNextNode()) onyuRenderCurrentNode();
     else onyuFinishChapter();
+  } else if (node.type === 'scoreGate') {
+    // CH27 전용 — 선택지 없이 최종 누적 호감도로만 우정/썸/연인 3갈래 중 하나를
+    // 고른다. choice와 달리 플레이어 입력을 기다리지 않고, 해당 구간의 script를
+    // 프레임으로 push한 뒤 곧장 그 첫 노드를 렌더한다(onyuSelectChoice와 동일 패턴).
+    var score = window.ONYU_STATE.affection;
+    var branch = node.branches.filter(function (b) {
+      var min = (b.min === undefined) ? -Infinity : b.min;
+      var max = (b.max === undefined) ? Infinity : b.max;
+      return score >= min && score <= max;
+    })[0];
+    if (branch) {
+      onyuFrameStack.push({ list: branch.script, i: 0 });
+      onyuRenderCurrentNode();
+    } else if (onyuStepToNextNode()) {
+      onyuRenderCurrentNode();
+    } else {
+      onyuFinishChapter();
+    }
   }
 }
 
@@ -267,9 +285,11 @@ function onyuFinishChapter() {
   if (next) {
     onyuStartChapter(next.id);
   } else {
+    // CH27(마지막 챕터) 완주 — 엔딩→시그니처 오프닝→타이틀 복귀 연출은 Phase 4에서
+    // 만들 예정이라 지금은 완주했다는 것만 알리는 임시 화면.
     onyuEl.speakerTag.hidden = true;
     onyuEl.situation.textContent = '';
     onyuEl.choiceList.innerHTML = '';
-    onyuEl.dialogueLine.textContent = '여기까지가 지금 이식된 분량이에요 — 다음 챕터는 준비 중입니다.';
+    onyuEl.dialogueLine.textContent = '— 끝 — (엔딩 연출은 준비 중입니다. 타이틀로 돌아가려면 새로고침하세요.)';
   }
 }
