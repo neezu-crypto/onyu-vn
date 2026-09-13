@@ -1,5 +1,16 @@
 /* 부트스트랩 — DOM 참조 연결 + 타이틀 화면 버튼 배선. */
 
+// 스탠딩 12장(장당 1.5~2MB)을 표정이 바뀌는 그 순간 처음 요청하면 네트워크·디코딩
+// 지연 때문에 "대사는 바로 나오는데 표정만 한 박자 늦게 바뀌는" 현상이 생긴다.
+// 그래서 페이지 로드 즉시(타이틀 화면을 보는 동안) 미리 받아서 브라우저 캐시에
+// 데워둔다 — onyuApplySprite()가 나중에 .src를 바꿀 때는 캐시 히트라 즉시 반영된다.
+var onyuPreloadedSprites = [];
+['s1', 's2', 's3', 's4', 's5', 's6', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6'].forEach(function (name) {
+  var img = new Image();
+  img.src = 'assets/standing/' + name + '.png';
+  onyuPreloadedSprites.push(img); // 참조를 들고 있어야 로드 도중 GC로 취소되지 않는다
+});
+
 document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();
 
