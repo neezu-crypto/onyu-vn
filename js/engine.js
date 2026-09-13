@@ -96,6 +96,7 @@ function onyuRenderCurrentNode() {
   onyuEl.choiceList.innerHTML = '';
   onyuEl.situation.textContent = '';
   onyuEl.nameForm.hidden = true;
+  onyuEl.nameError.textContent = ''; // 이전에 이름을 잘못 입력했을 때 뜬 안내문이 다음 노드까지 안 남게
 
   var node = onyuCurrentNode();
   if (node === undefined) { onyuFinishChapter(); return; }
