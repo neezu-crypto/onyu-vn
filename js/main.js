@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();
 
   onyuEl.chapterTag = document.getElementById('play-chapter-tag');
+  onyuEl.spriteWrap = document.getElementById('play-sprite-wrap');
   onyuEl.spriteImg = document.getElementById('play-sprite-img');
   onyuEl.particleLayer = document.getElementById('play-particle-layer');
   onyuEl.speakerTag = document.getElementById('play-speaker-tag');

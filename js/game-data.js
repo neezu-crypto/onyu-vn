@@ -5,6 +5,10 @@
  *
  * 줄 타입: 'narration' | 'line' | 'choice' | 'nameInput'
  * line.speaker: 'player' | 'onyu' | 'teacher' 등 SPEAKER_LABELS의 키
+ * line.expr: speaker가 'onyu'일 때만 의미 있음 — 스탠딩 표정 6종
+ *   (calm/smile/surprised/shy/worried/pouty) 중 하나. 생략하면 직전 표정을 유지.
+ * narration.sheAbsent: true면 그 나레이션이 보이는 동안만 스탠딩을 숨김(그녀가 그
+ *   장면에 물리적으로 없는 순간용). line/choice가 나오면 항상 다시 보인다.
  * choice.options[].branch: 'pos' | 'neg' — 각 옵션 안의 script가 해당 분기의 전개
  */
 
@@ -28,17 +32,17 @@ window.ONYU_CHAPTERS = [
             branch: 'pos', text: '진심으로 그림이 좋다고 말을 건다', affection: 2, tag: 'L01',
             script: [
               { type: 'line', speaker: 'player', text: '이거, 네가 그린 거야?' },
-              { type: 'line', speaker: 'onyu', text: '(고개를 들며) 어... 응.' },
+              { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(고개를 들며) 어... 응.' },
               { type: 'line', speaker: 'player', text: '진짜 잘 그렸다.' },
-              { type: 'line', speaker: 'onyu', text: '고마워. 그렇게 말해주는 사람, 별로 없었는데.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '고마워. 그렇게 말해주는 사람, 별로 없었는데.' },
               { type: 'line', speaker: 'player', text: '뭐 그린 거야?' },
-              { type: 'line', speaker: 'onyu', text: '그냥 창밖 풍경. 아직 다 못 그렸어.' },
+              { type: 'line', speaker: 'onyu', expr: 'calm', text: '그냥 창밖 풍경. 아직 다 못 그렸어.' },
               { type: 'line', speaker: 'player', text: '다 그리면 보여줘.' },
-              { type: 'line', speaker: 'onyu', text: '(살짝 웃으며) 그러든가.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(살짝 웃으며) 그러든가.' },
               { type: 'line', speaker: 'player', text: '미술부야?' },
-              { type: 'line', speaker: 'onyu', text: '아니, 디자인과 준비용. 좋아서 하는 건 아니고.' },
+              { type: 'line', speaker: 'onyu', expr: 'calm', text: '아니, 디자인과 준비용. 좋아서 하는 건 아니고.' },
               { type: 'line', speaker: 'player', text: '그럼 뭘 좋아하는데?' },
-              { type: 'line', speaker: 'onyu', text: '...그건 나중에.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '...그건 나중에.' },
             ],
           },
           {
@@ -61,11 +65,11 @@ window.ONYU_CHAPTERS = [
             script: [
               { type: 'line', speaker: 'player', text: '(손을 들며) 저 먼저 할게요!' },
               { type: 'narration', text: '일부러 시답잖은 농담을 살짝 섞었다. 다음 차례가 왔을 땐 다들 이미 다른 이야기에 정신이 팔려 있었다. 그녀는 이름만 담백하게 말하고 자리에 앉았다.' },
-              { type: 'line', speaker: 'onyu', text: '(쉬는 시간, 다가와서) 아까, 고마워.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(쉬는 시간, 다가와서) 아까, 고마워.' },
               { type: 'line', speaker: 'player', text: '뭐가?' },
-              { type: 'line', speaker: 'onyu', text: '그냥. 먼저 나서준 거.' },
+              { type: 'line', speaker: 'onyu', expr: 'calm', text: '그냥. 먼저 나서준 거.' },
               { type: 'line', speaker: 'player', text: '별거 아니었어.' },
-              { type: 'line', speaker: 'onyu', text: '그래도. ...그렇게 막 나서는 거, 은근 별로 안 싫더라.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '그래도. ...그렇게 막 나서는 거, 은근 별로 안 싫더라.' },
             ],
           },
           {
@@ -78,16 +82,16 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '쉬는 시간, 복도에서 다시 마주쳤다. 이번엔 그녀가 먼저 걸음을 멈췄다.' },
-      { type: 'line', speaker: 'onyu', text: '저기, 너 이름이 뭐야?' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '저기, 너 이름이 뭐야?' },
       { type: 'nameInput' },
       { type: 'line', speaker: 'player', text: '(이름을 말한다)' },
-      { type: 'line', speaker: 'onyu', text: '(되뇌며) 그렇구나. 알겠어.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '(되뇌며) 그렇구나. 알겠어.' },
       { type: 'line', speaker: 'player', text: '너는?' },
-      { type: 'line', speaker: 'onyu', text: '온이유.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '온이유.' },
       { type: 'line', speaker: 'player', text: '이유... 이름 특이하다.' },
-      { type: 'line', speaker: 'onyu', text: '많이 듣는 말이야.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '많이 듣는 말이야.' },
       { type: 'line', speaker: 'player', text: '왜, 무슨 뜻인데?' },
-      { type: 'line', speaker: 'onyu', text: '(잠깐 생각하다가) ...나중에 알려줄게.' },
+      { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠깐 생각하다가) ...나중에 알려줄게.' },
       { type: 'narration', text: '짧게 웃고는, 먼저 몸을 돌려 걸어갔다. 그뿐이었지만, 교실이 조금은 덜 낯설게 느껴졌다. 창밖으로 아직 여물지 않은 벚꽃 봉오리가 보였다.' },
     ],
   },
@@ -97,13 +101,13 @@ window.ONYU_CHAPTERS = [
     script: [
       { type: 'narration', text: '등굣길, 어느새 벚꽃이 활짝 피어 있었다. 바람이 불 때마다 꽃잎이 골목 가득 흩날렸다. 나란히 걷던 중이었다.' },
       { type: 'line', speaker: 'player', text: '오늘 좀 늦었네.' },
-      { type: 'line', speaker: 'onyu', text: '어젯밤에 게임하다 늦게 잤어.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '어젯밤에 게임하다 늦게 잤어.' },
       { type: 'line', speaker: 'player', text: '무슨 게임인데?' },
-      { type: 'line', speaker: 'onyu', text: '비밀.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '비밀.' },
       { type: 'line', speaker: 'player', text: '표정 보니까 롤인 거 같은데.' },
-      { type: 'line', speaker: 'onyu', text: '(움찔하며) ...어떻게 알았어.' },
+      { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(움찔하며) ...어떻게 알았어.' },
       { type: 'narration', text: '앞서 걷던 온이유가 문득 걸음을 멈췄다. 고개를 살짝 젖힌 채, 떨어지는 꽃잎을 가만히 올려다보고 있었다.' },
-      { type: 'line', speaker: 'onyu', text: '예쁘다.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '예쁘다.' },
       { type: 'line', speaker: 'player', text: '(정말 그러네.)' },
       {
         type: 'choice',
@@ -113,13 +117,13 @@ window.ONYU_CHAPTERS = [
             branch: 'pos', text: '같이 걸음을 멈추고 벚꽃을 바라본다', affection: 2, tag: 'L10',
             script: [
               { type: 'narration', text: '발걸음을 멈추고 옆에 나란히 섰다. 딱히 할 말은 없었지만, 그것만으로 충분했다.' },
-              { type: 'line', speaker: 'onyu', text: '너도 이런 거 볼 줄 아는구나.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '너도 이런 거 볼 줄 아는구나.' },
               { type: 'line', speaker: 'player', text: '무슨 소리야, 나도 눈 있거든.' },
-              { type: 'line', speaker: 'onyu', text: '(피식) 그런 뜻 아니었는데.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(피식) 그런 뜻 아니었는데.' },
               { type: 'line', speaker: 'player', text: '알아. 놀린 거야.' },
-              { type: 'line', speaker: 'onyu', text: '(살짝 웃으며) 여유 좀 있네.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(살짝 웃으며) 여유 좀 있네.' },
               { type: 'line', speaker: 'player', text: '너도 여유 있어 보이는데.' },
-              { type: 'line', speaker: 'onyu', text: '오늘만 그래.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '오늘만 그래.' },
             ],
           },
           {
@@ -127,7 +131,7 @@ window.ONYU_CHAPTERS = [
             script: [
               { type: 'line', speaker: 'player', text: '야, 지각한다. 빨리 가자.' },
               { type: 'narration', text: '손목을 슬쩍 잡아끌었다.' },
-              { type: 'line', speaker: 'onyu', text: '(흠칫 놀라며) ...어, 그래.' },
+              { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(흠칫 놀라며) ...어, 그래.' },
               { type: 'narration', text: '말없이 다시 걷기 시작했다. 발걸음이 아까보다 조금 빨라져 있었다.' },
             ],
           },
@@ -135,9 +139,9 @@ window.ONYU_CHAPTERS = [
       },
       { type: 'narration', text: '교문 앞, 아직 조회까지는 시간이 남아 있었다. 화단 옆 벤치에 앉은 그녀가 가방에서 스케치북을 꺼냈다.' },
       { type: 'line', speaker: 'player', text: '맨날 스케치북 들고 다녀?' },
-      { type: 'line', speaker: 'onyu', text: '과제 마감이 코앞이라. 안 그러면 나도 안 들고 다녀.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '과제 마감이 코앞이라. 안 그러면 나도 안 들고 다녀.' },
       { type: 'line', speaker: 'player', text: '그럼 집에서는 뭐 해?' },
-      { type: 'line', speaker: 'onyu', text: '(웃으며) 그건 비밀이라니까.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃으며) 그건 비밀이라니까.' },
       {
         type: 'choice',
         situation: '스케치북을 꺼내 벚꽃을 그리기 시작하는 그녀',
@@ -146,9 +150,9 @@ window.ONYU_CHAPTERS = [
             branch: 'pos', text: '말없이 옆에 앉아 그리는 모습을 지켜본다', affection: 2, tag: 'L03',
             script: [
               { type: 'narration', text: '굳이 말을 걸지 않고 옆에 조용히 앉았다. 연필이 사각거리는 소리만 벤치 주변을 채웠다. 한참 뒤, 그녀가 낮게 중얼거렸다.' },
-              { type: 'line', speaker: 'onyu', text: '가만히 있어 줘서 고마워.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '가만히 있어 줘서 고마워.' },
               { type: 'line', speaker: 'player', text: '방해하는 것 같아서.' },
-              { type: 'line', speaker: 'onyu', text: '아니야. 오히려 편해. ...이런 거 자꾸 말하게 하지 마.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '아니야. 오히려 편해. ...이런 거 자꾸 말하게 하지 마.' },
               { type: 'line', speaker: 'player', text: '다행이네.' },
             ],
           },
@@ -157,18 +161,18 @@ window.ONYU_CHAPTERS = [
             script: [
               { type: 'line', speaker: 'player', text: '(친구들을 부르며) 야, 여기서 사진 찍자!' },
               { type: 'narration', text: '연필을 쥔 손이 뚝 멈췄다.' },
-              { type: 'line', speaker: 'onyu', text: '(스케치북을 덮으며) 나 먼저 갈게.' },
+              { type: 'line', speaker: 'onyu', expr: 'worried', text: '(스케치북을 덮으며) 나 먼저 갈게.' },
               { type: 'narration', text: '뒤도 돌아보지 않고 교실 쪽으로 향했다.' },
             ],
           },
         ],
       },
       { type: 'narration', text: '종이 울리기 직전, 그녀가 스케치북을 가방에 넣었다.' },
-      { type: 'line', speaker: 'onyu', text: '봄이 생각보다 짧네.' },
+      { type: 'line', speaker: 'onyu', expr: 'calm', text: '봄이 생각보다 짧네.' },
       { type: 'line', speaker: 'player', text: '그게 무슨 말이야?' },
-      { type: 'line', speaker: 'onyu', text: '(웃으며) 그냥. 벚꽃이 빨리 지는 것 같아서.' },
+      { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃으며) 그냥. 벚꽃이 빨리 지는 것 같아서.' },
       { type: 'line', speaker: 'player', text: '내년에도 같이 보면 되지.' },
-      { type: 'line', speaker: 'onyu', text: '(잠깐 이쪽을 보다가) ...그러네.' },
+      { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠깐 이쪽을 보다가) ...그러네.' },
       { type: 'narration', text: '대수롭지 않게 넘긴 말이었지만, 그녀는 한동안 그 말을 곱씹는 얼굴이었다. 흩날리는 꽃잎 사이로, 올해 벚꽃이 유난히 빨리 지고 있다는 것만은 확실했다.' },
     ],
   },

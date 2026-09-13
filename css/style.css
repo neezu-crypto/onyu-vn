@@ -77,7 +77,9 @@ button { font-family: inherit; }
 .sprite-wrap {
   flex: 0 0 46%; max-width: 640px; height: 100%; z-index: 2;
   display: flex; align-items: flex-end; justify-content: flex-start; pointer-events: none;
+  opacity: 1; transition: opacity .35s ease;
 }
+.sprite-wrap.is-hidden { opacity: 0; }
 .sprite-wrap img { max-height: 98vh; max-width: 100%; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 20px 26px rgba(61, 52, 54, 0.16)); }
 
 .play-text-col { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column-reverse; gap: 14px; z-index: 3; padding-bottom: 4vh; }

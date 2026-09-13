@@ -7,17 +7,28 @@
 
 var onyuFrameStack = [];
 var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
+var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
 
 var onyuEl = {}; // DOM 참조는 main.js가 부팅 시 채운다
+
+// onyu-vn-standing-prompts.html 기준 S1~S6 / W1~W6 표정 순서
+var ONYU_EXPR_INDEX = { calm: 1, smile: 2, surprised: 3, shy: 4, worried: 5, pouty: 6 };
 
 function onyuSpeakerLabel(key) {
   if (key === 'player') return window.ONYU_STATE.playerName || '플레이어';
   return window.SPEAKER_LABELS[key] || key;
 }
 
-function onyuSpriteFileForSeason(season) {
-  // 하복(봄·여름) vs 동복(가을·겨울), 지금은 표정 태깅이 없어 평온(기본) 한 장으로 고정.
-  return (season === 'autumn' || season === 'winter') ? 'w1' : 's1';
+function onyuSpriteFile(season, expr) {
+  var prefix = (season === 'autumn' || season === 'winter') ? 'w' : 's';
+  var n = ONYU_EXPR_INDEX[expr] || 1;
+  return prefix + n;
+}
+
+function onyuApplySprite() {
+  var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
+  var chapter = window.ONYU_CHAPTERS[idx];
+  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr) + '.png';
 }
 
 function onyuTextSpeedMs() {
@@ -32,10 +43,11 @@ function onyuStartChapter(chapterId) {
   window.ONYU_STATE.currentChapterId = chapterId;
   window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
   onyuFrameStack = [{ list: chapter.script, i: 0 }];
+  onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
 
   onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
   document.body.setAttribute('data-season', chapter.season);
-  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFileForSeason(chapter.season) + '.png';
+  onyuApplySprite();
   onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
 
   onyuShowScreen('play');
@@ -72,12 +84,22 @@ function onyuRenderCurrentNode() {
   var node = onyuCurrentNode();
   if (node === undefined) { onyuFinishChapter(); return; }
 
+  // 나레이션에 sheAbsent:true가 달려 있으면(그녀가 물리적으로 그 장면에 없는 순간) 그
+  // 동안만 스탠딩을 숨긴다 — line/choice 등 다른 노드에서는 항상 다시 보인다(그녀가
+  // 등장/발화하는 순간이므로).
+  var absent = node.type === 'narration' && node.sheAbsent === true;
+  onyuEl.spriteWrap.classList.toggle('is-hidden', absent);
+
   if (node.type === 'narration') {
     onyuEl.speakerTag.hidden = true;
     onyuStartTypewriter(node.text, node.slow);
   } else if (node.type === 'line') {
     onyuEl.speakerTag.hidden = false;
     onyuEl.speakerTag.textContent = node.speakerLabel || onyuSpeakerLabel(node.speaker);
+    if (node.speaker === 'onyu' && node.expr) {
+      onyuCurrentExpr = node.expr;
+      onyuApplySprite();
+    }
     onyuStartTypewriter(node.text, node.slow);
   } else if (node.type === 'choice') {
     onyuEl.speakerTag.hidden = true;
