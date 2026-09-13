@@ -24,7 +24,12 @@ body {
   background: var(--paper); color: var(--ink);
   font-family: "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic", -apple-system, sans-serif;
   overflow: hidden;
+  /* 웹페이지가 아니라 앱처럼 느껴지게 — 빠르게 연타할 때 텍스트가 드래그로
+     선택되거나 파란 하이라이트가 뜨는 걸 막는다. 이름 입력창만 예외적으로 다시 켠다. */
+  -webkit-user-select: none; -moz-user-select: none; user-select: none;
 }
+input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; user-drag: none; }
 button { font-family: inherit; }
 
 .screen { position: fixed; inset: 0; display: none; }
