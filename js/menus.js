@@ -123,6 +123,18 @@ function onyuInitGallerySubtabs() {
 /* ---------------- 저장 · 불러오기 ---------------- */
 
 function onyuRenderSaveScreen() {
+  var fromPlay = (onyuReturnScreen === 'play');
+
+  // 화면 자체는 저장/불러오기 공용이라 진입 경로에 따라 하는 일이 정반대인데
+  // ("저장 · 불러오기"라는 고정 문구만 보면 지금이 어느 모드인지 알 수 없다는
+  // 피드백을 받고) 제목·설명·빈 슬롯 문구를 모드에 맞게 바꿔서 명확히 한다.
+  document.getElementById('save-screen-topbar-title').textContent = fromPlay ? '저장하기' : '불러오기';
+  document.getElementById('save-screen-title').textContent = fromPlay ? '저장하기' : '불러오기';
+  document.getElementById('save-screen-sub').textContent = fromPlay
+    ? '슬롯을 선택하면 지금 진행 상황이 그 자리에 저장됩니다(기존 내용은 덮어쓰기).'
+    : '불러올 저장 파일을 선택하세요. 자동저장 또는 수동 슬롯 중 하나를 고르면 그 시점부터 다시 시작합니다.';
+  document.getElementById('save-screen-slot-label').textContent = fromPlay ? '수동 저장 (5칸)' : '수동 저장 불러오기 (5칸)';
+
   var autosaveContainer = document.getElementById('autosave-slot');
   var snap = onyuLoadAutosave();
   if (snap) {
@@ -132,13 +144,23 @@ function onyuRenderSaveScreen() {
       + '<div class="autosave-name-row"><span class="autosave-badge">자동</span>'
       + '<p class="autosave-name">CH.' + String(ch.order).padStart(2, '0') + ' · ' + ch.title + '</p></div>'
       + '<p class="autosave-date num">' + onyuFormatDate(snap.savedAt) + '</p></div></div>';
+    if (!fromPlay) {
+      // 불러오기 모드에선 자동저장도 눌러서 바로 불러올 수 있어야 한다 — 지금까진
+      // 이 카드가 정보 표시 전용이라 타이틀의 "이어하기" 버튼으로만 불러올 수
+      // 있었는데, 이 화면 자체가 "불러오기" 화면인 이상 여기서도 가능해야 맞다.
+      autosaveContainer.querySelector('.autosave-card').addEventListener('click', function () {
+        onyuApplySnapshot(snap);
+        onyuRequestFullscreen();
+        onyuStartChapter(snap.currentChapterId);
+      });
+      autosaveContainer.querySelector('.autosave-card').classList.add('is-clickable');
+    }
   } else {
     autosaveContainer.innerHTML = '<p class="autosave-empty">아직 자동저장 기록이 없습니다.</p>';
   }
 
   var grid = document.getElementById('manual-slot-grid');
   grid.innerHTML = '';
-  var fromPlay = (onyuReturnScreen === 'play');
 
   for (var i = 1; i <= 5; i++) {
     (function (slotIndex) {

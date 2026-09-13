@@ -100,15 +100,15 @@
   <section class="screen" data-screen="save" id="screen-save">
     <div class="sub-topbar">
       <button class="sub-back" data-back>← 타이틀로</button>
-      <span class="sub-topbar-title">저장 · 불러오기</span>
+      <span class="sub-topbar-title" id="save-screen-topbar-title">저장 · 불러오기</span>
     </div>
     <div class="scroll-inner">
       <div class="scroll-head">
-        <p class="scroll-title">저장 · 불러오기</p>
-        <p class="scroll-sub">자동저장은 매 챕터가 끝날 때마다 갱신됩니다. 수동 저장 5칸은 원하는 시점을 직접 남겨두는 용도예요.</p>
+        <p class="scroll-title" id="save-screen-title">저장 · 불러오기</p>
+        <p class="scroll-sub" id="save-screen-sub">자동저장은 매 챕터가 끝날 때마다 갱신됩니다. 수동 저장 5칸은 원하는 시점을 직접 남겨두는 용도예요.</p>
       </div>
       <div id="autosave-slot"></div>
-      <p class="slot-grid-label">수동 저장 (5칸)</p>
+      <p class="slot-grid-label" id="save-screen-slot-label">수동 저장 (5칸)</p>
       <div class="slot-grid" id="manual-slot-grid"></div>
     </div>
   </section>

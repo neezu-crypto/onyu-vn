@@ -65,7 +65,8 @@ function onyuStartChapter(chapterId) {
   onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
   document.body.setAttribute('data-season', chapter.season);
   onyuApplySprite();
-  onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
+  // 계절 낙하 파티클(벚꽃/빗방울/낙엽/눈)은 사용자 요청으로 일단 비활성화(2026-09-14).
+  // onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
 
   onyuShowScreen('play');
   onyuRenderCurrentNode();
