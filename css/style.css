@@ -18,14 +18,20 @@ body[data-season='summer'] { --season-accent: #3f8177; --season-soft: #e1f0ec; -
 body[data-season='autumn'] { --season-accent: #a8632b; --season-soft: #f5e6d3; --season-wash: #ecd3b0; }
 body[data-season='winter'] { --season-accent: #5d7f95; --season-soft: #e8eef2; --season-wash: #d4e0e8; }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  /* 모바일에서 화면(클릭 가능 영역)을 터치할 때마다 기본으로 뜨는 파란/회색 탭
+     하이라이트 오버레이 제거 — "화면 전체가 클릭 리스너"인 이 게임 구조상 그
+     기본 효과가 화면 전체를 덮어 번쩍이는 것처럼 보였다. */
+  -webkit-tap-highlight-color: transparent;
+}
 html, body { margin: 0; padding: 0; height: 100%; }
 body {
   background: var(--paper); color: var(--ink);
   font-family: "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic", -apple-system, sans-serif;
   overflow: hidden;
-  /* 웹페이지가 아니라 앱처럼 느껴지게 — 빠르게 연타할 때 텍스트가 드래그로
-     선택되거나 파란 하이라이트가 뜨는 걸 막는다. 이름 입력창만 예외적으로 다시 켠다. */
+  /* 웹페이지가 아니라 앱처럼 느껴지게 — 빠르게 연타할 때 텍스트가 드래그로 선택되는
+     걸 막는다. 이름 입력창만 예외적으로 다시 켠다. */
   -webkit-user-select: none; -moz-user-select: none; user-select: none;
 }
 input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
