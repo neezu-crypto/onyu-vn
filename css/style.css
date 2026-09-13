@@ -101,12 +101,18 @@ button { font-family: inherit; }
 .play-layout { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 0 3% 0 1%; gap: 2%; z-index: 2; }
 
 .sprite-wrap {
-  flex: 0 0 46%; max-width: 640px; height: 100%; z-index: 2;
-  display: flex; align-items: flex-end; justify-content: flex-start; pointer-events: none;
+  /* 폭을 %로 고정하지 않고 이미지 실제 렌더 크기에 맞춘다 — 예전엔 박스가 46%
+     고정폭이라 세로로 긴 캐릭터 이미지가 그 안에서 왼쪽 정렬되며 오른쪽에 빈
+     여백이 생겼는데, 특히 폰 가로모드처럼 화면이 짧고 넓을 때 그 여백이 훨씬
+     커 보였다(박스는 화면폭 기준 46%라 안 줄어드는데 이미지는 화면높이 기준이라
+     같이 짧아지니까). flex:0 0 auto + 이미지 자체 크기로 박스를 감싸면 여백이
+     원천적으로 안 생긴다 — 데스크톱·모바일 화면비 둘 다에 적용되는 근본 수정. */
+  flex: 0 0 auto; height: 100%; z-index: 2;
+  display: flex; align-items: flex-end; pointer-events: none;
   opacity: 1; transition: opacity .35s ease;
 }
 .sprite-wrap.is-hidden { opacity: 0; }
-.sprite-wrap img { max-height: 98vh; max-width: 100%; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 20px 26px rgba(61, 52, 54, 0.16)); }
+.sprite-wrap img { height: 98%; width: auto; max-width: 48vw; object-fit: contain; filter: drop-shadow(0 20px 26px rgba(61, 52, 54, 0.16)); }
 
 .play-text-col { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column-reverse; gap: 14px; z-index: 3; padding-bottom: 4vh; }
 .play-situation { font-size: 16px; color: var(--muted); font-weight: 600; text-align: center; min-height: 1.4em; }
