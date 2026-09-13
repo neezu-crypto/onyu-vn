@@ -294,3 +294,53 @@ button { font-family: inherit; }
 .settings-danger-btn { font-family: inherit; font-size: 13px; font-weight: 700; color: var(--season-accent); background: none; border: 1.5px solid var(--season-wash); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
 
 #screen-play { cursor: pointer; }
+
+/* ================= 데스크톱 글자 크기 확대 ================= */
+/* 모바일은 가로모드로 강제 고정된 좁은 화면(회전 안내 오버레이 참고)이라 지금
+   크기가 그대로 맞고, 마우스로 보는 실제 데스크톱 창에서만 전체적으로 조금
+   더 키운다. 화면 폭이 아니라 (hover:hover)+(pointer:fine)로 판별하는 이유는
+   폭만 보면 폰 가로모드(844~926px)가 작은 데스크톱 창과 겹쳐서 오판할 수
+   있기 때문 — 이 조합은 마우스/트랙패드가 있는 환경에서만 참이 된다. */
+@media (hover: hover) and (pointer: fine) {
+  .title-kicker { font-size: 14px; }
+  .title-tag { font-size: 16px; }
+  .title-menu-item { font-size: 18px; }
+  .title-menu-item.is-primary { font-size: 20px; }
+  .title-hint { font-size: 13px; }
+
+  .play-icon-btn { font-size: 18px; }
+  .play-chapter-tag { font-size: 14px; }
+  .play-situation { font-size: 18px; }
+  .choice-bubble { font-size: 21px; }
+  .speaker-tag { font-size: 18px; }
+  .dialogue-line { font-size: 29px; }
+  .name-form input { font-size: 22px; }
+  .name-form button { font-size: 19px; }
+  .name-error { font-size: 15px; }
+
+  .sub-back { font-size: 15px; }
+  .sub-topbar-title { font-size: 17px; }
+  .scroll-title { font-size: 21px; }
+  .scroll-sub { font-size: 15px; }
+
+  .year-row-label { font-size: 15px; }
+  .ch-card .ch-no { font-size: 12px; }
+  .ch-card .ch-name { font-size: 12px; }
+
+  .subtab-btn { font-size: 14px; }
+  .ending-thumb .ending-name { font-size: 14px; }
+
+  .autosave-name { font-size: 15px; }
+  .autosave-date { font-size: 12.5px; }
+  .autosave-empty { font-size: 14px; }
+  .slot-grid-label { font-size: 15px; }
+  .save-slot-name { font-size: 13px; }
+  .save-slot-date { font-size: 11.5px; }
+
+  .settings-section-title { font-size: 13px; }
+  .settings-row-label { font-size: 16px; }
+  .settings-row-sub { font-size: 12.5px; }
+  .slider-pct { font-size: 12.5px; }
+  .segmented button { font-size: 13.5px; }
+  .settings-danger-btn { font-size: 14px; }
+}
