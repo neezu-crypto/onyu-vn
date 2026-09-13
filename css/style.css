@@ -35,6 +35,27 @@ button { font-family: inherit; }
 .screen { position: fixed; inset: 0; display: none; }
 .screen.is-active { display: block; }
 
+/* ================= 회전 안내 ================= */
+/* screen.orientation.lock()은 iOS Safari가 아예 지원하지 않고, 지원하는 브라우저도
+   전체화면 상태를 전제조건으로 요구하는 경우가 많아 100% 보장되지 않는다. 그래서
+   실제 게임 화면(타이틀 제외)이 켜져 있는데 기기가 세로 방향이면, 기종과 무관하게
+   항상 동작하는 순수 CSS 오버레이로 회전을 안내한다 — API가 성공하면 애초에 세로가
+   안 되니 이 오버레이는 뜰 일이 없고, 실패한 기기에서만 보완적으로 뜬다. */
+#rotate-overlay { display: none; }
+@media (orientation: portrait) {
+  body.onyu-in-game #rotate-overlay {
+    display: flex; position: fixed; inset: 0; z-index: 999;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: var(--ink); color: var(--paper); text-align: center; padding: 24px;
+  }
+}
+.rotate-icon { font-size: 48px; animation: onyu-rotate-hint 1.6s ease-in-out infinite; }
+@keyframes onyu-rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+@media (prefers-reduced-motion: reduce) { .rotate-icon { animation: none; } }
+
 /* ================= 타이틀 ================= */
 #screen-title { background: linear-gradient(150deg, var(--paper-strong), var(--paper) 60%); }
 .title-figure { position: absolute; left: 8%; bottom: 0; width: min(30vw, 340px); }

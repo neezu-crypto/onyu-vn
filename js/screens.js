@@ -8,11 +8,28 @@ function onyuShowScreen(name) {
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.toggle('is-active', el.dataset.screen === name);
   });
+  // 타이틀은 세로로 봐도 무방하지만, 실제 플레이 화면(과 앞으로 추가될 챕터선택·
+  // 갤러리 등)은 좌우 분할 레이아웃이라 세로 화면에선 안 돌아간다 — 회전 안내
+  // 오버레이는 이 클래스 + CSS의 (orientation: portrait) 미디어쿼리 조합으로 뜬다.
+  document.body.classList.toggle('onyu-in-game', name !== 'title');
+}
+
+function onyuTryLockLandscape() {
+  // Android Chrome/Firefox 등은 지원하지만 iOS Safari는 이 API 자체가 없고, 대부분의
+  // 브라우저가 전체화면 상태여야만 lock을 허용한다 — 실패해도 조용히 넘어가고,
+  // 대신 CSS 회전 안내 오버레이가 모든 기기에서 동일하게 보완한다.
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(function () {});
+  }
 }
 
 function onyuRequestFullscreen() {
+  // 전체화면 진입이 실제로 끝난 뒤에 방향 고정을 시도해야 성공률이 높다(대부분의
+  // 브라우저가 전체화면 상태를 방향 고정의 전제조건으로 요구).
   var el = document.documentElement;
   if (el.requestFullscreen) {
-    el.requestFullscreen().catch(function () { /* 미지원/거부 시 조용히 일반 화면 진행 */ });
+    el.requestFullscreen().then(onyuTryLockLandscape).catch(function () { /* 미지원/거부 시 조용히 일반 화면 진행 */ });
+  } else {
+    onyuTryLockLandscape(); // Fullscreen API 자체가 없는 환경에서도 밑져야 본전으로 시도
   }
 }
