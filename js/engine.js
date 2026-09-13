@@ -36,6 +36,21 @@ function onyuTextSpeedMs() {
   return map[window.ONYU_STATE.settings.textSpeed] || 35;
 }
 
+// CG(32장)는 스탠딩·배경과 달리 챕터당 한 장만 쓰이고 장당 용량도 더 클 가능성이
+// 높아서, 32장을 전부 미리 받아두면 초기 로딩이 너무 무거워진다. 대신 지금 챕터를
+// 읽는 동안 "다음 챕터"에 쓸 CG 한 장만 미리 fetch해둔다 — 플레이어가 실제로 그
+// 챕터에 도달할 때쯤엔 이미 캐시에 있어 지연이 없다. chapter.cg 필드가 아직 없는
+// 챕터(지금 CH01·CH02 포함, Phase 2에서 실제 CG 파일명이 정해지면 채워질 예정)는
+// 조용히 아무것도 안 한다.
+var onyuPrefetchedCg = [];
+function onyuPrefetchNextChapterCg(currentIdx) {
+  var next = window.ONYU_CHAPTERS[currentIdx + 1];
+  if (!next || !next.cg) return;
+  var img = new Image();
+  img.src = 'assets/cg/' + next.cg;
+  onyuPrefetchedCg.push(img);
+}
+
 function onyuStartChapter(chapterId) {
   var idx = onyuChapterIndexById(chapterId);
   if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
@@ -44,6 +59,7 @@ function onyuStartChapter(chapterId) {
   window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
   onyuFrameStack = [{ list: chapter.script, i: 0 }];
   onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
+  onyuPrefetchNextChapterCg(idx);
 
   onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
   document.body.setAttribute('data-season', chapter.season);

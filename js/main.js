@@ -11,6 +11,18 @@ var onyuPreloadedSprites = [];
   onyuPreloadedSprites.push(img); // 참조를 들고 있어야 로드 도중 GC로 취소되지 않는다
 });
 
+// 재사용 배경 13종(B1~B13, 기획서 ARTWORK 기준)도 스탠딩과 같은 이유로 부팅 시 통째로
+// 프리로드한다 — 개수가 적고(13장) 여러 챕터에서 계속 재사용되니 스탠딩과 성격이 같다.
+// 아직 실제 파일이 없어서 지금은 전부 404로 끝나지만(콘솔에만 조용히 남고 화면엔
+// 영향 없음), 나중에 assets/backgrounds/b1.png~b13.png를 채워 넣기만 하면 코드
+// 수정 없이 바로 프리로드·사용된다.
+var onyuPreloadedBackgrounds = [];
+for (var onyuBgI = 1; onyuBgI <= 13; onyuBgI++) {
+  var bgImg = new Image();
+  bgImg.src = 'assets/backgrounds/b' + onyuBgI + '.png';
+  onyuPreloadedBackgrounds.push(bgImg);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();
 

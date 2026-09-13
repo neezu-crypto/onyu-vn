@@ -10,6 +10,9 @@
  * narration.sheAbsent: true면 그 나레이션이 보이는 동안만 스탠딩을 숨김(그녀가 그
  *   장면에 물리적으로 없는 순간용). line/choice가 나오면 항상 다시 보인다.
  * choice.options[].branch: 'pos' | 'neg' — 각 옵션 안의 script가 해당 분기의 전개
+ * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(예: 'cg-02.png', assets/cg/ 기준).
+ *   engine.js가 챕터 시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다 — 실제
+ *   CG 32장이 생성되고 각 챕터에 배정되면(Phase 2) 채워 넣을 것, 지금은 비워둠.
  */
 
 window.SPEAKER_LABELS = {
