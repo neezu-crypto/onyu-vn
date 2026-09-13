@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.nameForm = document.getElementById('play-name-form');
   onyuEl.nameInput = document.getElementById('play-name-input');
   onyuEl.nameError = document.getElementById('play-name-error');
+  onyuEl.dialogueBox = document.getElementById('dialogue-box');
 
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
   // 선택지·이름입력 중에는 onyuHandleDialogueClick 자체가 no-op이라 별도 예외 처리가 필요 없다.

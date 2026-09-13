@@ -101,6 +101,11 @@ function onyuRenderCurrentNode() {
   var node = onyuCurrentNode();
   if (node === undefined) { onyuFinishChapter(); return; }
 
+  // 선택지가 떠 있는 동안은 대사창 자체를 접어서 없앤다 — 기획서 "선택지 리액션"이
+  // 선택된 말풍선이 대사창 "자리로" 모핑해 들어가는 연출이라, 그 전까지 빈 대사창이
+  // 따로 떠 있으면 안 맞는다(선택 전엔 대사창이 존재하지 않는 셈).
+  onyuEl.dialogueBox.style.display = (node.type === 'choice') ? 'none' : '';
+
   // 나레이션에 sheAbsent:true가 달려 있으면(그녀가 물리적으로 그 장면에 없는 순간) 그
   // 동안만 스탠딩을 숨긴다 — line/choice 등 다른 노드에서는 항상 다시 보인다(그녀가
   // 등장/발화하는 순간이므로).
@@ -124,9 +129,16 @@ function onyuRenderCurrentNode() {
     onyuEl.situation.textContent = node.situation;
     node.options.forEach(function (opt) {
       var btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'choice-bubble';
-      btn.textContent = opt.text;
-      btn.addEventListener('click', function () { onyuSelectChoice(node, opt); });
+      var fill = document.createElement('span');
+      fill.className = 'choice-fill';
+      var label = document.createElement('span');
+      label.className = 'choice-label';
+      label.textContent = opt.text;
+      btn.appendChild(fill);
+      btn.appendChild(label);
+      btn.addEventListener('click', function (evt) { onyuSelectChoice(node, opt, evt, btn, fill); });
       onyuEl.choiceList.appendChild(btn);
     });
   } else if (node.type === 'nameInput') {
@@ -177,10 +189,52 @@ function onyuHandleDialogueClick() {
   else onyuFinishChapter();
 }
 
-function onyuSelectChoice(choiceNode, option) {
+// 기획서 "선택지 리액션": 클릭 즉시 클릭한 말풍선이 그 지점부터 season-accent 색으로
+// 차오르고(물감 번짐) 텍스트가 흰색으로 반전, 나머지 말풍선은 동시에 페이드아웃 →
+// ~400ms 홀드 후 선택된 말풍선이 대사창 자리로 모핑하듯 사라지고 → 같은 텍스트가
+// 대사창의 플레이어 대사로 이어진다. 호감도가 오르는지 내리는지는 색·이펙트로
+// 절대 힌트를 주지 않는다(모든 선택이 시각적으로 동일하게 처리됨).
+function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
+  // 이 클릭이 #screen-play의 "빈 곳 클릭하면 진행" 리스너로 버블링되면 안 된다 —
+  // 버블링되는 시점엔 이미 아래에서 프레임을 push해 다음 노드로 넘어간 상태라
+  // onyuHandleDialogueClick의 "선택지 중엔 무시" 가드가 안 먹혀서 애니메이션이
+  // 뜨기도 전에 즉시 다음 줄로 넘어가버리는 버그가 있었다.
+  evt.stopPropagation();
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
-  onyuRenderCurrentNode();
+
+  var buttons = Array.prototype.slice.call(onyuEl.choiceList.querySelectorAll('.choice-bubble'));
+  buttons.forEach(function (btn) {
+    btn.disabled = true;
+    if (btn !== clickedBtn) btn.classList.add('is-fading');
+  });
+
+  var reduceMotion = window.ONYU_STATE.settings.reduceMotion
+    || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (reduceMotion) { onyuRenderCurrentNode(); return; }
+
+  var rect = clickedBtn.getBoundingClientRect();
+  var x = evt.clientX - rect.left;
+  var y = evt.clientY - rect.top;
+  fillEl.style.left = x + 'px';
+  fillEl.style.top = y + 'px';
+  void fillEl.offsetHeight; // 강제 리플로우 — 위치 지정 후에 확장 트랜지션이 걸리게
+  clickedBtn.classList.add('is-selected');
+
+  setTimeout(function () {
+    // 대사창이 지금 display:none이라 그대로 재면 rect가 전부 0이 된다 — 순간적으로
+    // 보이게 해서 실제 자리를 잰 뒤(동기 실행이라 화면엔 안 그려짐) 바로 다시 숨긴다.
+    onyuEl.dialogueBox.style.display = '';
+    var dialogueRect = onyuEl.dialogueBox.getBoundingClientRect();
+    onyuEl.dialogueBox.style.display = 'none';
+    var clickedRect = clickedBtn.getBoundingClientRect();
+    var dx = (dialogueRect.left + dialogueRect.width / 2) - (clickedRect.left + clickedRect.width / 2);
+    var dy = (dialogueRect.top + dialogueRect.height / 2) - (clickedRect.top + clickedRect.height / 2);
+    clickedBtn.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.9)';
+    clickedBtn.classList.add('is-morphing');
+  }, 400);
+
+  setTimeout(onyuRenderCurrentNode, 400 + 350);
 }
 
 function onyuSubmitName() {
