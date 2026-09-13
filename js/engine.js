@@ -323,7 +323,7 @@ function onyuFinishChapter() {
     // 이 전환이 화면을 덮는 동안 onyuStartChapter가 실제 초기화를 수행하므로,
     // 플레이어에게는 "제목 카드 → 다음 챕터 첫 줄"로 자연스럽게 이어져 보인다.
     var nextLabel = 'CH.' + String(next.order).padStart(2, '0') + ' · ' + next.title;
-    onyuRunTransition({ holdMs: 650, chapterLabel: nextLabel }, function () {
+    onyuRunTransition({ holdMs: 1100, chapterLabel: nextLabel }, function () {
       onyuStartChapter(next.id);
     });
   } else {

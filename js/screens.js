@@ -8,7 +8,7 @@
 // 타이틀에서 들어왔으면 타이틀로, 플레이 중 상단바 아이콘으로 들어왔으면 플레이로.
 var onyuReturnScreen = 'title';
 
-var ONYU_TRANSITION_FADE_MS = 260; // #screen-transition-overlay의 CSS transition 시간과 맞출 것
+var ONYU_TRANSITION_FADE_MS = 450; // #screen-transition-overlay의 CSS transition 시간과 맞출 것 — 힐링물 톤에 맞춰 느긋하게
 var onyuTransitionDepth = 0; // >0이면 이미 오버레이가 화면을 덮고 있는 중 — 중첩 페이드 방지
 
 // 실제 화면 전환(class 토글 + 각 화면의 렌더 함수 호출)은 항상 오버레이가 화면을
