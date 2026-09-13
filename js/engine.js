@@ -182,6 +182,7 @@ function onyuCompleteTypewriter() {
 }
 
 function onyuHandleDialogueClick() {
+  onyuMaybeRecoverFullscreen();
   var node = onyuCurrentNode();
   if (!node || node.type === 'choice' || node.type === 'nameInput') return; // 선택/입력 중엔 클릭 무시
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
@@ -200,6 +201,7 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
   // onyuHandleDialogueClick의 "선택지 중엔 무시" 가드가 안 먹혀서 애니메이션이
   // 뜨기도 전에 즉시 다음 줄로 넘어가버리는 버그가 있었다.
   evt.stopPropagation();
+  onyuMaybeRecoverFullscreen();
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
 

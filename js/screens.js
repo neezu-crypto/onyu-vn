@@ -33,3 +33,12 @@ function onyuRequestFullscreen() {
     onyuTryLockLandscape(); // Fullscreen API 자체가 없는 환경에서도 밑져야 본전으로 시도
   }
 }
+
+// 모바일에서 스와이프 제스처·홈 버튼 등으로 전체화면이 풀리는 경우가 흔하다.
+// Fullscreen API는 사용자 제스처 없이는 재요청이 막히므로, 게임 진행 중 화면을
+// 터치하는 그 순간(이미 사용자 제스처)에 슬쩍 끼워서 다시 전체화면으로 되돌린다.
+function onyuMaybeRecoverFullscreen() {
+  if (document.body.classList.contains('onyu-in-game') && !document.fullscreenElement) {
+    onyuRequestFullscreen();
+  }
+}
