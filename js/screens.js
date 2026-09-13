@@ -8,7 +8,13 @@
 // 타이틀에서 들어왔으면 타이틀로, 플레이 중 상단바 아이콘으로 들어왔으면 플레이로.
 var onyuReturnScreen = 'title';
 
-function onyuShowScreen(name) {
+var ONYU_TRANSITION_FADE_MS = 260; // #screen-transition-overlay의 CSS transition 시간과 맞출 것
+var onyuTransitionDepth = 0; // >0이면 이미 오버레이가 화면을 덮고 있는 중 — 중첩 페이드 방지
+
+// 실제 화면 전환(class 토글 + 각 화면의 렌더 함수 호출)은 항상 오버레이가 화면을
+// 완전히 덮은 시점에만 일어나야 한다 — 그래야 전환 도중에 이전/다음 화면이 잠깐
+// 비치는 일이 없다. onyuRunTransition의 callback으로만 호출하고, 직접 부르지 않는다.
+function onyuSwapScreen(name) {
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.toggle('is-active', el.dataset.screen === name);
   });
@@ -23,6 +29,50 @@ function onyuShowScreen(name) {
   if (name === 'settings' && typeof onyuRenderSettingsScreen === 'function') onyuRenderSettingsScreen();
 
   onyuUpdateBackButtonLabels();
+}
+
+// 모든 메뉴 이동(타이틀↔4개 화면, 플레이 상단바 아이콘 등)에 공용으로 쓰는 가벼운
+// 화면 전환 — 페이드로 덮었다 걷는다. 이미 그 화면이면(예: 부팅 시 title로 최초
+// 진입) 페이드 없이 그냥 렌더만 다시 한다.
+function onyuShowScreen(name) {
+  var current = document.querySelector('.screen.is-active');
+  if (current && current.dataset.screen === name) {
+    onyuSwapScreen(name);
+    return;
+  }
+  onyuRunTransition({}, function () { onyuSwapScreen(name); });
+}
+
+// 화면 전환 오버레이 — 페이드인(덮기) → (옵션) 대기 시간 동안 챕터 타이틀 카드
+// 노출 → callback 실행(실제 내용 교체) → 곧장 페이드아웃(걷기). 챕터↔챕터 전환처럼
+// "잠깐 쉬어가는" 느낌이 필요한 곳은 holdMs/chapterLabel을 넘기고, 단순 메뉴 이동은
+// 옵션 없이 기본 페이드만 쓴다. 이미 다른 전환이 화면을 덮고 있는 도중(예: 챕터
+// 전환 콜백 안에서 onyuStartChapter가 다시 이 함수를 호출하는 경우)이거나 모션
+// 줄이기가 켜져 있으면 페이드 없이 callback을 즉시 실행한다(중첩 깜빡임 방지).
+function onyuRunTransition(options, callback) {
+  options = options || {};
+  if (onyuTransitionDepth > 0 || window.ONYU_STATE.settings.reduceMotion) {
+    callback();
+    return;
+  }
+  var holdMs = options.holdMs || 0;
+  var chapterLabel = options.chapterLabel || '';
+  var overlay = document.getElementById('screen-transition-overlay');
+  var label = document.getElementById('screen-transition-label');
+
+  onyuTransitionDepth++;
+  label.textContent = chapterLabel;
+  label.classList.toggle('is-visible', !!chapterLabel);
+  overlay.classList.add('is-active');
+
+  setTimeout(function () {
+    setTimeout(function () {
+      callback();
+      overlay.classList.remove('is-active');
+      label.classList.remove('is-visible');
+      onyuTransitionDepth--;
+    }, holdMs);
+  }, ONYU_TRANSITION_FADE_MS);
 }
 
 // 저장·설정 화면은 타이틀뿐 아니라 플레이 중에도 진입 가능해서, "뒤로" 버튼이

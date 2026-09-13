@@ -53,23 +53,30 @@ function onyuPrefetchNextChapterCg(currentIdx) {
 }
 
 function onyuStartChapter(chapterId) {
-  var idx = onyuChapterIndexById(chapterId);
-  if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
-  var chapter = window.ONYU_CHAPTERS[idx];
-  window.ONYU_STATE.currentChapterId = chapterId;
-  window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
-  onyuFrameStack = [{ list: chapter.script, i: 0 }];
-  onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
-  onyuPrefetchNextChapterCg(idx);
+  // 새 게임/이어하기/타임머신 점프/불러오기 등 이 함수로 들어오는 모든 경로가
+  // 전환 오버레이로 덮인 채 초기화되게 감싼다 — onyuFinishChapter가 이미 자기
+  // 전환(챕터 타이틀 카드+대기)을 걸어둔 채로 이 함수를 부르는 경우엔
+  // onyuTransitionDepth가 이미 1 이상이라 onyuRunTransition이 추가 페이드 없이
+  // callback을 바로 실행한다(그래서 이중 페이드가 겹치지 않는다).
+  onyuRunTransition({}, function () {
+    var idx = onyuChapterIndexById(chapterId);
+    if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
+    var chapter = window.ONYU_CHAPTERS[idx];
+    window.ONYU_STATE.currentChapterId = chapterId;
+    window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
+    onyuFrameStack = [{ list: chapter.script, i: 0 }];
+    onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
+    onyuPrefetchNextChapterCg(idx);
 
-  onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
-  document.body.setAttribute('data-season', chapter.season);
-  onyuApplySprite();
-  // 계절 낙하 파티클(벚꽃/빗방울/낙엽/눈)은 사용자 요청으로 일단 비활성화(2026-09-14).
-  // onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
+    onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
+    document.body.setAttribute('data-season', chapter.season);
+    onyuApplySprite();
+    // 계절 낙하 파티클(벚꽃/빗방울/낙엽/눈)은 사용자 요청으로 일단 비활성화(2026-09-14).
+    // onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
 
-  onyuShowScreen('play');
-  onyuRenderCurrentNode();
+    onyuSwapScreen('play');
+    onyuRenderCurrentNode();
+  });
 }
 
 function onyuCurrentFrame() {
@@ -312,7 +319,13 @@ function onyuFinishChapter() {
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var next = window.ONYU_CHAPTERS[idx + 1];
   if (next) {
-    onyuStartChapter(next.id);
+    // 챕터 사이엔 다음 챕터 제목 카드를 잠깐 보여주며 쉬어가는 전환을 넣는다 —
+    // 이 전환이 화면을 덮는 동안 onyuStartChapter가 실제 초기화를 수행하므로,
+    // 플레이어에게는 "제목 카드 → 다음 챕터 첫 줄"로 자연스럽게 이어져 보인다.
+    var nextLabel = 'CH.' + String(next.order).padStart(2, '0') + ' · ' + next.title;
+    onyuRunTransition({ holdMs: 650, chapterLabel: nextLabel }, function () {
+      onyuStartChapter(next.id);
+    });
   } else {
     // CH27(마지막 챕터) 완주 — 엔딩→시그니처 오프닝→타이틀 복귀 연출은 Phase 4에서
     // 만들 예정이라 지금은 완주했다는 것만 알리는 임시 화면.
