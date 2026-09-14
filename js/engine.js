@@ -27,8 +27,8 @@ function onyuSpeakerLabel(key) {
   return window.SPEAKER_LABELS[key] || key;
 }
 
-function onyuSpriteFile(season, expr) {
-  var prefix = (season === 'autumn' || season === 'winter') ? 'w' : 's';
+function onyuSpriteFile(season, expr, spriteSet) {
+  var prefix = spriteSet || ((season === 'autumn' || season === 'winter') ? 'w' : 's');
   var n = ONYU_EXPR_INDEX[expr] || 1;
   return prefix + n;
 }
@@ -36,7 +36,7 @@ function onyuSpriteFile(season, expr) {
 function onyuApplySprite() {
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var chapter = window.ONYU_CHAPTERS[idx];
-  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr) + '.png';
+  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, chapter.spriteSet) + '.png';
 }
 
 // 재사용 배경 13종 중 하나가 지정된 챕터(chapter.bg)만 사진을 깔고, 지정이 없는

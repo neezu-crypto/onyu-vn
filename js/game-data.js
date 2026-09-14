@@ -52,6 +52,10 @@
  *   "그 챕터만" 날씨가 특별한 경우는 계절 축이 아니라서 자동 감지를 안 쓰고
  *   chapter.bg 자체를 그 챕터 전용 변형 키로 직접 바꿔 쓴다(예: CH04는
  *   'b3'가 아니라 'b3-rain' — 같은 b3를 쓰는 CH02·CH21은 비와 무관해서 그대로 'b3').
+ * chapter.spriteSet: (선택) 스탠딩 파일명 접두사(assets/standing/{spriteSet}{1~6}.png)를
+ *   season 기반 자동 선택(하복 's'/동복 'w') 대신 강제 고정. 교복이 안 맞는 상황
+ *   전용 — 지금은 CH05(체육대회)만 'g'(학교 체육복 6종, 2026-09-15 추가)로 고정.
+ *   생략 시 기존과 동일하게 season으로 's'/'w' 자동 선택.
  */
 
 window.SPEAKER_LABELS = {
@@ -377,7 +381,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch05', order: 5, grade: 1, season: 'autumn', title: '체육대회', bg: 'b6',
+    id: 'ch05', order: 5, grade: 1, season: 'autumn', title: '체육대회', bg: 'b6', spriteSet: 'g',
     script: [
       { type: 'narration', text: '가을 체육대회, 운동장은 응원 함성과 호루라기 소리로 뒤덮여 있었다. 반 대항 이어달리기를 기다리며 다들 목이 터져라 소리를 질렀다.', sheAbsent: true },
       { type: 'narration', text: '저 멀리 그늘진 스탠드 구석, 온이유가 혼자 앉아 스케치북을 펼치고 있었다. 함성이 가장 덜 닿는 자리를 골라 앉은 게 분명해 보였다.' },
