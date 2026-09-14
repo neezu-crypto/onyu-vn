@@ -399,24 +399,24 @@ button { font-family: inherit; }
 .outfit-picker-overlay[hidden] { display: none; }
 .outfit-picker-overlay.is-active { opacity: 1; }
 .outfit-picker-title { color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin: 0; }
-.outfit-picker-cards { display: flex; gap: 24px; }
+.outfit-picker-cards { display: flex; gap: 2vw; width: 75vw; justify-content: center; }
 .outfit-card {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
-  background: var(--paper-strong); border: 2px solid transparent; border-radius: 18px;
-  padding: 14px; cursor: pointer; width: 220px; max-width: 40vw;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: var(--paper-strong); border: 2px solid transparent; border-radius: 20px;
+  padding: 18px; cursor: pointer; width: 36.5vw; max-width: 560px;
   transition: transform .15s ease, border-color .15s ease; font-family: inherit;
 }
 .outfit-card:hover { transform: translateY(-4px); border-color: var(--season-accent); }
 .outfit-card img {
-  width: 100%; height: 320px; max-height: 46vh; object-fit: cover; object-position: top;
-  border-radius: 12px; background: var(--season-soft);
+  width: 100%; height: auto; aspect-ratio: 3 / 4; max-height: 68vh; object-fit: cover; object-position: top;
+  border-radius: 14px; background: var(--season-soft);
 }
-.outfit-card.is-paid img { filter: blur(16px); }
-.outfit-card-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.outfit-card.is-paid img { filter: blur(8px); }
+.outfit-card-label { font-size: 15px; font-weight: 700; color: var(--ink); }
 .outfit-paid-badge {
-  position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
-  background: var(--season-accent); color: #fff; font-size: 12.5px; font-weight: 800;
-  padding: 6px 14px; border-radius: 999px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); white-space: nowrap;
+  position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--season-accent); color: #fff; font-size: 13.5px; font-weight: 800;
+  padding: 7px 16px; border-radius: 999px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); white-space: nowrap;
 }
 
 .outfit-confirm-modal {
@@ -439,8 +439,8 @@ button { font-family: inherit; }
 .outfit-confirm-btn.is-yes { background: var(--season-accent); color: #fff; }
 
 @media (max-width: 640px) {
-  .outfit-picker-cards { gap: 14px; }
-  .outfit-card { width: 42vw; padding: 10px; }
-  .outfit-card img { height: 220px; }
+  .outfit-picker-cards { gap: 3vw; width: 82vw; }
+  .outfit-card { width: 40vw; padding: 10px; }
+  .outfit-card img { max-height: 60vh; }
   .outfit-picker-title { font-size: 15px; }
 }
