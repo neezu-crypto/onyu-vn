@@ -140,15 +140,34 @@ function onyuCurrentNode() {
   return frame.list[frame.i];
 }
 
+var onyuLastAdvancePoppedFrame = false; // onyuStepToNextNode가 프레임을 하나 이상 pop했는지(선택지 분기 등 하나의 "이야기"가 끝나고 바깥 이야기로 복귀하는 지점인지)
+
 function onyuStepToNextNode() {
   // 현재 프레임 포인터를 하나 전진시키고, 프레임이 끝났으면 스택을 정리한다.
+  onyuLastAdvancePoppedFrame = false;
   while (onyuFrameStack.length) {
     var frame = onyuCurrentFrame();
     frame.i++;
     if (frame.i < frame.list.length) return true;
     onyuFrameStack.pop(); // 이 프레임(선택지 분기 등) 종료 — 바깥으로 복귀
+    onyuLastAdvancePoppedFrame = true;
   }
   return false; // 챕터 전체 종료
+}
+
+// onyuStepToNextNode() 뒤에 실제로 다음 노드를 그릴 때 항상 이걸로 부른다. 방금
+// 선택지 분기(또는 CH27 scoreGate 분기) 하나가 끝나서 바깥 이야기로 돌아온
+// 참이면(onyuLastAdvancePoppedFrame) 짧은 암전 트랜지션을 한 번 걸어 "이야기와
+// 이야기 사이"에 숨 고르는 틈을 준다 — 그냥 같은 흐름 안에서 다음 줄로 넘어가는
+// 보통의 클릭 진행에는 트랜지션을 넣지 않는다(매 줄마다 걸면 진행이 답답해짐).
+// 챕터↔챕터 전환(onyuStartChapter)과 같은 오버레이를 재사용하되 chapterLabel 없이
+// 짧게(holdMs 400) 써서 타이틀 카드 없는 순수 암전 컷으로 보인다.
+function onyuRenderNextNode() {
+  if (onyuLastAdvancePoppedFrame) {
+    onyuRunTransition({ holdMs: 400 }, onyuRenderCurrentNode);
+  } else {
+    onyuRenderCurrentNode();
+  }
 }
 
 function onyuRenderCurrentNode() {
@@ -334,7 +353,7 @@ function onyuHandleDialogueClick() {
   var node = onyuCurrentNode();
   if (!node || node.type === 'choice' || node.type === 'nameInput') return; // 선택/입력 중엔 클릭 무시
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
-  if (onyuStepToNextNode()) onyuRenderCurrentNode();
+  if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();
 }
 
@@ -396,7 +415,7 @@ function onyuSubmitName() {
   }
   window.ONYU_STATE.playerName = raw;
   onyuEl.nameForm.hidden = true;
-  if (onyuStepToNextNode()) onyuRenderCurrentNode();
+  if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();
 }
 
