@@ -36,7 +36,8 @@ function onyuSpriteFile(season, expr, spriteSet) {
 function onyuApplySprite() {
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var chapter = window.ONYU_CHAPTERS[idx];
-  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, chapter.spriteSet) + '.png';
+  var spriteSet = chapter.spriteSet || (window.onyuResolveSpriteCandidate && window.onyuResolveSpriteCandidate(chapter.id));
+  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, spriteSet) + '.png';
 }
 
 // 재사용 배경 13종 중 하나가 지정된 챕터(chapter.bg)만 사진을 깔고, 지정이 없는
