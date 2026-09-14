@@ -45,6 +45,11 @@
  *   한 곳에만 씀 — 나머지 26챕터는 챕터 전체를 chapter.bg 하나로 커버.
  *   화면에는 계절색 반투명 오버레이가 사진 위에 덧씌워진다(원화 자체는 중립
  *   조명, 계절감은 CSS color-mix()로 코드가 입힘 — 배경 프롬프트 시트 설계 그대로).
+ *   같은 배경 키를 쓰는 여러 챕터 중 일부만 계절이 안 맞아 생기는 문제는
+ *   main.js의 ONYU_BG_SEASON_VARIANTS(계절 자동 감지)로 해결하지만, CH04처럼
+ *   "그 챕터만" 날씨가 특별한 경우는 계절 축이 아니라서 자동 감지를 안 쓰고
+ *   chapter.bg 자체를 그 챕터 전용 변형 키로 직접 바꿔 쓴다(예: CH04는
+ *   'b3'가 아니라 'b3-rain' — 같은 b3를 쓰는 CH02·CH21은 비와 무관해서 그대로 'b3').
  */
 
 window.SPEAKER_LABELS = {
@@ -293,7 +298,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch04', order: 4, grade: 1, season: 'summer', title: '장마와 우산', bg: 'b3',
+    id: 'ch04', order: 4, grade: 1, season: 'summer', title: '장마와 우산', bg: 'b3-rain',
     script: [
       { type: 'narration', text: '장마가 시작된 지 며칠째, 하늘은 아침부터 무겁게 가라앉아 있었다. 예보를 확인하지 않고 나선 게 화근이었다 — 하교 시간이 되자 예고도 없이 비가 쏟아지기 시작했다. 처마 밑에 서 있는데, 온이유도 우산을 안 챙긴 모양이었다.' },
       { type: 'line', speaker: 'player', text: '우산 없어?' },
