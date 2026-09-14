@@ -130,7 +130,21 @@ function onyuRenderCurrentNode() {
   // 동안만 스탠딩을 숨긴다 — line/choice 등 다른 노드에서는 항상 다시 보인다(그녀가
   // 등장/발화하는 순간이므로).
   var absent = node.type === 'narration' && node.sheAbsent === true;
-  onyuEl.spriteWrap.classList.toggle('is-hidden', absent);
+  if (onyuTransitionDepth > 0) {
+    // 화면 전환 오버레이가 아직 화면을 덮고 있는 도중(챕터 시작 직후 첫 노드
+    // 렌더 등)이라면 트랜지션 없이 즉시 반영한다 — 그대로 두면 스탠딩의 자체
+    // opacity 트랜지션(.35s)이 오버레이가 걷히는 페이드아웃과 동시에 진행돼,
+    // 오버레이가 열리는 순간 "막 바뀐 의상의 스탠딩이 잠깐 보였다 사라지는"
+    // 깜빡임으로 드러난다(실사용 스크린 녹화로 확인된 버그). 화면 전환 도중이
+    // 아닌 평범한 mid-chapter sheAbsent 전환(그녀가 눈앞에서 자리를 뜨는 등)은
+    // 이 분기를 안 타므로 기존의 부드러운 페이드가 그대로 유지된다.
+    onyuEl.spriteWrap.style.transition = 'none';
+    onyuEl.spriteWrap.classList.toggle('is-hidden', absent);
+    void onyuEl.spriteWrap.offsetHeight; // 강제 리플로우로 트랜지션 없이 즉시 적용
+    onyuEl.spriteWrap.style.transition = '';
+  } else {
+    onyuEl.spriteWrap.classList.toggle('is-hidden', absent);
+  }
 
   if (node.type === 'narration') {
     onyuEl.speakerTag.hidden = true;
