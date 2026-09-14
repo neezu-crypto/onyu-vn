@@ -54,8 +54,9 @@
  *   'b3'가 아니라 'b3-rain' — 같은 b3를 쓰는 CH02·CH21은 비와 무관해서 그대로 'b3').
  * chapter.spriteSet: (선택) 스탠딩 파일명 접두사(assets/standing/{spriteSet}{1~6}.png)를
  *   season 기반 자동 선택(하복 's'/동복 'w') 대신 강제 고정. 교복이 안 맞는 상황
- *   전용 — 지금은 CH05(체육대회)만 'g'(학교 체육복 6종, 2026-09-15 추가)로 고정.
- *   생략 시 기존과 동일하게 season으로 's'/'w' 자동 선택.
+ *   전용(2026-09-15 추가) — CH05(체육대회)는 'g'(학교 체육복 6종), CH20·CH21
+ *   (여름 실기 특강·그 후반부)은 'a'(활동복/트레이닝복 6종, 실기실 직후라 정규
+ *   체육복과는 디자인이 다름). 생략 시 기존과 동일하게 season으로 's'/'w' 자동 선택.
  */
 
 window.SPEAKER_LABELS = {
@@ -1474,7 +1475,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch20', order: 20, grade: 3, season: 'summer', title: '여름 실기 특강', bg: 'b9',
+    id: 'ch20', order: 20, grade: 3, season: 'summer', title: '여름 실기 특강', bg: 'b9', spriteSet: 'a',
     script: [
       { type: 'narration', text: '방학이 시작되자 학원 수업은 오전부터 밤까지 이어지는 종일반으로 바뀌었다. 매미 소리가 시끄럽게 울리는 한낮에도 그녀는 에어컨도 잘 안 나오는 실기실에 틀어박혀 있었다. 창밖으로 아지랑이가 일렁이는 게 보일 정도로 뜨거운 날이었다.' },
       { type: 'line', speaker: 'player', text: '이 더위에 하루 종일 그림 그리는 거야? 안 지쳐?' },
@@ -1542,7 +1543,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch21', order: 21, grade: 3, season: 'summer', title: '지친 그녀', bg: 'b3',
+    id: 'ch21', order: 21, grade: 3, season: 'summer', title: '지친 그녀', bg: 'b3', spriteSet: 'a',
     script: [
       { type: 'narration', text: '특강이 후반부로 접어들자 그녀의 얼굴에서 웃음이 눈에 띄게 줄었다. 메시지 답장도 하루씩 늦어지기 시작했고, 통화 중에도 목소리에 힘이 빠져 있었다. 늦여름 매미 소리만 변함없이 시끄럽게 울렸다.' },
       { type: 'line', speaker: 'player', text: '오늘도 늦게 끝났어?' },
