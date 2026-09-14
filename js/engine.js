@@ -10,6 +10,12 @@ var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
 var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 
+// 대사를 빠르게 연타해서 넘기다가 그 타이밍에 마침 선택지가 뜨면, 미처 보기도
+// 전에 그 연타가 그대로 선택지를 눌러버릴 위험이 있다(실사용 피드백) — 선택지가
+// 뜨고 나서 이 시간(ms) 동안은 클릭을 무시해 안전 여유를 둔다.
+var ONYU_CHOICE_INPUT_LOCK_MS = 450;
+var onyuChoiceInputLocked = false;
+
 var onyuEl = {}; // DOM 참조는 main.js가 부팅 시 채운다
 
 // onyu-vn-standing-prompts.html 기준 S1~S6 / W1~W6 표정 순서
@@ -137,10 +143,16 @@ function onyuRenderCurrentNode() {
     onyuEl.speakerTag.hidden = true;
     onyuEl.dialogueLine.textContent = '';
     onyuEl.situation.textContent = node.situation;
-    node.options.forEach(function (opt) {
+
+    var reduceMotionForChoice = window.ONYU_STATE.settings.reduceMotion;
+    onyuChoiceInputLocked = true;
+    setTimeout(function () { onyuChoiceInputLocked = false; }, ONYU_CHOICE_INPUT_LOCK_MS);
+
+    node.options.forEach(function (opt, i) {
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'choice-bubble';
+      btn.className = 'choice-bubble' + (reduceMotionForChoice ? '' : ' is-entering');
+      if (!reduceMotionForChoice) btn.style.transitionDelay = (i * 70) + 'ms';
       var fill = document.createElement('span');
       fill.className = 'choice-fill';
       var label = document.createElement('span');
@@ -151,6 +163,15 @@ function onyuRenderCurrentNode() {
       btn.addEventListener('click', function (evt) { onyuSelectChoice(node, opt, evt, btn, fill); });
       onyuEl.choiceList.appendChild(btn);
     });
+    if (!reduceMotionForChoice) {
+      // 같은 프레임에서 바로 클래스를 빼면 브라우저가 시작 상태(opacity:0)를
+      // 못 그려 트랜지션이 생략된다 — 다음 프레임에서 벗겨야 실제로 재생된다.
+      requestAnimationFrame(function () {
+        onyuEl.choiceList.querySelectorAll('.choice-bubble.is-entering').forEach(function (b) {
+          b.classList.remove('is-entering');
+        });
+      });
+    }
   } else if (node.type === 'nameInput') {
     onyuEl.speakerTag.hidden = true;
     onyuEl.dialogueLine.textContent = '';
@@ -259,6 +280,7 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
   // onyuHandleDialogueClick의 "선택지 중엔 무시" 가드가 안 먹혀서 애니메이션이
   // 뜨기도 전에 즉시 다음 줄로 넘어가버리는 버그가 있었다.
   evt.stopPropagation();
+  if (onyuChoiceInputLocked) return; // 선택지가 막 뜬 직후의 연타성 오클릭 무시
   onyuMaybeRecoverFullscreen();
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });

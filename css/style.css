@@ -153,9 +153,15 @@ button { font-family: inherit; }
   position: relative; overflow: hidden; text-align: center; background: var(--paper-strong);
   border: 1.5px solid var(--season-wash); border-radius: 20px; padding: 18px 22px;
   font-size: 19px; font-weight: 600; color: var(--ink);
-  cursor: pointer; box-shadow: 0 6px 18px rgba(61, 52, 54, 0.1); transition: border-color .12s ease, transform .12s ease;
+  cursor: pointer; box-shadow: 0 6px 18px rgba(61, 52, 54, 0.1);
+  transition: border-color .12s ease, transform .3s ease, opacity .3s ease;
 }
 .choice-bubble:hover { border-color: var(--season-accent); transform: translateY(-1px); }
+
+/* 선택지가 뜨는 순간 하나씩 살짝 떠오르며 페이드인 — 대사를 연타하다 마침 그
+   타이밍에 선택지가 뜨는 경우에도 "지금 막 나타났다"는 걸 눈으로 알아차릴
+   여유를 준다(js의 ONYU_CHOICE_INPUT_LOCK_MS 클릭 무시 구간과 함께 동작). */
+.choice-bubble.is-entering { opacity: 0; transform: translateY(10px); }
 
 /* 물감 번짐: 클릭 지점에 작은 원을 심어두고 선택 시 크게 확대 — overflow:hidden이
    버튼의 둥근 모서리 안에서 이 원을 깔끔하게 잘라준다. */
