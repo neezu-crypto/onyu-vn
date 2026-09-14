@@ -27,7 +27,10 @@ for (var onyuBgI = 1; onyuBgI <= 13; onyuBgI++) {
 // 캐시해두고, engine.js의 onyuApplyBackground()가 렌더 시점에 동기적으로
 // 참조한다 — 파일이 아직 없으면(404) 조용히 기본 배경으로 폴백, 나중에 파일만
 // 넣으면 이 목록에 추가하는 것만으로 코드 수정 없이 바로 적용된다.
-var ONYU_BG_SEASON_VARIANTS = { b2: ['winter'], b3: ['winter'] };
+var ONYU_BG_SEASON_VARIANTS = {
+  b2: ['winter'], b3: ['winter'], // CH08·CH27(교문) / CH26(하굣길) — 실제 적용됨
+  b5: ['winter'], b6: ['autumn'], b8: ['winter'], b9: ['winter'], // CH07/CH05/CH17/CH16 — 프롬프트만 준비, 이미지 대기 중
+};
 var onyuBgVariantAvailable = {};
 Object.keys(ONYU_BG_SEASON_VARIANTS).forEach(function (key) {
   ONYU_BG_SEASON_VARIANTS[key].forEach(function (season) {
