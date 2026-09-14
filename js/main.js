@@ -4,8 +4,13 @@
 // 지연 때문에 "대사는 바로 나오는데 표정만 한 박자 늦게 바뀌는" 현상이 생긴다.
 // 그래서 페이지 로드 즉시(타이틀 화면을 보는 동안) 미리 받아서 브라우저 캐시에
 // 데워둔다 — onyuApplySprite()가 나중에 .src를 바꿀 때는 캐시 히트라 즉시 반영된다.
+// s/w(교복) 12장과 함께, 이미 확정돼 챕터에 고정 배선된 g(체육복 CH05)·a(활동복
+// CH20/21) 12장도 여기 포함한다 — 이 둘은 chapter.spriteSet에 직접 못박힌 채로
+// 항상 쓰이므로 s/w와 성격이 같다(조건부 후보가 아님). 실제 화면에 뜨기 전까지는
+// 존재 확인이 필요 없어 probe 없이 바로 프리로드.
 var onyuPreloadedSprites = [];
-['s1', 's2', 's3', 's4', 's5', 's6', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6'].forEach(function (name) {
+['s1', 's2', 's3', 's4', 's5', 's6', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6',
+ 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6'].forEach(function (name) {
   var img = new Image();
   img.src = 'assets/standing/' + name + '.png';
   onyuPreloadedSprites.push(img); // 참조를 들고 있어야 로드 도중 GC로 취소되지 않는다
@@ -51,7 +56,17 @@ function onyuProbeSpritePrefix(prefix) {
   if (prefix in onyuSpriteVariantAvailable) return; // 이미 probe했으면 중복 요청 안 함
   onyuSpriteVariantAvailable[prefix] = false;
   var probe = new Image();
-  probe.onload = function () { onyuSpriteVariantAvailable[prefix] = true; };
+  probe.onload = function () {
+    onyuSpriteVariantAvailable[prefix] = true;
+    // 1번(표정 probe용) 말고 나머지 5장도 존재가 확인된 시점에 마저 프리로드—
+    // 안 그러면 이 세트로 표정이 처음 바뀌는 순간에만 s/w 12장과 똑같은 "대사는
+    // 나왔는데 표정만 한 박자 늦게 바뀌는" 네트워크·디코딩 지연이 재현된다.
+    for (var n = 2; n <= 6; n++) {
+      var img = new Image();
+      img.src = 'assets/standing/' + prefix + n + '.png';
+      onyuPreloadedSprites.push(img);
+    }
+  };
   probe.src = 'assets/standing/' + prefix + '1.png';
 }
 
