@@ -42,29 +42,26 @@ Object.keys(ONYU_BG_SEASON_VARIANTS).forEach(function (key) {
   });
 });
 
-// 사복 등 "후보 2종 중 택 1" 스탠딩 세트 — 최종 채택 전까지는 game-data.js의
-// chapter.spriteSet에 직접 못박지 않고, 여기 우선순위 목록만 정의해둔다. 부팅 시
-// 각 접두사의 1번 파일이 실제로 있는지 probe해서 먼저 발견되는 쪽을 그 챕터의
-// 스탠딩으로 자동 채택한다 — onyu-vn-standing-prompts.html의 prompt-no(C1-/P1- 등)
-// 표기를 그대로 파일명 접두사로 써서, 이미지 파일만 assets/standing/에 넣으면
-// 코드 수정 없이 바로 적용된다(파일이 전혀 없으면 기존처럼 season 기반 s/w로 폴백).
-// 우선순위는 대본 대조로 판단한 각 챕터의 정본 후보를 앞에 둔 것 — 순서를
-// 바꾸고 싶으면 이 배열만 뒤집으면 된다.
-var ONYU_SPRITE_CANDIDATES = {
-  ch12: ['C1-', 'P1-'],   // 우연한 만남 — 편한 코디가 대본 톤에 더 맞음
-  ch13: ['P13-', 'C13-'], // 첫 데이트 — 대본에 "신경 쓴 차림"이 명시돼 꾸민 쪽이 정본
-  ch16: ['C16-', 'P16-'], // 크리스마스 — 대본에 옷차림 명시 없음, 둘 다 무방
-  ch24: ['C24-', 'P24-'], // 둘만의 하루 — 피시방행이라 편한 코디가 더 맞음
-  ch27: ['GR-'],          // 졸업식 — 후보 없이 하나뿐
-};
+// 스탠딩 파일명 접두사(assets/standing/{prefix}1.png)가 실제로 존재하는지 부팅 시
+// probe해서 onyuSpriteVariantAvailable에 캐시해두는 공용 헬퍼 — 배경 계절변형과
+// 같은 패턴. outfit-picker.js(사복 후원 픽커)와 아래 ONYU_SPRITE_CANDIDATES(후보
+// 없이 이미지만 있으면 바로 쓰는 단일 세트, 예: CH27 졸업 가운)가 공유해서 쓴다.
 var onyuSpriteVariantAvailable = {};
+function onyuProbeSpritePrefix(prefix) {
+  if (prefix in onyuSpriteVariantAvailable) return; // 이미 probe했으면 중복 요청 안 함
+  onyuSpriteVariantAvailable[prefix] = false;
+  var probe = new Image();
+  probe.onload = function () { onyuSpriteVariantAvailable[prefix] = true; };
+  probe.src = 'assets/standing/' + prefix + '1.png';
+}
+
+// "후보 없이 이미지만 있으면 바로 쓰는" 단일 스탠딩 세트. 사복처럼 무료/후원 2종
+// 중 골라야 하는 챕터는 outfit-picker.js의 ONYU_OUTFIT_CHOICES가 따로 담당한다.
+var ONYU_SPRITE_CANDIDATES = {
+  ch27: ['GR-'], // 졸업식 — 졸업 가운, 후보 없이 하나뿐
+};
 Object.keys(ONYU_SPRITE_CANDIDATES).forEach(function (chapterId) {
-  ONYU_SPRITE_CANDIDATES[chapterId].forEach(function (prefix) {
-    var probe = new Image();
-    probe.onload = function () { onyuSpriteVariantAvailable[prefix] = true; };
-    probe.onerror = function () { onyuSpriteVariantAvailable[prefix] = false; };
-    probe.src = 'assets/standing/' + prefix + '1.png';
-  });
+  ONYU_SPRITE_CANDIDATES[chapterId].forEach(onyuProbeSpritePrefix);
 });
 
 function onyuResolveSpriteCandidate(chapterId) {

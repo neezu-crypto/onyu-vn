@@ -17,6 +17,7 @@ function onyuSnapshotState() {
     currentChapterId: s.currentChapterId,
     chapterCheckpoints: s.chapterCheckpoints,
     completedChapters: s.completedChapters,
+    chosenOutfits: s.chosenOutfits,
     savedAt: Date.now(),
   };
 }
@@ -29,6 +30,7 @@ function onyuApplySnapshot(snap) {
   s.currentChapterId = snap.currentChapterId;
   s.chapterCheckpoints = snap.chapterCheckpoints || {};
   s.completedChapters = snap.completedChapters || {};
+  s.chosenOutfits = snap.chosenOutfits || {};
 }
 
 function onyuSaveAutosave() {

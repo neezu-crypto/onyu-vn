@@ -389,3 +389,58 @@ button { font-family: inherit; }
   .segmented button { font-size: 13.5px; }
   .settings-danger-btn { font-size: 14px; }
 }
+
+/* ================= 사복 후원 선택 픽커(outfit-picker.js) ================= */
+.outfit-picker-overlay {
+  position: absolute; inset: 0; z-index: 500; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+  background: rgba(61, 52, 54, 0.6); opacity: 0; transition: opacity .3s ease; padding: 24px;
+}
+.outfit-picker-overlay[hidden] { display: none; }
+.outfit-picker-overlay.is-active { opacity: 1; }
+.outfit-picker-title { color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin: 0; }
+.outfit-picker-cards { display: flex; gap: 24px; }
+.outfit-card {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: var(--paper-strong); border: 2px solid transparent; border-radius: 18px;
+  padding: 14px; cursor: pointer; width: 220px; max-width: 40vw;
+  transition: transform .15s ease, border-color .15s ease; font-family: inherit;
+}
+.outfit-card:hover { transform: translateY(-4px); border-color: var(--season-accent); }
+.outfit-card img {
+  width: 100%; height: 320px; max-height: 46vh; object-fit: cover; object-position: top;
+  border-radius: 12px; background: var(--season-soft);
+}
+.outfit-card.is-paid img { filter: blur(16px); }
+.outfit-card-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.outfit-paid-badge {
+  position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
+  background: var(--season-accent); color: #fff; font-size: 12.5px; font-weight: 800;
+  padding: 6px 14px; border-radius: 999px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); white-space: nowrap;
+}
+
+.outfit-confirm-modal {
+  position: absolute; inset: 0; z-index: 510; display: flex; align-items: center; justify-content: center;
+  background: rgba(61, 52, 54, 0.45); opacity: 0; transition: opacity .2s ease; padding: 24px;
+}
+.outfit-confirm-modal[hidden] { display: none; }
+.outfit-confirm-modal.is-active { opacity: 1; }
+.outfit-confirm-panel {
+  background: var(--paper-strong); border-radius: 16px; padding: 24px; max-width: 320px;
+  text-align: center; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+.outfit-confirm-text { font-size: 14.5px; color: var(--ink); margin: 0 0 18px; line-height: 1.6; }
+.outfit-confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.outfit-confirm-btn {
+  border: none; border-radius: 999px; padding: 10px 20px; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.outfit-confirm-btn.is-no { background: var(--line); color: var(--ink); }
+.outfit-confirm-btn.is-yes { background: var(--season-accent); color: #fff; }
+
+@media (max-width: 640px) {
+  .outfit-picker-cards { gap: 14px; }
+  .outfit-card { width: 42vw; padding: 10px; }
+  .outfit-card img { height: 220px; }
+  .outfit-picker-title { font-size: 15px; }
+}

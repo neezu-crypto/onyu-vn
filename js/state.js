@@ -10,6 +10,7 @@ window.ONYU_STATE = {
   currentChapterId: null,
   chapterCheckpoints: {}, // { [chapterId]: affection at chapter start } — 타임머신용
   completedChapters: {}, // { [chapterId]: true } — "이미 읽은 텍스트 스킵" 판단용(챕터 단위)
+  chosenOutfits: {}, // { [chapterId]: spritePrefix } — 사복 후원 픽커(outfit-picker.js)에서 고른 결과
   unlockedGallery: { cg: {}, endings: {} }, // 세이브와 무관한 영구 기록
   settings: {
     textSpeed: 'normal', // 'slow' | 'normal' | 'fast'
@@ -32,6 +33,7 @@ function onyuResetNewGame() {
   window.ONYU_STATE.currentChapterId = window.ONYU_CHAPTERS[0].id;
   window.ONYU_STATE.chapterCheckpoints = {};
   window.ONYU_STATE.completedChapters = {};
+  window.ONYU_STATE.chosenOutfits = {};
   // unlockedGallery는 의도적으로 초기화하지 않는다 — 새 게임을 시작해도 이미 언락한
   // CG·엔딩 기록은 영구 보존(기획서 SAVE & UI 원칙).
 }

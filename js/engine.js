@@ -36,7 +36,9 @@ function onyuSpriteFile(season, expr, spriteSet) {
 function onyuApplySprite() {
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var chapter = window.ONYU_CHAPTERS[idx];
-  var spriteSet = chapter.spriteSet || (window.onyuResolveSpriteCandidate && window.onyuResolveSpriteCandidate(chapter.id));
+  var spriteSet = chapter.spriteSet
+    || window.ONYU_STATE.chosenOutfits[chapter.id] // 사복 후원 픽커(outfit-picker.js)에서 고른 결과
+    || (window.onyuResolveSpriteCandidate && window.onyuResolveSpriteCandidate(chapter.id));
   onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, spriteSet) + '.png';
 }
 
@@ -117,7 +119,13 @@ function onyuStartChapter(chapterId) {
     // onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
 
     onyuSwapScreen('play');
-    onyuRenderCurrentNode();
+    // 사복 후원 픽커(outfit-picker.js) — 이 챕터에 무료/후원 2종 후보가 다 준비돼
+    // 있고 아직 이번 플레이스루에서 고르지 않았으면, 대사 시작 전에 먼저 골라야
+    // 한다. 해당 없는 챕터는 onDone이 그 자리에서 바로 불려 체감상 아무 변화 없음.
+    onyuMaybeShowOutfitPicker(chapterId, function () {
+      onyuApplySprite(); // 의상을 골랐다면 반영해서 다시 적용
+      onyuRenderCurrentNode();
+    });
   });
 }
 
