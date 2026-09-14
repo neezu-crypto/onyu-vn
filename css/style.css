@@ -109,7 +109,14 @@ button { font-family: inherit; }
 
 /* ================= 대화 · 선택 ================= */
 #screen-play { background: var(--paper); }
-.play-bg { position: absolute; inset: 0; background: linear-gradient(165deg, var(--season-soft), var(--paper) 68%); }
+.play-bg { position: absolute; inset: 0; background: linear-gradient(165deg, var(--season-soft), var(--paper) 68%); background-size: cover; background-position: center; }
+/* 실제 배경 일러스트가 있는 챕터는 js/engine.js의 onyuApplyBackground()가
+   사진 위에 계절색 반투명 오버레이(color-mix)를 얹은 background-image 전체를
+   인라인 스타일로 직접 설정한다(.has-photo 클래스만 여기서 마커로 관리) —
+   원화 자체는 중립 조명으로 그려져 있어서(배경 프롬프트 시트 설계) 계절감은
+   코드가 입힌다. 일러스트가 없는 챕터(예: 교외로 나가는 소풍 등, 재사용
+   로케이션 13종에 안 맞는 장소)는 이 클래스가 안 붙어서 위 기본 규칙의
+   불투명 그라데이션 워시가 그대로 유지된다. */
 
 .particle-layer { position: absolute; inset: 0; overflow: hidden; z-index: 1; pointer-events: none; }
 .particle { position: absolute; top: -5%; animation: onyu-fall linear infinite; }

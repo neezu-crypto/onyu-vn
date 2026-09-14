@@ -8,6 +8,7 @@
 var onyuFrameStack = [];
 var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
 var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
+var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할 키 — expr과 동일하게 "다음 지정 전까지 유지"
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 
 // 대사를 빠르게 연타해서 넘기다가 그 타이밍에 마침 선택지가 뜨면, 미처 보기도
@@ -36,6 +37,28 @@ function onyuApplySprite() {
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var chapter = window.ONYU_CHAPTERS[idx];
   onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr) + '.png';
+}
+
+// 재사용 배경 13종 중 하나가 지정된 챕터(chapter.bg)만 사진을 깔고, 지정이 없는
+// 챕터(재사용 로케이션 13곳에 안 맞는 장소, 예: 교외로 나가는 소풍)는 기존
+// 계절 그라데이션 워시만 그대로 쓴다 — 없는 배경을 억지로 아무거나 보여주지 않음.
+function onyuApplyBackground() {
+  if (onyuCurrentBg) {
+    // url()을 CSS 커스텀 프로퍼티에 넣어 var()로 참조하면, 그 상대경로가
+    // "값을 설정한 곳"이 아니라 "var()가 실제로 쓰인 스타일시트(css/style.css)"
+    // 기준으로 풀려서 엉뚱한 경로(예: css/assets/...)가 되는 CSS 스펙상의
+    // 함정이 있다 — 그래서 background-image 전체를 인라인 스타일로 직접
+    // 설정한다(인라인 스타일의 상대경로는 문서 기준으로 풀려 정상 동작).
+    var seasonSoft = getComputedStyle(document.body).getPropertyValue('--season-soft').trim();
+    var paper = getComputedStyle(document.body).getPropertyValue('--paper').trim();
+    onyuEl.bg.style.backgroundImage =
+      'linear-gradient(165deg, color-mix(in srgb, ' + seasonSoft + ' 45%, transparent), color-mix(in srgb, ' + paper + ' 20%, transparent) 68%), ' +
+      "url('assets/backgrounds/" + onyuCurrentBg + ".png')";
+    onyuEl.bg.classList.add('has-photo');
+  } else {
+    onyuEl.bg.classList.remove('has-photo');
+    onyuEl.bg.style.backgroundImage = ''; // 인라인 스타일 제거 → CSS 기본 그라데이션으로 복귀
+  }
 }
 
 function onyuTextSpeedMs() {
@@ -72,11 +95,13 @@ function onyuStartChapter(chapterId) {
     window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
     onyuFrameStack = [{ list: chapter.script, i: 0 }];
     onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
+    onyuCurrentBg = chapter.bg || null; // 챕터 기본 배경(없으면 계절 워시만)
     onyuPrefetchNextChapterCg(idx);
 
     onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
     document.body.setAttribute('data-season', chapter.season);
     onyuApplySprite();
+    onyuApplyBackground();
     // 계절 낙하 파티클(벚꽃/빗방울/낙엽/눈)은 사용자 요청으로 일단 비활성화(2026-09-14).
     // onyuSpawnParticles(onyuEl.particleLayer, chapter.season);
 
@@ -116,6 +141,13 @@ function onyuRenderCurrentNode() {
 
   var node = onyuCurrentNode();
   if (node === undefined) { onyuFinishChapter(); return; }
+
+  // 한 챕터 안에서 장소가 바뀌는 경우(예: CH27 강당→교문)만 노드에 bg 필드를
+  // 달아 배경을 바꾼다 — expr과 동일하게 "다음 지정 전까지 유지"되는 방식.
+  if (node.bg) {
+    onyuCurrentBg = node.bg;
+    onyuApplyBackground();
+  }
 
   // 선택지가 떠 있는 동안은 대사창 내용을 비우고 안 보이게 한다 — 기획서 "선택지
   // 리액션"이 선택된 말풍선이 대사창 "자리로" 모핑해 들어가는 연출이라, 그 전까지

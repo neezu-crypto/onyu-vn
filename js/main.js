@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();
   onyuBootLoadSettings();
 
+  onyuEl.bg = document.getElementById('play-bg');
   onyuEl.chapterTag = document.getElementById('play-chapter-tag');
   onyuEl.spriteWrap = document.getElementById('play-sprite-wrap');
   onyuEl.spriteImg = document.getElementById('play-sprite-img');
