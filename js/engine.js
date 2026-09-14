@@ -117,10 +117,14 @@ function onyuRenderCurrentNode() {
   var node = onyuCurrentNode();
   if (node === undefined) { onyuFinishChapter(); return; }
 
-  // 선택지가 떠 있는 동안은 대사창 자체를 접어서 없앤다 — 기획서 "선택지 리액션"이
-  // 선택된 말풍선이 대사창 "자리로" 모핑해 들어가는 연출이라, 그 전까지 빈 대사창이
-  // 따로 떠 있으면 안 맞는다(선택 전엔 대사창이 존재하지 않는 셈).
-  onyuEl.dialogueBox.style.display = (node.type === 'choice') ? 'none' : '';
+  // 선택지가 떠 있는 동안은 대사창 내용을 비우고 안 보이게 한다 — 기획서 "선택지
+  // 리액션"이 선택된 말풍선이 대사창 "자리로" 모핑해 들어가는 연출이라, 그 전까지
+  // 빈 대사창이 그대로 보이면 안 맞는다. display:none이 아니라 visibility:hidden을
+  // 쓰는 이유는 레이아웃 공간(min-height 160px)은 그대로 유지해야 하기 때문 —
+  // 그래야 설명 캡션+선택지 묶음이 대사창 자리를 밀고 내려오지 않고 그 위쪽에
+  // 뜬다(대사창이 사라진 자리를 대신 채우지 않음). display:none이었다면 대사창이
+  // 레이아웃에서 완전히 빠져 선택지 묶음이 화면 맨 아래까지 내려왔을 것이다.
+  onyuEl.dialogueBox.style.visibility = (node.type === 'choice') ? 'hidden' : '';
 
   // 나레이션에 sheAbsent:true가 달려 있으면(그녀가 물리적으로 그 장면에 없는 순간) 그
   // 동안만 스탠딩을 숨긴다 — line/choice 등 다른 노드에서는 항상 다시 보인다(그녀가
@@ -304,11 +308,9 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
   clickedBtn.classList.add('is-selected');
 
   setTimeout(function () {
-    // 대사창이 지금 display:none이라 그대로 재면 rect가 전부 0이 된다 — 순간적으로
-    // 보이게 해서 실제 자리를 잰 뒤(동기 실행이라 화면엔 안 그려짐) 바로 다시 숨긴다.
-    onyuEl.dialogueBox.style.display = '';
+    // 대사창은 visibility:hidden이라(레이아웃 공간은 유지, 화면엔 안 그려짐)
+    // display:none일 때와 달리 곧바로 실제 자리를 잴 수 있다.
     var dialogueRect = onyuEl.dialogueBox.getBoundingClientRect();
-    onyuEl.dialogueBox.style.display = 'none';
     var clickedRect = clickedBtn.getBoundingClientRect();
     var dx = (dialogueRect.left + dialogueRect.width / 2) - (clickedRect.left + clickedRect.width / 2);
     var dy = (dialogueRect.top + dialogueRect.height / 2) - (clickedRect.top + clickedRect.height / 2);
