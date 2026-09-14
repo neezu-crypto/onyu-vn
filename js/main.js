@@ -13,15 +13,31 @@ var onyuPreloadedSprites = [];
 
 // 재사용 배경 13종(B1~B13, 기획서 ARTWORK 기준)도 스탠딩과 같은 이유로 부팅 시 통째로
 // 프리로드한다 — 개수가 적고(13장) 여러 챕터에서 계속 재사용되니 스탠딩과 성격이 같다.
-// 아직 실제 파일이 없어서 지금은 전부 404로 끝나지만(콘솔에만 조용히 남고 화면엔
-// 영향 없음), 나중에 assets/backgrounds/b1.png~b13.png를 채워 넣기만 하면 코드
-// 수정 없이 바로 프리로드·사용된다.
 var onyuPreloadedBackgrounds = [];
 for (var onyuBgI = 1; onyuBgI <= 13; onyuBgI++) {
   var bgImg = new Image();
   bgImg.src = 'assets/backgrounds/b' + onyuBgI + '.png';
   onyuPreloadedBackgrounds.push(bgImg);
 }
+
+// 일부 배경엔 계절 요소가 원화 자체에 그려져 있어(예: 교문 배경의 벚꽃) 다른
+// 계절 챕터에 재사용하면 텍스트와 안 맞는 경우가 실사로 확인됐다(2026-09-14) —
+// 가장 두드러진 곳들에 계절 전용 변형을 준비 중. 부팅 시 "b2-winter.png" 같은
+// 변형 파일이 실제로 존재하는지 미리 probe해서 onyuBgVariantAvailable에
+// 캐시해두고, engine.js의 onyuApplyBackground()가 렌더 시점에 동기적으로
+// 참조한다 — 파일이 아직 없으면(404) 조용히 기본 배경으로 폴백, 나중에 파일만
+// 넣으면 이 목록에 추가하는 것만으로 코드 수정 없이 바로 적용된다.
+var ONYU_BG_SEASON_VARIANTS = { b2: ['winter'], b3: ['winter'] };
+var onyuBgVariantAvailable = {};
+Object.keys(ONYU_BG_SEASON_VARIANTS).forEach(function (key) {
+  ONYU_BG_SEASON_VARIANTS[key].forEach(function (season) {
+    var variantKey = key + '-' + season;
+    var probe = new Image();
+    probe.onload = function () { onyuBgVariantAvailable[variantKey] = true; };
+    probe.onerror = function () { onyuBgVariantAvailable[variantKey] = false; };
+    probe.src = 'assets/backgrounds/' + variantKey + '.png';
+  });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadGallery();

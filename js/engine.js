@@ -51,9 +51,19 @@ function onyuApplyBackground() {
     // 설정한다(인라인 스타일의 상대경로는 문서 기준으로 풀려 정상 동작).
     var seasonSoft = getComputedStyle(document.body).getPropertyValue('--season-soft').trim();
     var paper = getComputedStyle(document.body).getPropertyValue('--paper').trim();
+
+    // 챕터 계절 전용 변형(예: b2-winter.png)이 실제로 존재하면(main.js가 부팅 시
+    // probe해서 onyuBgVariantAvailable에 캐시해둠) 그쪽을 쓰고, 없으면 조용히
+    // 기본 배경으로 폴백한다 — 일부 원화에 계절 요소(벚꽃 등)가 그려져 있어
+    // 다른 계절 챕터에 그대로 쓰면 텍스트와 안 맞는 문제를 보완하기 위함.
+    var chapterIdx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
+    var season = window.ONYU_CHAPTERS[chapterIdx].season;
+    var variantKey = onyuCurrentBg + '-' + season;
+    var fileKey = (window.onyuBgVariantAvailable && window.onyuBgVariantAvailable[variantKey]) ? variantKey : onyuCurrentBg;
+
     onyuEl.bg.style.backgroundImage =
       'linear-gradient(165deg, color-mix(in srgb, ' + seasonSoft + ' 45%, transparent), color-mix(in srgb, ' + paper + ' 20%, transparent) 68%), ' +
-      "url('assets/backgrounds/" + onyuCurrentBg + ".png')";
+      "url('assets/backgrounds/" + fileKey + ".png')";
     onyuEl.bg.classList.add('has-photo');
   } else {
     onyuEl.bg.classList.remove('has-photo');
