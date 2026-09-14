@@ -6,7 +6,7 @@
 window.ONYU_STATE = {
   playerName: '',
   affection: 0,
-  addressStage: 0, // 0: 초반 호칭, 1: 이름으로(CH13~), 2: 애칭(연인 엔딩)
+  addressStage: 0, // 0: 초반 호칭, 1: 이름으로(CH13~)
   currentChapterId: null,
   chapterCheckpoints: {}, // { [chapterId]: affection at chapter start } — 타임머신용
   completedChapters: {}, // { [chapterId]: true } — "이미 읽은 텍스트 스킵" 판단용(챕터 단위)

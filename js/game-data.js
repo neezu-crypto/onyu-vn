@@ -23,7 +23,10 @@
  *   개별적으로 달아야 한다(엔진이 노드 단위로만 판단, 상태를 이어서 기억하지 않음).
  * choice.options[].branch: 'pos' | 'neg' — 각 옵션 안의 script가 해당 분기의 전개
  * setAddressStage.value: 화면 출력 없이 addressStage만 바꾸고 곧장 다음 노드로
- *   진행하는 순수 상태 노드(CH13 첫 데이트 후 0→1, CH27 연인 엔딩 1→2에 사용).
+ *   진행하는 순수 상태 노드(CH13 첫 데이트 후 0→1에 사용). 원래는 CH27 연인
+ *   엔딩에서 애칭 단계(1→2)까지 있었으나, "사귀자마자 애칭부터 부르지는
+ *   않는다"는 피드백으로 애칭 연출을 제거하고 담백한 고백 반응으로 대체했다
+ *   (2026-09-14) — addressStage는 이제 0/1 두 단계만 쓰인다.
  * scoreGate.branches: [{ id, min, max, script }] — CH27 전용, 선택지 없이 최종
  *   호감도(window.ONYU_STATE.affection)만으로 그 구간에 맞는 script를 프레임으로
  *   push한다(min/max 생략 시 -Infinity/Infinity). 우정≤8 / 썸 9~64 / 연인≥65.
@@ -1969,17 +1972,14 @@ window.ONYU_CHAPTERS = [
               { type: 'narration', text: '그녀는 잠시 망설이다 가방에서 스케치북을 꺼내 마지막 장을 펼쳤다. 거기엔 지난 3년간 몰래 그려온, 플레이어가 담긴 그림들이 페이지마다 빼곡했다.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '사실 처음 만났을 때부터 지금까지, 계속 그려왔어. 들키면 어쩌나 매번 조마조마했는데.' },
               { type: 'narration', text: '한 장 한 장 넘길 때마다, 그 계절 그 순간들이 고스란히 되살아났다. 그녀는 마지막 장을 넘기기 직전, 잠시 숨을 골랐다.' },
-              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(조심스럽게) 있잖아. 네가 여기 온 이유가... 나였으면 좋겠어.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', slow: 2, text: '(조심스럽게) 있잖아. 네가 여기 온 이유가... 나였으면 좋겠어.' },
               { type: 'narration', text: '그 말이 끝나는 순간, 세상의 소리가 잠시 멀어졌다. 흩날리던 눈송이만 유난히 크고 느리게 떨어지고 있었다.' },
-              { type: 'narration', text: '긴 정적 끝에, 그녀가 다시 입을 열었다. 그 한마디는 지금까지와는 다른 이름을 부르고 있었다.' },
-              { type: 'setAddressStage', value: 2 },
-              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', slow: 2, text: '(눈을 마주치며) ...그동안 이 말, 진짜 하고 싶었어.' },
-              { type: 'line', speaker: 'player', text: '...방금 뭐라고 부른 거야?' },
-              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', text: '(살짝 웃으며) 1픽. 나한테 제일 먼저였던 사람이니까. 이상해?' },
-              { type: 'line', speaker: 'player', text: '아니, 마음에 들어.' },
-              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'shy', text: '(눈시울이 붉어지며) ...다행이다. 앞으로 계속 이렇게 부를 거니까.' },
-              { type: 'line', speaker: 'player', text: '그럼 나는 뭐라고 불러야 돼?' },
-              { type: 'line', speaker: 'onyu', speakerLabel: '1픽', expr: 'smile', text: '(장난스럽게) 그건 천천히 생각해봐. 시간은 이제 많으니까.' },
+              { type: 'narration', text: '짧은 정적 끝에, 플레이어가 먼저 손을 뻗어 그녀의 손을 잡았다.' },
+              { type: 'line', speaker: 'player', text: '나도 같은 마음이야. 진작 말할 걸 그랬어.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(눈을 마주치며) ...정말? 나만 그런 게 아니어서 다행이다.' },
+              { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 웃으며) 그럼 오늘부터 1일인 거네.' },
+              { type: 'line', speaker: 'player', text: '어, 오늘부터 1일.' },
+              { type: 'line', speaker: 'onyu', expr: 'smile', text: '(장난스럽게) 기억해둬. 오늘 날짜, 나중에 까먹으면 안 돼.' },
               { type: 'narration', text: '두 사람은 눈이 소복이 쌓여가는 교문 앞에서, 오래도록 손을 맞잡고 서 있었다. 벚꽃으로 시작된 이야기가, 이렇게 눈 속에서 가장 다정한 결말을 맞이하고 있었다.' },
               { type: 'line', speaker: 'ending', text: '온 이유' },
               { type: 'narration', text: '엔딩 화면이 저물고, 화면 위로 지난 3년의 순간들이 조용히 흘러갔다 — 벚꽃 아래 첫 만남, 축제의 소란, 눈싸움 같던 다툼과 화해, 함께 웃던 피시방의 밤. 그 모든 순간이 갤러리에 남아있던 CG들로 하나씩 되살아나는, 짧은 크레딧이었다.' },
