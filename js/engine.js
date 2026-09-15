@@ -295,9 +295,13 @@ function onyuRenderCurrentNode() {
     if (branch) {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       onyuFrameStack.push({ list: branch.script, i: 0 });
-      onyuRenderCurrentNode();
+      // 우정/썸/연인 갈림길 — 여러 갈래 중 하나가 갈리는 순간이라 일반 선택지
+      // 분기 종료(onyuRenderNextNode)보다도 더 뚜렷한 "이야기 사이" 지점인데,
+      // scoreGate는 최상위 프레임에 있어 pop이 없어서 그 경로를 안 탄다 — 여기서
+      // 직접 같은 암전 트랜지션을 걸어준다.
+      onyuRunTransition({ holdMs: 400 }, onyuRenderCurrentNode);
     } else if (onyuStepToNextNode()) {
-      onyuRenderCurrentNode();
+      onyuRenderNextNode();
     } else {
       onyuFinishChapter();
     }
