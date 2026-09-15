@@ -366,12 +366,18 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
     img.onerror = null;
     onyuUnlockGalleryItem('cg', chapterId);
     overlay.hidden = false;
+    img.classList.remove('is-visible'); // 이전 노출분의 상태가 남아있지 않게 초기화
     if (reduceMotion) {
       overlay.classList.add('is-active');
+      img.classList.add('is-visible');
       hint.classList.add('is-visible');
     } else {
+      // 암전(오버레이가 화면 전체를 검게 덮음, .3s) -> 그 위에서 CG 노출 -> 페이드인
+      // (img 자체의 별도 .4s 트랜지션) 3단계로 분리 - "띡" 하고 바로 뜨지 않게
+      // 오버레이가 완전히 덮인 뒤에야 이미지 페이드인을 시작한다(2026-09-15, 사용자 지시).
       requestAnimationFrame(function () { overlay.classList.add('is-active'); });
-      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 600);
+      setTimeout(function () { img.classList.add('is-visible'); }, 320);
+      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 720);
     }
     overlay.addEventListener('click', finish);
   };
@@ -379,15 +385,20 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
 }
 
 // 갤러리에서 이미 풀린 CG를 다시 감상할 때(브라우징 모드) — 같은 오버레이를
-// onDone 콜백 없이 재사용, 클릭하면 그냥 닫히기만 한다.
+// onDone 콜백 없이 재사용, 클릭하면 그냥 닫히기만 한다. 본편 팝업과 달리 암전
+// 홀드 없이 즉시 페이드인(가볍게 훑어보는 용도라 연출을 무겁게 가져갈 이유가 없음).
 function onyuOpenCgBrowse(cgFile) {
   var overlay = onyuEl.cgViewerOverlay;
   var img = onyuEl.cgViewerImg;
   img.onload = null;
   img.onerror = null;
+  img.classList.remove('is-visible');
   img.src = 'assets/cg/' + cgFile;
   overlay.hidden = false;
-  requestAnimationFrame(function () { overlay.classList.add('is-active'); });
+  requestAnimationFrame(function () {
+    overlay.classList.add('is-active');
+    img.classList.add('is-visible');
+  });
   function close() {
     overlay.removeEventListener('click', close);
     overlay.classList.remove('is-active');

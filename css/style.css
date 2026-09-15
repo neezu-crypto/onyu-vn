@@ -571,7 +571,12 @@ button { font-family: inherit; }
 }
 #cg-viewer-overlay[hidden] { display: none; }
 #cg-viewer-overlay.is-active { opacity: 1; pointer-events: auto; }
-#cg-viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* 본편 CG 팝업(Mechanism 1) 노출을 암전 -> 노출 -> 페이드인 3단계로 분리하기 위해
+   (2026-09-15, 사용자 지시) 이미지 자체도 오버레이(검은 배경) 페이드와 별개의
+   opacity 트랜지션을 가진다 - 오버레이가 먼저 완전히 검게 덮인 뒤에야 engine.js가
+   is-visible을 붙여 그림이 그 위에서 따로 페이드인한다("띡" 하고 바로 뜨는 대신). */
+#cg-viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity .4s ease; }
+#cg-viewer-img.is-visible { opacity: 1; }
 #cg-viewer-hint {
   position: absolute; bottom: 28px; right: 32px; color: rgba(255, 255, 255, 0.8); font-size: 12.5px;
   font-weight: 700; letter-spacing: 0.04em; opacity: 0; transition: opacity .4s ease;
