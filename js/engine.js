@@ -104,6 +104,14 @@ function onyuStartChapter(chapterId) {
     var idx = onyuChapterIndexById(chapterId);
     if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
     var chapter = window.ONYU_CHAPTERS[idx];
+    // 이전 챕터의 타자기·자동진행 타이머가 아직 살아있으면(사복 픽커처럼 이
+    // 챕터의 첫 노드 렌더가 뒤로 미뤄지는 경로가 생기면서 발견된 문제) 그 사이에도
+    // 계속 틱이 돌면서 방금 비워둔 대사창을 이전 챕터 텍스트로 도로 채우거나,
+    // 자동진행 설정이 켜져 있으면 아직 아무것도 확정 안 된 상태에서 다음 노드로
+    // 넘어가버릴 수 있다 — 새 챕터 진입 시점에 확실히 멈춰둔다.
+    clearTimeout(onyuTyping.timer);
+    onyuTyping.active = false;
+    clearTimeout(onyuAutoAdvanceTimer);
     window.ONYU_STATE.currentChapterId = chapterId;
     window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
     onyuFrameStack = [{ list: chapter.script, i: 0 }];

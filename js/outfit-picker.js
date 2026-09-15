@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.outfitConfirmPrice = document.getElementById('outfit-confirm-price');
   onyuEl.outfitConfirmYes = document.getElementById('outfit-confirm-yes');
   onyuEl.outfitConfirmNo = document.getElementById('outfit-confirm-no');
+
+  // 이 오버레이는 #screen-play 안쪽에 있어서, 카드가 아닌 빈 공간을 클릭하면
+  // 이벤트가 #screen-play까지 버블링돼 onyuHandleDialogueClick이 불릴 수 있다 —
+  // 이 시점엔 아직 챕터의 첫 노드가 렌더되기 전이라 그 클릭이 "선택지 중 클릭
+  // 무시" 가드에 안 걸리고 그대로 다음 노드로 넘어가버려 프레임 포인터가
+  // 미리 하나 밀리는 실제 버그가 있었다 — 오버레이에서 나가는 클릭을 여기서 막는다.
+  onyuEl.outfitPickerOverlay.addEventListener('click', function (e) { e.stopPropagation(); });
+  onyuEl.outfitConfirmModal.addEventListener('click', function (e) { e.stopPropagation(); });
 });
 
 // engine.js의 onyuStartChapter가 대사를 그리기 직전에 호출한다. 이미 이번
@@ -59,6 +67,14 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   var priceLabel = '별풍선 ' + choice.price + '개';
   onyuEl.outfitPaidBadge.textContent = '⭐ ' + priceLabel;
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
+
+  // 의상을 고르기 전까진 대사(이전 챕터의 마지막 줄이 아직 남아있는 상태)도,
+  // 스탠딩 일러스트(고르기 전이라 아직 어떤 의상인지도 안 정해진 기본 스프라이트)도
+  // 노출하지 않는다 — 선택 확정 후 onDone이 부르는 onyuRenderCurrentNode가 다시 채운다.
+  onyuEl.dialogueLine.textContent = '';
+  onyuEl.speakerTag.hidden = true;
+  onyuEl.situation.textContent = '';
+  onyuEl.spriteWrap.classList.add('is-hidden');
 
   onyuEl.outfitPickerOverlay.hidden = false;
   requestAnimationFrame(function () { onyuEl.outfitPickerOverlay.classList.add('is-active'); });
