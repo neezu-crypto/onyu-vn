@@ -357,7 +357,7 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
       overlay.hidden = true;
       onDone();
     } else {
-      setTimeout(function () { overlay.hidden = true; onDone(); }, 300);
+      setTimeout(function () { overlay.hidden = true; onDone(); }, 600);
     }
   }
 
@@ -372,12 +372,24 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
       img.classList.add('is-visible');
       hint.classList.add('is-visible');
     } else {
-      // 암전(오버레이가 화면 전체를 검게 덮음, .3s) -> 그 위에서 CG 노출 -> 페이드인
-      // (img 자체의 별도 .4s 트랜지션) 3단계로 분리 - "띡" 하고 바로 뜨지 않게
-      // 오버레이가 완전히 덮인 뒤에야 이미지 페이드인을 시작한다(2026-09-15, 사용자 지시).
+      // 암전(오버레이가 화면 전체를 검게 덮음, .6s) -> 그 위에서 CG 노출 -> 페이드인
+      // (img 자체의 별도 .5s 트랜지션) 3단계로 분리 - "띡" 하고 바로 뜨지 않게
+      // 오버레이가 완전히 덮인 뒤에야 이미지 페이드인을 시작한다(2026-09-15, 사용자
+      // 지시). 암전을 .3s로 뒀을 땐 순식간에 지나가 "갑자기 화면이 꺼진다"는 인상을
+      // 줬다는 후속 피드백으로 .6s로 늘렸다 - 아래 지연 값들도 CSS 트랜지션 시간과
+      // 맞춰 같이 조정.
+      //
+      // void overlay.offsetHeight로 강제 리플로우(2026-09-16 추가) - hidden=false로
+      // display:none에서 벗어난 바로 그 틱에 requestAnimationFrame으로 opacity
+      // 트랜지션을 걸면, 브라우저가 "opacity:0으로 실제 렌더된 이전 프레임"을 갖지
+      // 못해 트랜지션을 건너뛰고 곧장 최종값(opacity:1)으로 스냅해버리는 문제가
+      // 실측(실제 클릭 흐름을 15ms 간격으로 정밀 샘플링)으로 확인됐다 - 암전 시간을
+      // .3s→.6s로 늘리면서 체감상 명확히 드러남. 리플로우를 강제해 "opacity:0" 상태를
+      // 먼저 실제로 커밋시킨 뒤에야 is-active를 붙여야 트랜지션이 정상 재생된다.
+      void overlay.offsetHeight;
       requestAnimationFrame(function () { overlay.classList.add('is-active'); });
-      setTimeout(function () { img.classList.add('is-visible'); }, 320);
-      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 720);
+      setTimeout(function () { img.classList.add('is-visible'); }, 620);
+      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 1120);
     }
     overlay.addEventListener('click', finish);
   };
@@ -395,6 +407,7 @@ function onyuOpenCgBrowse(cgFile) {
   img.classList.remove('is-visible');
   img.src = 'assets/cg/' + cgFile;
   overlay.hidden = false;
+  void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유
   requestAnimationFrame(function () {
     overlay.classList.add('is-active');
     img.classList.add('is-visible');
@@ -402,7 +415,7 @@ function onyuOpenCgBrowse(cgFile) {
   function close() {
     overlay.removeEventListener('click', close);
     overlay.classList.remove('is-active');
-    setTimeout(function () { overlay.hidden = true; }, 300);
+    setTimeout(function () { overlay.hidden = true; }, 600);
   }
   overlay.addEventListener('click', close);
 }
@@ -577,6 +590,8 @@ function onyuMaybePlayEndingCredits(onDone) {
   var overlay = onyuEl.endingCreditsOverlay;
   var img = onyuEl.endingCreditsImg;
   overlay.hidden = false;
+  void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유(display:none 직후
+                              // 곧바로 opacity 트랜지션을 걸면 스냅되는 문제 방지)
   requestAnimationFrame(function () { overlay.classList.add('is-active'); });
 
   var i = 0;
