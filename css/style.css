@@ -68,15 +68,16 @@ button { font-family: inherit; }
    공용으로 쓰는 페이드 커버. 회전 안내(999)보다도 위에 오도록 1000 — 전환
    도중 어떤 화면이 떠 있든 항상 덮을 수 있어야 한다. transition 시간(.45s)은
    js/screens.js의 ONYU_TRANSITION_FADE_MS와 반드시 맞출 것 — 힐링물 장르
-   톤에 맞춰 원래(.26s)보다 느긋하게 늘렸다(2026-09-14). */
+   톤에 맞춰 원래(.26s)보다 느긋하게 늘렸다(2026-09-14, 2026-09-16 1s로 재조정 -
+   "배경·CG 페이드 시간을 전부 1초로" 사용자 지시). */
 #screen-transition-overlay {
   position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--paper); opacity: 0; pointer-events: none; transition: opacity .45s ease;
+  background: var(--paper); opacity: 0; pointer-events: none; transition: opacity 1s ease;
 }
 #screen-transition-overlay.is-active { opacity: 1; pointer-events: all; }
 #screen-transition-label {
   margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; color: var(--season-accent);
-  opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease;
+  opacity: 0; transform: translateY(6px); transition: opacity 1s ease, transform 1s ease;
 }
 #screen-transition-label.is-visible { opacity: 1; transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
@@ -567,7 +568,7 @@ button { font-family: inherit; }
 /* ================= CG 뷰어(본편 팝업 + 갤러리 브라우징 공용) ================= */
 #cg-viewer-overlay {
   position: fixed; inset: 0; z-index: 1500; display: flex; align-items: center; justify-content: center;
-  background: #000; opacity: 0; pointer-events: none; transition: opacity .6s ease; cursor: pointer;
+  background: #000; opacity: 0; pointer-events: none; transition: opacity 1s ease; cursor: pointer;
 }
 #cg-viewer-overlay[hidden] { display: none; }
 #cg-viewer-overlay.is-active { opacity: 1; pointer-events: auto; }
@@ -575,9 +576,9 @@ button { font-family: inherit; }
    (2026-09-15, 사용자 지시) 이미지 자체도 오버레이(검은 배경) 페이드와 별개의
    opacity 트랜지션을 가진다 - 오버레이가 먼저 완전히 검게 덮인 뒤에야 engine.js가
    is-visible을 붙여 그림이 그 위에서 따로 페이드인한다("띡" 하고 바로 뜨는 대신).
-   암전 자체가 .3s일 땐 순식간에 지나가 "갑자기 꺼지는" 느낌이 들었다는 사용자
-   피드백으로 .6s로 늘림(engine.js의 대응 타이밍도 같이 조정) — js/engine.js */
-#cg-viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity .5s ease; }
+   힐링 장르 톤에 맞춰 배경·CG 페이드를 전부 1s로 통일(2026-09-16, 사용자 지시 -
+   engine.js의 대응 타이밍도 같이 조정) — js/engine.js */
+#cg-viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity 1s ease; }
 #cg-viewer-img.is-visible { opacity: 1; }
 #cg-viewer-hint {
   position: absolute; bottom: 28px; right: 32px; color: rgba(255, 255, 255, 0.8); font-size: 12.5px;
@@ -588,17 +589,17 @@ button { font-family: inherit; }
 /* ================= 엔딩 크레딧 몽타주(연인 엔딩 전용, 스킵 없음) ================= */
 #ending-credits-overlay {
   position: fixed; inset: 0; z-index: 1500; display: flex; align-items: center; justify-content: center;
-  background: #000; opacity: 0; transition: opacity .4s ease;
+  background: #000; opacity: 0; transition: opacity 1s ease;
 }
 #ending-credits-overlay[hidden] { display: none; }
 #ending-credits-overlay.is-active { opacity: 1; }
-#ending-credits-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity .3s ease; }
+#ending-credits-img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity 1s ease; }
 #ending-credits-img.is-visible { opacity: 1; }
 
 /* screen-transition-overlay 안의 학년 전환 컷 CG(09·19) — 기존 chapterLabel 위에 얹는다 */
 #screen-transition-cg {
   max-width: min(70vw, 520px); max-height: 46vh; object-fit: contain; border-radius: 12px;
-  margin-bottom: 18px; opacity: 0; transition: opacity .5s ease; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  margin-bottom: 18px; opacity: 0; transition: opacity 1s ease; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 #screen-transition-cg.is-visible { opacity: 1; }
 
