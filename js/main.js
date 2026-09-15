@@ -164,15 +164,54 @@ document.addEventListener('DOMContentLoaded', function () {
   (function tryTitleCoverCg() {
     var coverBg = document.getElementById('title-cover-bg');
     var loading = document.getElementById('title-loading');
+    var phraseEl = document.getElementById('title-loading-phrase');
+
+    // 로딩 문구 로테이션(2026-09-15, 사용자 지시) - 10개를 무작위 순서로 돌며
+    // 페이드 교차. CG 로드가 끝나면(성공/실패 모두) stopPhraseRotation으로 정리.
+    var phrases = [
+      '온이유 만나러 가는 중',
+      '벚꽃 잎을 하나씩 세는 중',
+      '교실 문 앞에서 숨 고르는 중',
+      '우산 하나를 나눠 쓸 준비하는 중',
+      '첫눈 오는 날을 기다리는 중',
+      '편지지에 마음을 옮겨 적는 중',
+      '이름을 불러볼 용기를 내는 중',
+      '함께 걸을 하굣길을 그리는 중',
+      '두근거림을 살짝 숨기는 중',
+      '세 번째 계절을 준비하는 중',
+    ];
+    var phraseOrder = phrases.map(function (_, i) { return i; });
+    for (var i = phraseOrder.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = phraseOrder[i]; phraseOrder[i] = phraseOrder[j]; phraseOrder[j] = tmp;
+    }
+    var phraseIdx = 0;
+    var phraseTimer = null;
+    function showNextPhrase() {
+      phraseEl.classList.remove('is-visible');
+      setTimeout(function () {
+        phraseEl.textContent = phrases[phraseOrder[phraseIdx % phraseOrder.length]];
+        phraseEl.classList.add('is-visible');
+        phraseIdx++;
+      }, 350);
+    }
+    showNextPhrase();
+    phraseTimer = setInterval(showNextPhrase, 2200);
+    function stopPhraseRotation() {
+      if (phraseTimer) { clearInterval(phraseTimer); phraseTimer = null; }
+    }
+
     var probe = new Image();
     probe.onload = function () {
       coverBg.src = 'assets/cg/cover.png';
       coverBg.hidden = false;
       document.getElementById('screen-title').classList.add('is-cg-cover');
       loading.classList.add('is-hidden');
+      stopPhraseRotation();
     };
     probe.onerror = function () {
       loading.classList.add('is-hidden');
+      stopPhraseRotation();
     };
     probe.src = 'assets/cg/cover.png';
   })();

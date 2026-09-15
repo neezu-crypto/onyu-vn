@@ -130,6 +130,16 @@ button { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .title-loading-pulse-line { animation: none; stroke-dashoffset: 0; opacity: 1; }
 }
+/* 로딩 문구 로테이션(2026-09-15, 사용자 지시) - main.js가 10개 문구를 순환시키며
+   textContent를 바꿀 때마다 is-visible을 껐다 켜서 교차 페이드시킨다. */
+.title-loading-phrase {
+  margin: 0; min-height: 1.4em; font-size: 14px; color: var(--muted); text-align: center;
+  opacity: 0; transition: opacity .35s ease;
+}
+.title-loading-phrase.is-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .title-loading-phrase { transition: none; }
+}
 .title-main {
   position: relative; z-index: 1; height: 100%; padding: 6% 6%;
   display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
