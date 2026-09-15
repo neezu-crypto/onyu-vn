@@ -100,6 +100,18 @@ window.ONYU_GRADE_TRANSITION_CG = {
   ch18: 'cg-19.png', // 고2 → 고3
 };
 
+// 사복 픽커(outfit-picker.js) 적용 챕터의 CG 무료/유료 변형(2026-09-15) - CH12·13·16·24는
+// 그 회차에 고른 사복(chosenOutfits)이 스탠딩뿐 아니라 CG에도 그대로 반영돼야 자연스러워
+// 이 4곳만 chapter.cg 단일 파일 대신 무료/유료 두 장을 따로 그렸다. 키는 outfit-picker.js의
+// ONYU_OUTFIT_CHOICES와 동일한 챕터 id, engine.js의 cgReveal 처리부가 chosenOutfits[챕터id]가
+// paid 접두사와 일치하는지로 둘 중 하나를 고른다(일치 안 하면 무조건 free - 무료 쪽이 기본값).
+window.ONYU_OUTFIT_CG_VARIANTS = {
+  ch12: { free: 'cg-13-1.png', paid: 'cg-13-2.png' },
+  ch13: { free: 'cg-14-1.png', paid: 'cg-14-2.png' },
+  ch16: { free: 'cg-17-1.png', paid: 'cg-17-2.png' },
+  ch24: { free: 'cg-26-1.png', paid: 'cg-26-2.png' },
+};
+
 window.ONYU_CHAPTERS = [
   {
     id: 'ch01', order: 1, grade: 1, season: 'spring', title: '새 학기', bg: 'b1', cg: 'cg-01.png',

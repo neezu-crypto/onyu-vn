@@ -311,10 +311,18 @@ function onyuRenderCurrentNode() {
     // 본편 CG 팝업(CG 노출 시스템 설계 v1.0, Mechanism 1) — 대본 어디에나 넣을 수
     // 있는 트리거 노드. 필드가 없어 현재 챕터의 chapter.cg를 그대로 쓰되, CH27
     // 엔딩 분기(chapter.cg 없음)에서는 lastEndingId로 ONYU_ENDING_CG를 조회한다.
+    // 사복 픽커 적용 챕터(ONYU_OUTFIT_CG_VARIANTS)는 chapter.cg보다 우선해서 그
+    // 회차에 고른 사복(chosenOutfits)에 맞는 CG를 고른다 - paid 접두사와 정확히
+    // 일치할 때만 유료판, 그 외(무료를 골랐거나 아직 안 골랐거나)는 전부 무료판.
     var revealIdx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
     var revealChapter = window.ONYU_CHAPTERS[revealIdx];
-    var revealCgFile = revealChapter.cg
-      || (window.ONYU_ENDING_CG && window.ONYU_ENDING_CG[window.ONYU_STATE.lastEndingId]);
+    var revealOutfitVariant = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[revealChapter.id];
+    var revealOutfitChoice = window.ONYU_OUTFIT_CHOICES && window.ONYU_OUTFIT_CHOICES[revealChapter.id];
+    var revealCgFile = revealOutfitVariant
+      ? ((revealOutfitChoice && window.ONYU_STATE.chosenOutfits[revealChapter.id] === revealOutfitChoice.paid)
+        ? revealOutfitVariant.paid
+        : revealOutfitVariant.free)
+      : (revealChapter.cg || (window.ONYU_ENDING_CG && window.ONYU_ENDING_CG[window.ONYU_STATE.lastEndingId]));
     if (!revealCgFile) {
       if (onyuStepToNextNode()) onyuRenderNextNode();
       else onyuFinishChapter();
