@@ -76,7 +76,7 @@ button { font-family: inherit; }
 }
 #screen-transition-overlay.is-active { opacity: 1; pointer-events: all; }
 #screen-transition-label {
-  margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; color: var(--season-accent);
+  margin: 0; font-size: 30px; font-weight: 800; letter-spacing: 0.06em; color: var(--season-accent);
   opacity: 0; transform: translateY(6px); transition: opacity 1s ease, transform 1s ease;
 }
 #screen-transition-label.is-visible { opacity: 1; transform: translateY(0); }
@@ -406,7 +406,7 @@ button { font-family: inherit; }
   .title-menu-item.is-primary { font-size: 20px; }
   .title-hint { font-size: 13px; }
 
-  #screen-transition-label { font-size: 17px; }
+  #screen-transition-label { font-size: 34px; }
   .play-icon-btn { font-size: 18px; }
   .play-chapter-tag { font-size: 14px; }
   .play-situation { font-size: 18px; }
