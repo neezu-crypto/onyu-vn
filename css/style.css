@@ -87,6 +87,16 @@ button { font-family: inherit; }
 #screen-title { background: linear-gradient(150deg, var(--paper-strong), var(--paper) 60%); }
 .title-figure { position: absolute; left: 8%; bottom: 0; width: min(30vw, 340px); }
 .title-figure img { width: 100%; display: block; filter: drop-shadow(0 20px 30px rgba(61, 52, 54, 0.18)); }
+/* 표지 CG(가로형 풀신, 세로형 스탠딩 컷과 달리 화면 전체를 덮는 배경으로 깐다) -
+   main.js의 tryTitleCoverCg가 로드 성공 시에만 hidden을 벗기고 #screen-title에
+   is-cg-cover를 얹어 세로형 스탠딩 컷(.title-figure)을 대신 숨긴다. 오른쪽 텍스트
+   패널이 그림 위에서도 읽히도록 스크림 그라데이션을 얹는다(::after). */
+.title-cover-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; }
+#screen-title.is-cg-cover::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 40%, var(--paper-strong) 92%);
+}
+#screen-title.is-cg-cover .title-figure { display: none; }
 .title-main {
   position: relative; z-index: 1; height: 100%; padding: 6% 6%;
   display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
