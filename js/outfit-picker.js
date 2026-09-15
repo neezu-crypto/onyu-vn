@@ -65,7 +65,10 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.outfitFreeImg.src = 'assets/standing/' + choice.free + '1.png';
   onyuEl.outfitPaidImg.src = 'assets/standing/' + choice.paid + '1.png';
   var priceLabel = '별풍선 ' + choice.price + '개';
-  onyuEl.outfitPaidBadge.textContent = '⭐ ' + priceLabel;
+  // 유료 의상은 단순 가격 표기가 아니라, 시청자가 해야 할 행동과 그 결과를
+  // 한눈에 이해할 수 있도록 안내한다. 줄바꿈은 CSS의 white-space: pre-line으로
+  // 카드 배지 안에서 그대로 표시되며, 이 공통 로직을 타는 모든 의상 이벤트에 적용된다.
+  onyuEl.outfitPaidBadge.textContent = '⭐ 스트리머에게 ' + priceLabel + '를 선물하고\n의상 선택 가능합니다.';
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
 
   // 의상을 고르기 전까진 대사(이전 챕터의 마지막 줄이 아직 남아있는 상태)도,
