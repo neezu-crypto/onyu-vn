@@ -89,9 +89,15 @@ function onyuRenderGallery() {
     var unlocked = !!(record.cg && record.cg[ch.id]);
     var div = document.createElement('div');
     div.className = 'cg-thumb' + (unlocked ? '' : ' is-locked');
-    div.innerHTML = unlocked
-      ? '<span class="cg-label num">CH' + String(ch.order).padStart(2, '0') + '</span>'
-      : '<span class="cg-lock">🔒</span>';
+    if (unlocked && ch.cg) {
+      // 풀린 것만 실제 이미지를 요청한다 — 잠긴 항목은 스포일러 방지 겸 불필요한
+      // 네트워크 요청을 안 하려고 아예 <img>를 안 만든다.
+      div.innerHTML = '<img src="assets/cg/' + ch.cg + '" alt="" draggable="false">'
+        + '<span class="cg-label num">CH' + String(ch.order).padStart(2, '0') + '</span>';
+      div.addEventListener('click', function () { onyuOpenCgBrowse(ch.cg); });
+    } else {
+      div.innerHTML = '<span class="cg-lock">🔒</span>';
+    }
     cgPanel.appendChild(div);
   });
 
@@ -99,11 +105,16 @@ function onyuRenderGallery() {
   endingPanel.innerHTML = '';
   ONYU_ENDING_DEFS.forEach(function (ed) {
     var unlocked = !!(record.endings && record.endings[ed.id]);
+    var cgFile = window.ONYU_ENDING_CG && window.ONYU_ENDING_CG[ed.id];
     var div = document.createElement('div');
     div.className = 'ending-thumb' + (unlocked ? ' is-unlocked' : '');
-    div.innerHTML = unlocked
-      ? '<span class="ending-name">' + ed.name + '</span>'
-      : '<span class="ending-lock">🔒</span><span class="ending-name">???</span>';
+    if (unlocked && cgFile) {
+      div.innerHTML = '<img src="assets/cg/' + cgFile + '" alt="" draggable="false">'
+        + '<span class="ending-name">' + ed.name + '</span>';
+      div.addEventListener('click', function () { onyuOpenCgBrowse(cgFile); });
+    } else {
+      div.innerHTML = '<span class="ending-lock">🔒</span><span class="ending-name">???</span>';
+    }
     endingPanel.appendChild(div);
   });
 }

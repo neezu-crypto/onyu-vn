@@ -116,6 +116,12 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.dialogueBox = document.getElementById('dialogue-box');
   onyuEl.endingOverlay = document.getElementById('ending-overlay');
   onyuEl.endingTitle = document.getElementById('ending-title');
+  onyuEl.cgViewerOverlay = document.getElementById('cg-viewer-overlay');
+  onyuEl.cgViewerImg = document.getElementById('cg-viewer-img');
+  onyuEl.cgViewerHint = document.getElementById('cg-viewer-hint');
+  onyuEl.endingCreditsOverlay = document.getElementById('ending-credits-overlay');
+  onyuEl.endingCreditsImg = document.getElementById('ending-credits-img');
+  onyuEl.transitionCg = document.getElementById('screen-transition-cg');
 
   // CH27 완주 후 엔딩 화면의 "타이틀로 돌아가기" — state는 그대로 두고(새 게임을
   // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다. 기획서

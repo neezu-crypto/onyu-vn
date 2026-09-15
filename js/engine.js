@@ -307,7 +307,85 @@ function onyuRenderCurrentNode() {
     } else {
       onyuFinishChapter();
     }
+  } else if (node.type === 'cgReveal') {
+    // 본편 CG 팝업(CG 노출 시스템 설계 v1.0, Mechanism 1) — 대본 어디에나 넣을 수
+    // 있는 트리거 노드. 필드가 없어 현재 챕터의 chapter.cg를 그대로 쓰되, CH27
+    // 엔딩 분기(chapter.cg 없음)에서는 lastEndingId로 ONYU_ENDING_CG를 조회한다.
+    var revealIdx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
+    var revealChapter = window.ONYU_CHAPTERS[revealIdx];
+    var revealCgFile = revealChapter.cg
+      || (window.ONYU_ENDING_CG && window.ONYU_ENDING_CG[window.ONYU_STATE.lastEndingId]);
+    if (!revealCgFile) {
+      if (onyuStepToNextNode()) onyuRenderNextNode();
+      else onyuFinishChapter();
+      return;
+    }
+    onyuShowCgReveal(revealCgFile, revealChapter.id, function () {
+      if (onyuStepToNextNode()) onyuRenderNextNode();
+      else onyuFinishChapter();
+    });
   }
+}
+
+// CG 노출 시스템 설계 v1.0, Mechanism 1 — 풀스크린 CG 팝업. 이미지가 없으면(404)
+// 조용히 onDone만 불러 다음 노드로 넘어간다(팝업 자체가 생략된 것처럼). 실제로
+// 뜬 시점에 갤러리 언락도 같이 기록한다("봤다 = 갤러리에 남는다").
+function onyuShowCgReveal(cgFile, chapterId, onDone) {
+  var overlay = onyuEl.cgViewerOverlay;
+  var img = onyuEl.cgViewerImg;
+  var hint = onyuEl.cgViewerHint;
+  var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
+  var settled = false;
+  var hintTimer = null;
+
+  function finish() {
+    if (settled) return;
+    settled = true;
+    clearTimeout(hintTimer);
+    overlay.removeEventListener('click', finish);
+    overlay.classList.remove('is-active');
+    hint.classList.remove('is-visible');
+    if (reduceMotion) {
+      overlay.hidden = true;
+      onDone();
+    } else {
+      setTimeout(function () { overlay.hidden = true; onDone(); }, 300);
+    }
+  }
+
+  img.onerror = function () { img.onerror = null; img.onload = null; onDone(); };
+  img.onload = function () {
+    img.onerror = null;
+    onyuUnlockGalleryItem('cg', chapterId);
+    overlay.hidden = false;
+    if (reduceMotion) {
+      overlay.classList.add('is-active');
+      hint.classList.add('is-visible');
+    } else {
+      requestAnimationFrame(function () { overlay.classList.add('is-active'); });
+      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 600);
+    }
+    overlay.addEventListener('click', finish);
+  };
+  img.src = 'assets/cg/' + cgFile;
+}
+
+// 갤러리에서 이미 풀린 CG를 다시 감상할 때(브라우징 모드) — 같은 오버레이를
+// onDone 콜백 없이 재사용, 클릭하면 그냥 닫히기만 한다.
+function onyuOpenCgBrowse(cgFile) {
+  var overlay = onyuEl.cgViewerOverlay;
+  var img = onyuEl.cgViewerImg;
+  img.onload = null;
+  img.onerror = null;
+  img.src = 'assets/cg/' + cgFile;
+  overlay.hidden = false;
+  requestAnimationFrame(function () { overlay.classList.add('is-active'); });
+  function close() {
+    overlay.removeEventListener('click', close);
+    overlay.classList.remove('is-active');
+    setTimeout(function () { overlay.hidden = true; }, 300);
+  }
+  overlay.addEventListener('click', close);
 }
 
 function onyuScheduleAutoAdvance(text) {
@@ -365,7 +443,7 @@ function onyuCompleteTypewriter() {
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
   var node = onyuCurrentNode();
-  if (!node || node.type === 'choice' || node.type === 'nameInput') return; // 선택/입력 중엔 클릭 무시
+  if (!node || node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal') return; // 선택/입력/CG 팝업 중엔 클릭 무시(각자 자기 오버레이 클릭으로만 해제)
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
   if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();
@@ -436,7 +514,9 @@ function onyuSubmitName() {
 function onyuFinishChapter() {
   var finishedId = window.ONYU_STATE.currentChapterId;
   window.ONYU_STATE.completedChapters[finishedId] = true; // "이미 읽은 텍스트 스킵" 판단용
-  if (finishedId !== 'ch27') onyuUnlockGalleryItem('cg', finishedId); // CH27은 CG가 아니라 엔딩으로 언락됨
+  // CG 갤러리 언락은 챕터 완주 시점이 아니라 cgReveal 노드가 실제로 뜬 순간으로
+  // 옮겼다(onyuShowCgReveal) — "봤다 = 갤러리에 남는다"가 더 자연스럽고, 이미지
+  // 파일이 아직 없어 팝업이 조용히 스킵된 경우 불필요하게 언락되지 않는다.
   onyuSaveAutosave();
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var next = window.ONYU_CHAPTERS[idx + 1];
@@ -444,18 +524,58 @@ function onyuFinishChapter() {
     // 챕터 사이엔 다음 챕터 제목 카드를 잠깐 보여주며 쉬어가는 전환을 넣는다 —
     // 이 전환이 화면을 덮는 동안 onyuStartChapter가 실제 초기화를 수행하므로,
     // 플레이어에게는 "제목 카드 → 다음 챕터 첫 줄"로 자연스럽게 이어져 보인다.
+    // 학년 전환(CH09·CH18 진입)엔 전용 CG를 얹고 홀드를 늘린다(CG 노출 시스템 Mechanism 3).
     var nextLabel = 'CH.' + String(next.order).padStart(2, '0') + ' · ' + next.title;
-    onyuRunTransition({ holdMs: 1100, chapterLabel: nextLabel }, function () {
+    var transitionCg = window.ONYU_GRADE_TRANSITION_CG && window.ONYU_GRADE_TRANSITION_CG[next.id];
+    onyuRunTransition({ holdMs: transitionCg ? 2400 : 1100, chapterLabel: nextLabel, cg: transitionCg }, function () {
       onyuStartChapter(next.id);
     });
   } else {
-    // CH27(마지막 챕터) 완주 — 시그니처 오프닝 연동은 별도 자산(ojm-sig-opening)이
-    // 필요해 이후 과제로 남기고, 여기서는 실제로 갈린 엔딩(우정/썸/연인) 타이틀을
-    // 보여주고 타이틀로 정상 복귀하는 화면까지를 지금 범위로 만든다.
-    onyuRunTransition({ holdMs: 600 }, function () {
-      onyuShowEndingScreen(window.ONYU_STATE.lastEndingId);
+    // CH27(마지막 챕터) 완주 — 연인 엔딩이면 갤러리 CG 크레딧 몽타주(CG 노출 시스템
+    // Mechanism 4)를 먼저 보여준 뒤 엔딩 타이틀 화면으로. 우정/썸은 몽타주 없이 바로.
+    onyuMaybePlayEndingCredits(function () {
+      onyuRunTransition({ holdMs: 600 }, function () {
+        onyuShowEndingScreen(window.ONYU_STATE.lastEndingId);
+      });
     });
   }
+}
+
+// CG 노출 시스템 설계 v1.0, Mechanism 4 — 연인 엔딩 전용, 갤러리에 실제로 풀린
+// CG를 챕터 순서대로 크로스페이드 재생. 클릭해도 넘어가지 않는 스킵 불가 연출로
+// 확정(2026-09-15) — 모션 줄이기 설정만 접근성 예외로 몽타주 자체를 생략한다.
+function onyuMaybePlayEndingCredits(onDone) {
+  if (window.ONYU_STATE.lastEndingId !== 'lover' || window.ONYU_STATE.settings.reduceMotion) {
+    onDone();
+    return;
+  }
+  var record = onyuLoadGalleryRecord();
+  var files = window.ONYU_CHAPTERS
+    .filter(function (c) { return c.cg && record.cg && record.cg[c.id]; })
+    .map(function (c) { return c.cg; });
+  if (!files.length) { onDone(); return; }
+
+  var overlay = onyuEl.endingCreditsOverlay;
+  var img = onyuEl.endingCreditsImg;
+  overlay.hidden = false;
+  requestAnimationFrame(function () { overlay.classList.add('is-active'); });
+
+  var i = 0;
+  function showNext() {
+    if (i >= files.length) {
+      overlay.classList.remove('is-active');
+      setTimeout(function () { overlay.hidden = true; onDone(); }, 400);
+      return;
+    }
+    img.classList.remove('is-visible');
+    setTimeout(function () {
+      img.src = 'assets/cg/' + files[i];
+      img.classList.add('is-visible');
+      i++;
+      setTimeout(showNext, 600);
+    }, 60); // 크로스페이드가 실제로 재생될 최소한의 갭
+  }
+  showNext();
 }
 
 function onyuShowEndingScreen(endingId) {

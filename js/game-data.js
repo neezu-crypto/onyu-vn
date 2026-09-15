@@ -115,6 +115,7 @@ window.ONYU_CHAPTERS = [
             script: [
               { type: 'line', speaker: 'player', text: '이거, 네가 그린 거야?' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(고개를 들며) 어... 응.' },
+              { type: 'cgReveal' },
               { type: 'line', speaker: 'player', text: '진짜 잘 그렸다.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '고마워. 그렇게 말해주는 사람, 별로 없었는데.' },
               { type: 'line', speaker: 'player', text: '뭐 그린 거야?' },
@@ -190,6 +191,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(움찔하며) ...어떻게 알았어.' },
       { type: 'narration', text: '앞서 걷던 온이유가 문득 걸음을 멈췄다. 고개를 살짝 젖힌 채, 떨어지는 꽃잎을 가만히 올려다보고 있었다.' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '예쁘다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'player', text: '(정말 그러네.)' },
       {
         type: 'choice',
@@ -301,6 +303,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'player', text: '그게 무슨 소리야.' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '나도 몰라. 그냥 그런 때가 있어.' },
       { type: 'narration', text: '얼마 뒤, 그녀가 붓을 씻고 캔버스를 이쪽으로 돌려 보여주었다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '완성된 그림을 보여주며 감상을 묻는 순간',
@@ -374,6 +377,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '비가 그칠 기미가 안 보이자, 결국 교문 앞 우산 대여함을 뒤졌다. 마지막 남은 우산 하나뿐이라, 둘이 나눠 쓸 수밖에 없었다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '결국 우산 하나를 나눠 쓰고 걷게 된 어색한 순간',
@@ -418,6 +422,7 @@ window.ONYU_CHAPTERS = [
     script: [
       { type: 'narration', text: '가을 체육대회, 운동장은 응원 함성과 호루라기 소리로 뒤덮여 있었다. 반 대항 이어달리기를 기다리며 다들 목이 터져라 소리를 질렀다.', sheAbsent: true },
       { type: 'narration', text: '저 멀리 그늘진 스탠드 구석, 온이유가 혼자 앉아 스케치북을 펼치고 있었다. 함성이 가장 덜 닿는 자리를 골라 앉은 게 분명해 보였다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'player', text: '여기 있었네.' },
       { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(스케치북을 슬쩍 덮으며) 어, 왔어?' },
       { type: 'line', speaker: 'player', text: '이 시끄러운 데서 뭐 해.' },
@@ -536,6 +541,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '단풍나무가 늘어선 길에 다다르자, 그녀가 걸음을 멈추고 가방에서 스케치북을 꺼냈다. 붉고 노란 잎들이 머리 위로 지붕처럼 드리워 있었다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '단풍을 배경으로 스케치를 하고 싶어하는 그녀',
@@ -579,6 +585,7 @@ window.ONYU_CHAPTERS = [
     script: [
       { type: 'narration', text: '기말고사 기간, 도서관은 평소보다 훨씬 붐볐다. 자리마다 빼곡히 앉은 학생들 사이로 사각거리는 연필 소리만 낮게 깔렸다. 빈자리를 찾다 우연히 같은 테이블에 앉게 됐다.', sheAbsent: true },
       { type: 'narration', text: '온이유가 문제집을 펴놓고 미간을 잔뜩 찌푸리고 있었다. 창밖엔 눈이라도 내릴 듯 하늘이 잔뜩 흐렸다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'player', text: '뭐가 그렇게 어려워?' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '(고개도 안 들고) 이 문제, 세 번째 풀어도 안 풀려.' },
       {
@@ -656,6 +663,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '문득 하늘에서 하얀 것이 흩날리기 시작했다. 처음엔 먼지인가 싶었는데, 이내 눈이라는 걸 알아챘다.', sheAbsent: true },
       { type: 'line', speaker: 'player', text: '어, 눈이다.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '(하늘을 올려다보며) 진짜네. 올해 첫눈이다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '눈이 내리기 시작하는 걸 먼저 알아챈 순간',
@@ -782,6 +790,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '하굣길, 나란히 걷다가 그녀가 문득 입을 열었다. 노을이 교문 앞 가로수를 붉게 물들이고 있었다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '작년 이맘때보다 지금이 낫다.' },
       { type: 'line', speaker: 'player', text: '왜?' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '그땐 네 이름도 몰랐잖아.' },
@@ -830,6 +839,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '몇 주 뒤, 전시 준비로 다들 늦게까지 남는 날이 이어졌다. 어느 날은 결국 동아리실에 둘만 남았다. 창밖은 이미 어두워지고 있었다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '작업이 늦어져 동아리실에 둘만 남게 된 저녁',
@@ -874,6 +884,7 @@ window.ONYU_CHAPTERS = [
     script: [
       { type: 'narration', text: '기말고사가 끝나고 여름방학을 앞둔 마지막 주, 교실은 후덥지근한 열기로 가득했다. 선풍기 몇 대가 힘없이 돌아가고 있었지만 더위를 이기기엔 역부족이었다. 에어컨 바람이 잘 안 닿는 자리에 앉은 그녀가 연신 부채질을 하고 있었다.' },
       { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(부채질하며) 진짜 덥다. 나 여름 진짜 싫어해.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'player', text: '매년 하는 말 아니야?' },
       { type: 'line', speaker: 'onyu', expr: 'pouty', text: '매년 진심이니까 문제지.' },
       {
@@ -946,6 +957,7 @@ window.ONYU_CHAPTERS = [
     script: [
       { type: 'narration', text: '방학 중, 동네 서점에 볼일이 있어 들렀다. 에어컨 바람이 시원하게 도는 매장 안으로 들어서는 순간, 낯익은 뒷모습이 눈에 들어왔다.', sheAbsent: true },
       { type: 'narration', text: '잡지 코너 앞에 선 온이유였다. 방학인데도 이렇게 밖에 나와 있다는 게 의외였다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '예상치 못한 만남에 반가움을 어떻게 표현할지',
@@ -1058,6 +1070,7 @@ window.ONYU_CHAPTERS = [
               { type: 'line', speaker: 'player', text: '아니야?' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(시선을 피하며) ...아니라고 안 했어.' },
               { type: 'narration', text: '그 순간, 그녀가 처음으로 이름을 불렀다. 여느 때와는 다른, 조금 조심스러운 부름이었다.' },
+              { type: 'cgReveal' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(조용히) ...사실 오늘 좀 긴장했었어.' },
               { type: 'line', speaker: 'player', text: '안 그래 보였는데.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '티 안 나게 하려고 얼마나 애썼는데.' },
@@ -1146,6 +1159,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '늦은 밤, 겨우 부스가 완성됐다. 창밖은 이미 캄캄했고, 물감 냄새가 방 안 가득 퍼져 있었다. 다른 부원들은 하나둘 먼저 돌아간 뒤였다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '드디어 끝났다.' },
       { type: 'line', speaker: 'player', text: '고생 많았어.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '이제 집 가서 밀린 랭크나 채워야지.' },
@@ -1174,6 +1188,7 @@ window.ONYU_CHAPTERS = [
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(당황하며) 그렇게까지 자세히 안 해도...' },
               { type: 'line', speaker: 'player', text: '진짜 잘 그렸잖아.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(얼굴이 살짝 붉어지며) 고마워. ...근데 다음엔 미리 말하고 그래.' },
+              { type: 'cgReveal' },
               { type: 'line', speaker: 'player', text: '왜, 부끄러워?' },
               { type: 'line', speaker: 'onyu', expr: 'pouty', text: '당연하지, 누가 안 그러겠어.' },
             ],
@@ -1263,6 +1278,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '보드게임 카페에 자리를 잡고 앉으니, 창밖으로 눈이 흩날리기 시작했다. 따뜻한 조명 아래 테이블마다 웃음소리가 낮게 깔려 있었다.' },
       { type: 'narration', text: '첫 판은 그녀의 압승이었다. 승리가 확정되는 순간, 그녀가 장난스럽게 내 손을 덥석 잡아 번쩍 들어 올렸다.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '(신나서) 봐봐, 내가 이겼잖아! 각오하랬지?' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'player', text: '야, 손 놔. 사람들 다 봐.' },
       { type: 'line', speaker: 'onyu', expr: 'shy', text: '(그제야 손을 놓으며) ...어, 그러네. 나도 모르게.' },
       { type: 'narration', text: '순간 어색해진 그녀가 헛기침을 하며 다시 카드를 섞기 시작했다. 귀끝이 살짝 붉어져 있었다.' },
@@ -1335,6 +1351,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '이야기가 끊긴 자리를 메우듯, 두 사람은 한동안 말없이 걸음만 옮겼다. 골목 끝, 편의점 앞 벤치에 잠깐 앉았다. 캔에 담긴 따뜻한 음료 두 개가 손에 들려 있었다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '내년엔 3학년이네. ...좀 무섭다.' },
       {
         type: 'choice',
@@ -1432,6 +1449,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '교문을 나서자 봄바람이 불어와 벚꽃 잎 몇 장을 흩날렸다. 그녀는 잠시 걸음을 멈추고 떨어지는 꽃잎을 바라보았다. 손바닥 위에 내려앉은 꽃잎 한 장을 가만히 들여다보다, 이내 훅 불어 날려 보냈다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '정답이 딱 정해져 있으면 편할 텐데. 아무도 정답을 안 알려주네.' },
       { type: 'line', speaker: 'player', text: '정답 없는 거, 원래 그런 거 아니야?' },
       { type: 'line', speaker: 'onyu', expr: 'shy', text: '(피식 웃으며) 위로인지 그냥 하는 말인지 모르겠지만, 그래도 고마워.' },
@@ -1483,6 +1501,7 @@ window.ONYU_CHAPTERS = [
               { type: 'line', speaker: 'player', text: '그냥 옆에 좀 앉아 있어도 돼? 아무 말 안 할게.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(피식 웃으며) 뭐야 그게. ...근데, 그래 줘.' },
               { type: 'narration', text: '둘은 아무 말 없이 나란히 앉아 잠깐 눈을 붙이듯 벤치에 몸을 기댔다. 그러다 스르르 기울어진 그녀의 머리가 어깨에 살짝 닿았다.' },
+              { type: 'cgReveal' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게) ...이런 게 은근 힘이 되네.' },
               { type: 'line', speaker: 'player', text: '(가만히) ...기대도 돼, 그 정도는.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(눈을 감으며 작게) ...말 안 해도 이미 기댔거든.' },
@@ -1543,6 +1562,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '오늘 그린 거 좀 볼래? 선생님한테 되게 혼났거든.' },
       { type: 'line', speaker: 'player', text: '어디 봐봐.' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '(스케치북을 펼치며) 손목이 나갈 것 같아. 근데 그린 만큼 느는 게 눈에 보이니까 그건 재밌어.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '학원 숙제로 지친 그녀가 그림 이야기를 꺼내는 순간',
@@ -1608,6 +1628,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'player', text: '어, 그럼 그날 말고 다른 날로 옮길까?' },
       { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(날카롭게) 아 진짜, 그냥 좀 한 번에 정하면 안 돼?' },
       { type: 'narration', text: '평소의 그녀답지 않은 말투에 순간 정적이 흘렀다. 그녀 스스로도 놀란 듯 눈이 커졌다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '갑자기 예민하게 반응하고 후회하는 그녀',
@@ -1687,6 +1708,7 @@ window.ONYU_CHAPTERS = [
             script: [
               { type: 'narration', text: '말로는 풀기 어려울 것 같아, 편지지를 사서 그날 못 다 들은 미안함과 진심을 꾹꾹 눌러 적었다. 다음 날, 그녀의 책상 위에 조용히 편지를 올려두었다.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(편지를 발견하고 멈칫하며) ...이게 뭐야.' },
+              { type: 'cgReveal' },
               { type: 'line', speaker: 'player', text: '그냥, 하고 싶은 말이 있어서. 읽어봐.' },
               { type: 'narration', text: '그녀는 편지를 조심스럽게 집어 들고는, 대답 없이 가방 속에 넣었다.' },
             ],
@@ -1736,6 +1758,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '방과 후, 늘 지나치던 공원 벤치에 나란히 앉았다. 낙엽이 바람에 쓸려 다니는 소리만 두 사람 사이를 채웠다. 그녀는 가방에서 그 편지를 살짝 꺼내 보이더니, 다시 조심스레 집어넣었다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '사실 며칠 동안 계속 편지 생각만 했어. 근데 막상 뭐라고 답해야 할지 모르겠더라.' },
       {
         type: 'choice',
@@ -1800,6 +1823,7 @@ window.ONYU_CHAPTERS = [
         ],
       },
       { type: 'narration', text: '피시방 구석 자리에 나란히 앉아 헤드셋을 나눠 썼다. 오랜만에 잡아보는 마우스에 그녀는 손목을 몇 번 풀더니 이내 화면에 완전히 몰입했다. 옆자리 소음도, 밖에서 기다리던 일들도 그 순간만큼은 전혀 신경 쓰이지 않는 듯했다.' },
+      { type: 'cgReveal' },
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '(집중한 채로) 잠깐, 거기 조심해. 갱킹 온다.' },
       { type: 'line', speaker: 'player', text: '이럴 때 보면 완전 다른 사람 같아.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '(모니터에서 눈도 안 떼고) 이게 진짜 내 모습이지.' },
@@ -1841,6 +1865,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'player', text: '어제 잠은 좀 잤어?' },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '(눈 밑이 거뭇한 채로) 거의 못 잤어. 평소엔 눈만 감아도 잘 자는데, 오늘따라 왜 이러나 몰라.' },
       { type: 'narration', text: '평소답지 않게 목도리를 몇 번이나 고쳐 매는 손끝이 미세하게 떨리고 있었다.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '시험장 앞에서 무슨 말을 건넬지',
@@ -1905,6 +1930,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '수능이 끝나고 나니 학교는 이상하리만치 여유로워졌다. 정해진 일과도, 쫓기던 마음도 사라진 자리에 낯선 한가함이 들어찼다. 교실 안 분위기도 한결 느슨해져 있었다.', sheAbsent: true },
       { type: 'narration', text: '하굣길, 흐린 하늘에서 뭔가 하얀 것이 하나둘 떨어지기 시작했다. 그녀가 먼저 걸음을 멈추고 하늘을 올려다보았다.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '어, 눈이다. 이번 겨울 첫눈이네.' },
+      { type: 'cgReveal' },
       {
         type: 'choice',
         situation: '3학년의 첫눈이 내리는 날',
@@ -1999,6 +2025,7 @@ window.ONYU_CHAPTERS = [
               { type: 'narration', text: '두 사람은 각자의 방향으로 손을 흔들며 돌아섰다. 거창한 인사도, 무거운 말도 없었지만 그걸로 충분했다.' },
               { type: 'narration', text: '그 후로도 계절이 몇 번 바뀌는 동안, 종종 안부를 주고받았다. 대단할 것 없는 사이였지만, 오래도록 편하게 남을 수 있는 사이라는 걸 둘 다 알고 있었다.' },
               { type: 'line', speaker: 'ending', text: '곁에 남은 사람' },
+              { type: 'cgReveal' },
             ],
           },
           {
@@ -2018,6 +2045,7 @@ window.ONYU_CHAPTERS = [
               { type: 'line', speaker: 'player', text: '당연하지, 걱정 마.' },
               { type: 'narration', text: '서로를 향한 눈빛에 담긴 말은 끝내 소리가 되지 않았다. 미래를 확정 짓지 않은 채로, 그 여백만이 두 사람 사이에 오래 남았다.' },
               { type: 'line', speaker: 'ending', text: '여백' },
+              { type: 'cgReveal' },
             ],
           },
           {
@@ -2037,6 +2065,7 @@ window.ONYU_CHAPTERS = [
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(장난스럽게) 기억해둬. 오늘 날짜, 나중에 까먹으면 안 돼.' },
               { type: 'narration', text: '두 사람은 눈이 소복이 쌓여가는 교문 앞에서, 오래도록 손을 맞잡고 서 있었다. 벚꽃으로 시작된 이야기가, 이렇게 눈 속에서 가장 다정한 결말을 맞이하고 있었다.' },
               { type: 'line', speaker: 'ending', text: '온 이유' },
+              { type: 'cgReveal' },
               { type: 'narration', text: '엔딩 화면이 저물고, 화면 위로 지난 3년의 순간들이 조용히 흘러갔다 — 벚꽃 아래 첫 만남, 축제의 소란, 눈싸움 같던 다툼과 화해, 함께 웃던 피시방의 밤. 그 모든 순간이 갤러리에 남아있던 CG들로 하나씩 되살아나는, 짧은 크레딧이었다.' },
             ],
           },

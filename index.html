@@ -240,7 +240,19 @@
 
   <!-- ============ 화면 전환 오버레이(챕터 전환·메뉴 이동 공용) ============ -->
   <div id="screen-transition-overlay">
+    <img id="screen-transition-cg" alt="" draggable="false">
     <p id="screen-transition-label"></p>
+  </div>
+
+  <!-- ============ CG 뷰어(본편 팝업 + 갤러리 브라우징 공용) ============ -->
+  <div id="cg-viewer-overlay" hidden>
+    <img id="cg-viewer-img" alt="" draggable="false">
+    <span id="cg-viewer-hint">클릭하여 계속</span>
+  </div>
+
+  <!-- ============ 엔딩 크레딧 몽타주(연인 엔딩 전용) ============ -->
+  <div id="ending-credits-overlay" hidden>
+    <img id="ending-credits-img" alt="" draggable="false">
   </div>
 
   <!-- ============ 오목지면시그 시그니처 오프닝(게임 시리즈 공용 브랜드 모먼트) ============ -->

@@ -57,12 +57,21 @@ function onyuRunTransition(options, callback) {
   }
   var holdMs = options.holdMs || 0;
   var chapterLabel = options.chapterLabel || '';
+  var cgFile = options.cg || ''; // CG 노출 시스템 Mechanism 3(학년 전환 컷 09·19) 전용
   var overlay = document.getElementById('screen-transition-overlay');
   var label = document.getElementById('screen-transition-label');
+  var cgImg = onyuEl.transitionCg;
 
   onyuTransitionDepth++;
   label.textContent = chapterLabel;
   label.classList.toggle('is-visible', !!chapterLabel);
+  if (cgFile) {
+    cgImg.onerror = function () { cgImg.classList.remove('is-visible'); }; // 파일 없으면 조용히 안 보임
+    cgImg.src = 'assets/cg/' + cgFile;
+    cgImg.classList.add('is-visible');
+  } else {
+    cgImg.classList.remove('is-visible');
+  }
   overlay.classList.add('is-active');
 
   setTimeout(function () {
@@ -70,6 +79,7 @@ function onyuRunTransition(options, callback) {
       callback();
       overlay.classList.remove('is-active');
       label.classList.remove('is-visible');
+      cgImg.classList.remove('is-visible');
       onyuTransitionDepth--;
     }, holdMs);
   }, ONYU_TRANSITION_FADE_MS);
