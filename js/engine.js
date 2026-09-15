@@ -294,6 +294,7 @@ function onyuRenderCurrentNode() {
     })[0];
     if (branch) {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
+      window.ONYU_STATE.lastEndingId = branch.id; // 엔딩 화면 타이틀 조회용(onyuFinishChapter)
       onyuFrameStack.push({ list: branch.script, i: 0 });
       // 우정/썸/연인 갈림길 — 여러 갈래 중 하나가 갈리는 순간이라 일반 선택지
       // 분기 종료(onyuRenderNextNode)보다도 더 뚜렷한 "이야기 사이" 지점인데,
@@ -447,11 +448,18 @@ function onyuFinishChapter() {
       onyuStartChapter(next.id);
     });
   } else {
-    // CH27(마지막 챕터) 완주 — 엔딩→시그니처 오프닝→타이틀 복귀 연출은 Phase 4에서
-    // 만들 예정이라 지금은 완주했다는 것만 알리는 임시 화면.
-    onyuEl.speakerTag.hidden = true;
-    onyuEl.situation.textContent = '';
-    onyuEl.choiceList.innerHTML = '';
-    onyuEl.dialogueLine.textContent = '— 끝 — (엔딩 연출은 준비 중입니다. 타이틀로 돌아가려면 새로고침하세요.)';
+    // CH27(마지막 챕터) 완주 — 시그니처 오프닝 연동은 별도 자산(ojm-sig-opening)이
+    // 필요해 이후 과제로 남기고, 여기서는 실제로 갈린 엔딩(우정/썸/연인) 타이틀을
+    // 보여주고 타이틀로 정상 복귀하는 화면까지를 지금 범위로 만든다.
+    onyuRunTransition({ holdMs: 600 }, function () {
+      onyuShowEndingScreen(window.ONYU_STATE.lastEndingId);
+    });
   }
+}
+
+function onyuShowEndingScreen(endingId) {
+  var title = (window.ONYU_ENDING_TITLES && window.ONYU_ENDING_TITLES[endingId]) || '';
+  onyuEl.endingTitle.textContent = title;
+  onyuEl.endingOverlay.hidden = false;
+  requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });
 }

@@ -114,6 +114,24 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.nameInput = document.getElementById('play-name-input');
   onyuEl.nameError = document.getElementById('play-name-error');
   onyuEl.dialogueBox = document.getElementById('dialogue-box');
+  onyuEl.endingOverlay = document.getElementById('ending-overlay');
+  onyuEl.endingTitle = document.getElementById('ending-title');
+
+  // CH27 완주 후 엔딩 화면의 "타이틀로 돌아가기" — state는 그대로 두고(새 게임을
+  // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다.
+  document.getElementById('ending-title-btn').addEventListener('click', function () {
+    var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
+    onyuEl.endingOverlay.classList.remove('is-active');
+    if (reduceMotion) {
+      onyuEl.endingOverlay.hidden = true;
+      onyuShowScreen('title');
+    } else {
+      setTimeout(function () {
+        onyuEl.endingOverlay.hidden = true;
+        onyuShowScreen('title');
+      }, 300);
+    }
+  });
 
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
   // 선택지·이름입력 중에는 onyuHandleDialogueClick 자체가 no-op이라 별도 예외 처리가 필요 없다.

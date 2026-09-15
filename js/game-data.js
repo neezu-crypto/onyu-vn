@@ -68,6 +68,14 @@ window.SPEAKER_LABELS = {
   ending: '엔딩',
 };
 
+// CH27 scoreGate.branches의 id -> 엔딩 화면에 띄울 타이틀. onyuFinishChapter가
+// window.ONYU_STATE.lastEndingId(분기 진입 시점에 기록)로 조회해서 쓴다.
+window.ONYU_ENDING_TITLES = {
+  friend: '곁에 남은 사람',
+  crush: '여백',
+  lover: '온 이유',
+};
+
 window.ONYU_CHAPTERS = [
   {
     id: 'ch01', order: 1, grade: 1, season: 'spring', title: '새 학기', bg: 'b1',

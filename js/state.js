@@ -11,6 +11,7 @@ window.ONYU_STATE = {
   chapterCheckpoints: {}, // { [chapterId]: affection at chapter start } — 타임머신용
   completedChapters: {}, // { [chapterId]: true } — "이미 읽은 텍스트 스킵" 판단용(챕터 단위)
   chosenOutfits: {}, // { [chapterId]: spritePrefix } — 사복 후원 픽커(outfit-picker.js)에서 고른 결과
+  lastEndingId: null, // CH27 scoreGate가 이번 플레이스루에서 고른 분기 id(friend/crush/lover) — 엔딩 화면 타이틀용, 세이브 불필요(같은 세션에서 바로 소비됨)
   unlockedGallery: { cg: {}, endings: {} }, // 세이브와 무관한 영구 기록
   settings: {
     textSpeed: 'normal', // 'slow' | 'normal' | 'fast'
