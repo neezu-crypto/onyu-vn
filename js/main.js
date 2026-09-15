@@ -124,7 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('ending-title-btn').addEventListener('click', function () {
     var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
     onyuEl.endingOverlay.classList.remove('is-active');
-    var toTitle = function () { onyuPlaySigOpening(function () { onyuShowScreen('title'); }); };
+    // 오프닝 종료 콜백에서 onyuShowScreen이 아니라 onyuSwapScreen(즉시 전환,
+    // 자체 페이드 없음)을 쓴다 — 안 그러면 오프닝 자체의 새 페이드아웃과 화면전환
+    // 오버레이의 또 다른 페이드가 겹쳐서, 오프닝이 채 안 사라진 play 화면이
+    // 한 프레임 비쳤다가 다시 덮이는 이중 깜빡임이 생긴다.
+    var toTitle = function () { onyuPlaySigOpening(function () { onyuSwapScreen('title'); }); };
     if (reduceMotion) {
       onyuEl.endingOverlay.hidden = true;
       toTitle();

@@ -24,10 +24,17 @@ function onyuPlaySigOpening(onDone) {
     if (finished) return;
     finished = true;
     clearTimeout(timer);
-    stage.classList.remove('is-playing');
     stage.removeEventListener('click', finish);
     stage.removeEventListener('keydown', onKeydown);
-    onDone();
+    // display:none으로 바로 끊지 않고 opacity 페이드아웃(.is-leaving)을 먼저
+    // 걸어 게임 화면(또는 타이틀)으로 부드럽게 넘어가게 한다. is-playing은
+    // 이 동안 그대로 둬서(display:flex 유지) 트랜지션이 실제로 재생될 시간을 번다.
+    stage.classList.add('is-leaving');
+    var fadeMs = reduceMotion ? 0 : 400;
+    setTimeout(function () {
+      stage.classList.remove('is-playing', 'is-leaving');
+      onDone();
+    }, fadeMs);
   }
   function onKeydown(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finish(); }

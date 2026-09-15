@@ -466,13 +466,17 @@ button { font-family: inherit; }
    6개 게임 공용 브랜드 모먼트(기획서 아티팩트 0ccfdea6 기준 그대로 이식).
    뷰어 테마·계절 팔레트와 무관하게 항상 이 고정된 어두운 색으로 뜬다. */
 #sig-opening-stage {
-  position: fixed; inset: 0; z-index: 2000; display: none;
+  position: fixed; inset: 0; z-index: 2000; display: none; opacity: 1;
   align-items: center; justify-content: center; overflow: hidden;
   background: radial-gradient(120% 140% at 50% 20%, #171c26, #10131a 70%);
   font-family: "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic", -apple-system, sans-serif;
   cursor: pointer;
 }
 #sig-opening-stage.is-playing { display: flex; }
+/* 종료 시 display:none으로 뚝 끊기지 않게 — is-leaving이 붙은 동안은 is-playing이
+   아직 살아있어(display:flex 유지) 불투명도만 0으로 서서히 빠지고, 다 빠진
+   뒤에야 실제로 둘 다 떼서 게임 화면(또는 타이틀)이 부드럽게 드러난다. */
+#sig-opening-stage.is-leaving { transition: opacity .4s ease; opacity: 0; }
 .sig-noise { position: absolute; inset: 0; opacity: 0.05; background-image: repeating-linear-gradient(115deg, #fff 0 1px, transparent 1px 3px); pointer-events: none; }
 .sig-series, .sig-title-frame { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
 #sig-opening-stage.is-playing .sig-series { animation: sigFadeUp .7s cubic-bezier(.2, .8, .3, 1) forwards, sigFadeOut .5s ease forwards 2.3s; }
