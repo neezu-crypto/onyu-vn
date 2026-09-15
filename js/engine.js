@@ -182,6 +182,11 @@ function onyuStepToNextNode() {
 function onyuRenderNextNode() {
   if (onyuLastAdvancePoppedFrame) {
     onyuRunTransition({ holdMs: 400 }, onyuRenderCurrentNode);
+  } else if (onyuCurrentNode() && onyuCurrentNode().transition) {
+    // 장면 전환이 지정된 다음 노드는 새 배경과 대사가 화면에 나타나기 전에
+    // 공용 전환 오버레이로 1초 페이드한다. 렌더링은 오버레이가 완전히 덮은
+    // 뒤에 실행되므로 이전 장면과 새 장면이 한 프레임 섞이지 않는다.
+    onyuRunTransition({}, onyuRenderCurrentNode);
   } else {
     onyuRenderCurrentNode();
   }
