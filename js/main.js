@@ -24,6 +24,15 @@ for (var onyuBgI = 1; onyuBgI <= 13; onyuBgI++) {
   bgImg.src = 'assets/backgrounds/b' + onyuBgI + '.png';
   onyuPreloadedBackgrounds.push(bgImg);
 }
+// 재사용 13곳 중 어디에도 안 맞아 추가된 전용 배경(CH06 b14, CH15 b15)과,
+// 계절 자동감지 대상이 아니라 ONYU_BG_SEASON_VARIANTS를 안 타는 챕터별 직접
+// 오버라이드(CH04 b3-rain)는 위 루프에 안 걸려서 프리로드가 빠져 있었다 —
+// 셋 다 이미 확정돼 실제 쓰이는 파일이라 g/a 스탠딩과 같은 이유로 바로 추가.
+['b14', 'b15', 'b3-rain'].forEach(function (name) {
+  var bgImg = new Image();
+  bgImg.src = 'assets/backgrounds/' + name + '.png';
+  onyuPreloadedBackgrounds.push(bgImg);
+});
 
 // 일부 배경엔 계절 요소가 원화 자체에 그려져 있어(예: 교문 배경의 벚꽃) 다른
 // 계절 챕터에 재사용하면 텍스트와 안 맞는 경우가 실사로 확인됐다(2026-09-14) —
