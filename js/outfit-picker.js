@@ -10,10 +10,10 @@
 // 있어야 픽커가 뜬다. 하나라도 없으면 조용히 기존 season 폴백으로 진행 — 이미지
 // 파일만 두 프리픽스 다 넣으면 코드 수정 없이 바로 픽커가 활성화된다.
 var ONYU_OUTFIT_CHOICES = {
-  ch12: { free: 'C1-', paid: 'P1-', price: 50 },
-  ch13: { free: 'C13-', paid: 'P13-', price: 50 },
-  ch16: { free: 'C16-', paid: 'P16-', price: 50 },
-  ch24: { free: 'C24-', paid: 'P24-', price: 50 },
+  ch12: { free: 'C1-', paid: 'P1-', price: 100 },
+  ch13: { free: 'C13-', paid: 'P13-', price: 100 },
+  ch16: { free: 'C16-', paid: 'P16-', price: 100 },
+  ch24: { free: 'C24-', paid: 'P24-', price: 100 },
 };
 
 document.addEventListener('DOMContentLoaded', function () {
