@@ -31,9 +31,16 @@
  *   호감도(window.ONYU_STATE.affection)만으로 그 구간에 맞는 script를 프레임으로
  *   push한다(min/max 생략 시 -Infinity/Infinity). 우정≤8 / 썸 9~64 / 연인≥65.
  *   id는 갤러리 엔딩 언락 키로 쓰인다(onyuUnlockGalleryItem('endings', id)).
- * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(예: 'cg-02.png', assets/cg/ 기준).
- *   engine.js가 챕터 시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다 — 실제
- *   CG 32장이 생성되고 각 챕터에 배정되면(Phase 2) 채워 넣을 것, 지금은 비워둠.
+ * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(assets/cg/ 기준). engine.js가 챕터
+ *   시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다. 파일명은 CG 프롬프트
+ *   시트(onyu-vn-cg-prompts.html)의 번호(00~31)를 그대로 따서 'cg-01.png'~'cg-28.png'
+ *   로 확정(2026-09-15) — 00(표지)은 예외로 별도 로직(main.js)이 'cover.png'를
+ *   찾으므로 chapter.cg 체계 밖. CH01~08은 01~08, CH09~17은 10~18, CH18~26은
+ *   20~28로 +1씩 밀려 있는데, 09번과 19번(학년 전환 컷)이 그 사이에 끼어 있어서다
+ *   — 이 둘은 특정 챕터 하나에 속하지 않고 "그 챕터로 넘어가는 전환 화면"에 쓸
+ *   용도라 chapter.cg가 아니라 아래 ONYU_GRADE_TRANSITION_CG로 따로 관리한다.
+ *   CH27의 엔딩 3종(29~31)도 마찬가지로 chapter.cg가 아니라 ONYU_ENDING_CG(분기
+ *   id 기준)로 관리 — CH27 자체엔 chapter.cg를 안 둔다.
  * chapter.bg: (선택) 재사용 배경(assets/backgrounds/ 기준) 중 이 챕터의 기본
  *   배경. 실제 대본 첫 나레이션(장소를 밝히는 문장)을 챕터마다 대조해 배정했다
  *   (2026-09-14) — 배경 프롬프트 시트의 예전 챕터 태그는 대본 완성 전에 쓰인
@@ -76,9 +83,26 @@ window.ONYU_ENDING_TITLES = {
   lover: '온 이유',
 };
 
+// 엔딩 3종 CG(CG 프롬프트 시트 29~31) — chapter.cg와 달리 CH27 하나가 아니라
+// 분기 id로 갈리므로 별도 테이블로 관리. 엔딩 크레딧/엔딩 화면에서 쓸 예정.
+window.ONYU_ENDING_CG = {
+  friend: 'cg-29.png',
+  crush: 'cg-30.png',
+  lover: 'cg-31.png',
+};
+
+// 학년 전환 컷 CG(CG 프롬프트 시트 09·19) — 특정 챕터 소속이 아니라 "그 챕터로
+// 넘어가는 전환 화면"용이라 chapter.cg가 아닌 별도 테이블. 키는 전환 후 들어가는
+// 챕터 id(현재 이 값을 실제로 표시하는 코드는 아직 없음 — 챕터 전환 오버레이에
+// 타이틀 카드 대신/같이 CG를 넣을지는 표시 방식을 별도로 정할 것).
+window.ONYU_GRADE_TRANSITION_CG = {
+  ch09: 'cg-09.png', // 고1 → 고2
+  ch18: 'cg-19.png', // 고2 → 고3
+};
+
 window.ONYU_CHAPTERS = [
   {
-    id: 'ch01', order: 1, grade: 1, season: 'spring', title: '새 학기', bg: 'b1',
+    id: 'ch01', order: 1, grade: 1, season: 'spring', title: '새 학기', bg: 'b1', cg: 'cg-01.png',
     script: [
       { type: 'narration', text: '새 학기 첫날의 교실은 어수선했다. 다들 새로 만난 얼굴들과 떠드는 사이, 창가 자리만 유독 조용했다. 온이유가 스케치북을 펼쳐놓고 하품을 참으며 연필을 움직이고 있었다.' },
       { type: 'narration', text: '우연히 그 옆을 지나다 걸음이 멈췄다.' },
@@ -155,7 +179,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch02', order: 2, grade: 1, season: 'spring', title: '벚꽃 스케치', bg: 'b3',
+    id: 'ch02', order: 2, grade: 1, season: 'spring', title: '벚꽃 스케치', bg: 'b3', cg: 'cg-02.png',
     script: [
       { type: 'narration', text: '등굣길, 어느새 벚꽃이 활짝 피어 있었다. 바람이 불 때마다 꽃잎이 골목 가득 흩날렸다. 나란히 걷던 중이었다.' },
       { type: 'line', speaker: 'player', text: '오늘 좀 늦었네.' },
@@ -236,7 +260,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch03', order: 3, grade: 1, season: 'summer', title: '미술실 방과후', bg: 'b4',
+    id: 'ch03', order: 3, grade: 1, season: 'summer', title: '미술실 방과후', bg: 'b4', cg: 'cg-03.png',
     script: [
       { type: 'narration', text: '여름 방과후, 다들 빠져나간 교실은 후텁지근한 공기만 남아 있었다. 두고 온 준비물이 생각나 미술실로 돌아갔더니, 온이유가 혼자 이젤 앞에 앉아 있었다.' },
       { type: 'narration', text: '조용히 문을 밀고 들어섰다. 열린 창으로 들어오는 바람에 커튼이 흔들리고, 멀리서 매미 우는 소리가 들려왔다. 그녀는 고개도 들지 않고 붓을 움직였다.' },
@@ -313,7 +337,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch04', order: 4, grade: 1, season: 'summer', title: '장마와 우산', bg: 'b3-rain',
+    id: 'ch04', order: 4, grade: 1, season: 'summer', title: '장마와 우산', bg: 'b3-rain', cg: 'cg-04.png',
     script: [
       { type: 'narration', text: '장마가 시작된 지 며칠째, 하늘은 아침부터 무겁게 가라앉아 있었다. 예보를 확인하지 않고 나선 게 화근이었다 — 하교 시간이 되자 예고도 없이 비가 쏟아지기 시작했다. 처마 밑에 서 있는데, 온이유도 우산을 안 챙긴 모양이었다.' },
       { type: 'line', speaker: 'player', text: '우산 없어?' },
@@ -390,7 +414,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch05', order: 5, grade: 1, season: 'autumn', title: '체육대회', bg: 'b6', spriteSet: 'g',
+    id: 'ch05', order: 5, grade: 1, season: 'autumn', title: '체육대회', bg: 'b6', spriteSet: 'g', cg: 'cg-05.png',
     script: [
       { type: 'narration', text: '가을 체육대회, 운동장은 응원 함성과 호루라기 소리로 뒤덮여 있었다. 반 대항 이어달리기를 기다리며 다들 목이 터져라 소리를 질렀다.', sheAbsent: true },
       { type: 'narration', text: '저 멀리 그늘진 스탠드 구석, 온이유가 혼자 앉아 스케치북을 펼치고 있었다. 함성이 가장 덜 닿는 자리를 골라 앉은 게 분명해 보였다.' },
@@ -474,7 +498,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch06', order: 6, grade: 1, season: 'autumn', title: '가을 소풍', bg: 'b14',
+    id: 'ch06', order: 6, grade: 1, season: 'autumn', title: '가을 소풍', bg: 'b14', cg: 'cg-06.png',
     script: [
       { type: 'narration', text: '단풍이 곱게 물든 교외로 학년 소풍을 떠났다. 도착하자마자 자유시간이 주어졌고, 다들 삼삼오오 흩어지기 시작했다. 버스에서 내리자마자 선선한 가을바람이 불어왔다.', sheAbsent: true },
       { type: 'narration', text: '온이유가 옆에서 두리번거리고 있었다. 어디로 갈지 아직 정하지 못한 눈치였다.' },
@@ -551,7 +575,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch07', order: 7, grade: 1, season: 'winter', title: '기말고사', bg: 'b5',
+    id: 'ch07', order: 7, grade: 1, season: 'winter', title: '기말고사', bg: 'b5', cg: 'cg-07.png',
     script: [
       { type: 'narration', text: '기말고사 기간, 도서관은 평소보다 훨씬 붐볐다. 자리마다 빼곡히 앉은 학생들 사이로 사각거리는 연필 소리만 낮게 깔렸다. 빈자리를 찾다 우연히 같은 테이블에 앉게 됐다.', sheAbsent: true },
       { type: 'narration', text: '온이유가 문제집을 펴놓고 미간을 잔뜩 찌푸리고 있었다. 창밖엔 눈이라도 내릴 듯 하늘이 잔뜩 흐렸다.' },
@@ -626,7 +650,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch08', order: 8, grade: 1, season: 'winter', title: '첫눈', bg: 'b2',
+    id: 'ch08', order: 8, grade: 1, season: 'winter', title: '첫눈', bg: 'b2', cg: 'cg-08.png',
     script: [
       { type: 'narration', text: '1학년 마지막 하굣길, 운동장을 가로질러 걷고 있었다. 겨울방학이 코앞이라 다들 들뜬 얼굴이었다. 하늘은 아까부터 계속 무겁게 가라앉아 있었다.', sheAbsent: true },
       { type: 'narration', text: '문득 하늘에서 하얀 것이 흩날리기 시작했다. 처음엔 먼지인가 싶었는데, 이내 눈이라는 걸 알아챘다.', sheAbsent: true },
@@ -699,7 +723,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch09', order: 9, grade: 2, season: 'spring', title: '새로운 반', bg: 'b1',
+    id: 'ch09', order: 9, grade: 2, season: 'spring', title: '새로운 반', bg: 'b1', cg: 'cg-10.png',
     script: [
       { type: 'narration', text: '2학년, 새 학기가 시작됐다. 아쉽게도 반은 갈렸지만, 복도에서 마주치는 게 이젠 별로 낯설지 않았다. 새로 붙은 반 배정표 앞에서 한참을 서로 찾아 헤맸던 게 무색하게, 결국 다른 반이었다.', sheAbsent: true },
       { type: 'narration', text: '쉬는 시간, 옆 반 문 앞에서 서성이다 안을 들여다봤다. 낯선 얼굴들 사이에서 그녀만 유독 눈에 띄었다.' },
@@ -774,7 +798,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch10', order: 10, grade: 2, season: 'spring', title: '동아리 활동', bg: 'b4',
+    id: 'ch10', order: 10, grade: 2, season: 'spring', title: '동아리 활동', bg: 'b4', cg: 'cg-11.png',
     script: [
       { type: 'narration', text: '같은 미술 관련 동아리에 들어가면서, 그녀와 마주치는 일이 부쩍 늘었다. 딱히 미술에 재능이 있어서라기보다, 어쩌다 보니 자연스럽게 신청하게 된 쪽이었다.' },
       { type: 'narration', text: '첫 모임, 동아리실에 둘러앉아 이번 학기 전시 주제를 정하는 중이었다. 낡은 이젤들과 물감 냄새가 방 안 가득 배어 있었다.' },
@@ -846,7 +870,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch11', order: 11, grade: 2, season: 'summer', title: '방학 계획', bg: 'b1',
+    id: 'ch11', order: 11, grade: 2, season: 'summer', title: '방학 계획', bg: 'b1', cg: 'cg-12.png',
     script: [
       { type: 'narration', text: '기말고사가 끝나고 여름방학을 앞둔 마지막 주, 교실은 후덥지근한 열기로 가득했다. 선풍기 몇 대가 힘없이 돌아가고 있었지만 더위를 이기기엔 역부족이었다. 에어컨 바람이 잘 안 닿는 자리에 앉은 그녀가 연신 부채질을 하고 있었다.' },
       { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(부채질하며) 진짜 덥다. 나 여름 진짜 싫어해.' },
@@ -918,7 +942,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch12', order: 12, grade: 2, season: 'summer', title: '우연한 만남', bg: 'b10',
+    id: 'ch12', order: 12, grade: 2, season: 'summer', title: '우연한 만남', bg: 'b10', cg: 'cg-13.png',
     script: [
       { type: 'narration', text: '방학 중, 동네 서점에 볼일이 있어 들렀다. 에어컨 바람이 시원하게 도는 매장 안으로 들어서는 순간, 낯익은 뒷모습이 눈에 들어왔다.', sheAbsent: true },
       { type: 'narration', text: '잡지 코너 앞에 선 온이유였다. 방학인데도 이렇게 밖에 나와 있다는 게 의외였다.' },
@@ -989,7 +1013,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch13', order: 13, grade: 2, season: 'summer', title: '첫 데이트', bg: 'b9',
+    id: 'ch13', order: 13, grade: 2, season: 'summer', title: '첫 데이트', bg: 'b9', cg: 'cg-14.png',
     script: [
       { type: 'narration', text: '방학이 끝나갈 무렵, 처음으로 약속을 잡고 만나기로 했다. 우연이 아니라 진짜 약속이라는 게, 묘하게 어색하면서도 설렜다.', sheAbsent: true },
       { type: 'narration', text: '약속 장소에서 기다리는데, 저 멀리서 걸어오는 모습이 보였다. 평소보다 조금 신경 쓴 듯한 차림에, 걸음도 어딘가 조심스러웠다.', sheAbsent: true },
@@ -1066,7 +1090,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch14', order: 14, grade: 2, season: 'autumn', title: '축제 준비', bg: 'b4',
+    id: 'ch14', order: 14, grade: 2, season: 'autumn', title: '축제 준비', bg: 'b4', cg: 'cg-15.png',
     script: [
       { type: 'narration', text: '가을 축제가 다가오면서, 동아리 전시 부스 준비로 다들 바빠졌다. 복도마다 붙은 홍보 포스터가 축제 분위기를 한층 부풀리고 있었다.', sheAbsent: true },
       { type: 'narration', text: '부스 콘셉트를 정하는 회의, 동아리실 탁자에 둘러앉아 의견이 여러 갈래로 갈렸다.', sheAbsent: true },
@@ -1134,7 +1158,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch15', order: 15, grade: 2, season: 'autumn', title: '축제 당일', bg: 'b15',
+    id: 'ch15', order: 15, grade: 2, season: 'autumn', title: '축제 당일', bg: 'b15', cg: 'cg-16.png',
     script: [
       { type: 'narration', text: '축제 당일, 어제 완성한 부스가 드디어 문을 열었다. 복도는 이미 다른 반 학생들로 북적였고, 곳곳에서 웃음소리와 음악 소리가 뒤섞여 들려왔다.', sheAbsent: true },
       { type: 'narration', text: '부스 안, 그녀는 긴장한 기색이 역력한 얼굴로 자기 그림 앞을 서성이고 있었다.' },
@@ -1203,7 +1227,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch16', order: 16, grade: 2, season: 'winter', title: '크리스마스', bg: 'b9',
+    id: 'ch16', order: 16, grade: 2, season: 'winter', title: '크리스마스', bg: 'b9', cg: 'cg-17.png',
     script: [
       { type: 'narration', text: '연말 분위기가 완연한 거리, 크리스마스 캐럴이 곳곳에서 흘러나왔다. 상점마다 내걸린 트리 장식이 반짝였다. 이번에도 진짜 약속을 잡고 만나기로 했다 — 사실상 두 번째 데이트였다.', sheAbsent: true },
       { type: 'narration', text: '약속 장소에서 기다리는데, 목도리를 두른 채 종종걸음으로 다가오는 모습이 보였다.', sheAbsent: true },
@@ -1279,7 +1303,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch17', order: 17, grade: 2, season: 'winter', title: '한 해의 끝', bg: 'b8',
+    id: 'ch17', order: 17, grade: 2, season: 'winter', title: '한 해의 끝', bg: 'b8', cg: 'cg-18.png',
     script: [
       { type: 'narration', text: '겨울방학을 앞둔 마지막 하굣길, 올 한 해를 정리하듯 조용한 공기가 감돌았다. 가로등 불빛 아래로 입김이 하얗게 퍼졌고, 발밑에서는 얼어붙은 눈이 뽀득뽀득 소리를 냈다.', sheAbsent: true },
       { type: 'narration', text: '나란히 걷던 그녀가 문득 걸음을 늦추며 입을 열었다.' },
@@ -1346,7 +1370,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch18', order: 18, grade: 3, season: 'spring', title: '진로 고민', bg: 'b1',
+    id: 'ch18', order: 18, grade: 3, season: 'spring', title: '진로 고민', bg: 'b1', cg: 'cg-20.png',
     script: [
       { type: 'narration', text: '새 학년이 시작된 지 얼마 안 된 3월, 교실 창밖으로 아직 앙상한 벚나무 가지가 흔들렸다. 새 반, 새 담임, 낯선 급훈 앞에서도 두 사람은 다행히 또 같은 반이었고, 자리도 우연히 가까웠다.' },
       { type: 'line', speaker: 'player', text: '담임이 진로 상담 신청서 내라던데, 넌 뭐 적었어?' },
@@ -1416,7 +1440,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch19', order: 19, grade: 3, season: 'spring', title: '입시 준비 시작', bg: 'b8',
+    id: 'ch19', order: 19, grade: 3, season: 'spring', title: '입시 준비 시작', bg: 'b8', cg: 'cg-21.png',
     script: [
       { type: 'narration', text: '신청서를 낸 지 얼마 지나지 않아, 그녀는 방과 후 곧장 실기 학원으로 향하기 시작했다. 빈 자리가 하루하루 늘어가는 하굣길이 낯설게 느껴졌다.' },
       { type: 'line', speaker: 'player', text: '이번 주 토요일에 다 같이 보기로 한 거, 기억하지?' },
@@ -1483,7 +1507,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch20', order: 20, grade: 3, season: 'summer', title: '여름 실기 특강', bg: 'b9', spriteSet: 'a',
+    id: 'ch20', order: 20, grade: 3, season: 'summer', title: '여름 실기 특강', bg: 'b9', spriteSet: 'a', cg: 'cg-22.png',
     script: [
       { type: 'narration', text: '방학이 시작되자 학원 수업은 오전부터 밤까지 이어지는 종일반으로 바뀌었다. 매미 소리가 시끄럽게 울리는 한낮에도 그녀는 에어컨도 잘 안 나오는 실기실에 틀어박혀 있었다. 창밖으로 아지랑이가 일렁이는 게 보일 정도로 뜨거운 날이었다.' },
       { type: 'line', speaker: 'player', text: '이 더위에 하루 종일 그림 그리는 거야? 안 지쳐?' },
@@ -1551,7 +1575,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch21', order: 21, grade: 3, season: 'summer', title: '지친 그녀', bg: 'b3', spriteSet: 'a',
+    id: 'ch21', order: 21, grade: 3, season: 'summer', title: '지친 그녀', bg: 'b3', spriteSet: 'a', cg: 'cg-23.png',
     script: [
       { type: 'narration', text: '특강이 후반부로 접어들자 그녀의 얼굴에서 웃음이 눈에 띄게 줄었다. 메시지 답장도 하루씩 늦어지기 시작했고, 통화 중에도 목소리에 힘이 빠져 있었다. 늦여름 매미 소리만 변함없이 시끄럽게 울렸다.' },
       { type: 'line', speaker: 'player', text: '오늘도 늦게 끝났어?' },
@@ -1619,7 +1643,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch22', order: 22, grade: 3, season: 'autumn', title: '작은 오해', bg: 'b1',
+    id: 'ch22', order: 22, grade: 3, season: 'autumn', title: '작은 오해', bg: 'b1', cg: 'cg-24.png',
     script: [
       { type: 'narration', text: '선선한 가을바람이 불기 시작한 어느 하굣길, 낙엽이 발밑에서 바스락거렸다. 입시가 코앞으로 다가오면서 교실 분위기도 어딘가 팽팽했다.', sheAbsent: true },
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '있잖아, 나 요즘 계속 생각하던 게 있는데.' },
@@ -1684,7 +1708,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch23', order: 23, grade: 3, season: 'autumn', title: '화해', bg: 'b7',
+    id: 'ch23', order: 23, grade: 3, season: 'autumn', title: '화해', bg: 'b7', cg: 'cg-25.png',
     script: [
       { type: 'narration', text: '편지를 건넨 다음 날, 교실 문을 열자마자 그녀의 자리부터 눈이 갔다. 평소와 다르게, 그녀도 이쪽을 슬쩍 돌아보고 있었다. 눈이 마주치자 그녀는 황급히 고개를 돌렸다.' },
       { type: 'narration', text: '쉬는 시간이 되어도 선뜻 다가가지 못하고 망설였다. 어떤 말부터 꺼내야 할지, 며칠 내내 머릿속으로 되뇌었지만 막상 눈앞에 서니 아무 말도 떠오르지 않았다.' },
@@ -1748,7 +1772,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch24', order: 24, grade: 3, season: 'autumn', title: '둘만의 하루', bg: 'b11',
+    id: 'ch24', order: 24, grade: 3, season: 'autumn', title: '둘만의 하루', bg: 'b11', cg: 'cg-26.png',
     script: [
       { type: 'narration', text: '화해 이후 처음 맞는 주말, 오랜만에 부담 없는 하루였다. 입시 준비도, 서먹함도 잠시 내려놓은 채, 그녀는 평소보다 한결 가벼운 얼굴로 약속 장소에 나왔다. 하늘까지 맑아서 오랜만에 여유로운 공기가 느껴졌다.' },
       { type: 'line', speaker: 'onyu', expr: 'smile', text: '오랜만에 진짜 자유시간이다. 오늘 뭐 하고 싶어?' },
@@ -1811,7 +1835,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch25', order: 25, grade: 3, season: 'winter', title: '수능', bg: 'b12',
+    id: 'ch25', order: 25, grade: 3, season: 'winter', title: '수능', bg: 'b12', cg: 'cg-27.png',
     script: [
       { type: 'narration', text: '이른 새벽, 아직 어둑한 하늘 아래 칼바람이 옷깃 사이를 파고들었다. 시험장 정문 앞은 이미 각종 플래카드와 후배들의 응원 소리로 북적였다.', sheAbsent: true },
       { type: 'line', speaker: 'player', text: '어제 잠은 좀 잤어?' },
@@ -1876,7 +1900,7 @@ window.ONYU_CHAPTERS = [
   },
 
   {
-    id: 'ch26', order: 26, grade: 3, season: 'winter', title: '마지막 겨울', bg: 'b3',
+    id: 'ch26', order: 26, grade: 3, season: 'winter', title: '마지막 겨울', bg: 'b3', cg: 'cg-28.png',
     script: [
       { type: 'narration', text: '수능이 끝나고 나니 학교는 이상하리만치 여유로워졌다. 정해진 일과도, 쫓기던 마음도 사라진 자리에 낯선 한가함이 들어찼다. 교실 안 분위기도 한결 느슨해져 있었다.', sheAbsent: true },
       { type: 'narration', text: '하굣길, 흐린 하늘에서 뭔가 하얀 것이 하나둘 떨어지기 시작했다. 그녀가 먼저 걸음을 멈추고 하늘을 올려다보았다.' },

@@ -82,9 +82,10 @@ function onyuTextSpeedMs() {
 // CG(32장)는 스탠딩·배경과 달리 챕터당 한 장만 쓰이고 장당 용량도 더 클 가능성이
 // 높아서, 32장을 전부 미리 받아두면 초기 로딩이 너무 무거워진다. 대신 지금 챕터를
 // 읽는 동안 "다음 챕터"에 쓸 CG 한 장만 미리 fetch해둔다 — 플레이어가 실제로 그
-// 챕터에 도달할 때쯤엔 이미 캐시에 있어 지연이 없다. chapter.cg 필드가 아직 없는
-// 챕터(지금 CH01·CH02 포함, Phase 2에서 실제 CG 파일명이 정해지면 채워질 예정)는
-// 조용히 아무것도 안 한다.
+// 챕터에 도달할 때쯤엔 이미 캐시에 있어 지연이 없다. CH01~26은 chapter.cg 파일명이
+// 이미 확정돼 있지만(2026-09-15), 실제 이미지 파일은 아직 생성 전이라 지금은 전부
+// 조용한 404로 끝난다(에러 없음, 프리페치 실패는 그냥 캐시 워밍 실패일 뿐이라
+// 무시해도 안전) — 파일이 생기는 대로 자동으로 정상 동작한다.
 var onyuPrefetchedCg = [];
 function onyuPrefetchNextChapterCg(currentIdx) {
   var next = window.ONYU_CHAPTERS[currentIdx + 1];
