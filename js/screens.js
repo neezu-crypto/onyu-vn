@@ -63,6 +63,7 @@ function onyuRunTransition(options, callback) {
   var cgImg = onyuEl.transitionCg;
 
   onyuTransitionDepth++;
+  onyuLockInput();
   label.textContent = chapterLabel;
   label.classList.toggle('is-visible', !!chapterLabel);
   if (cgFile) {
@@ -81,6 +82,7 @@ function onyuRunTransition(options, callback) {
       label.classList.remove('is-visible');
       cgImg.classList.remove('is-visible');
       onyuTransitionDepth--;
+      onyuUnlockInput();
     }, holdMs);
   }, ONYU_TRANSITION_FADE_MS);
 }

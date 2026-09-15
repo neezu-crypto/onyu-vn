@@ -11,6 +11,14 @@ var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과
 var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할 키 — expr과 동일하게 "다음 지정 전까지 유지"
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 
+// CG/화면 전환 연출 중에는 #screen-play의 전체 화면 클릭 리스너가 대사를
+// 진행시키지 않도록 입력을 잠근다. 오버레이가 페이드아웃을 시작하는 순간
+// pointer-events가 다시 풀리는 CSS 구조라, DOM 오버레이만으로는 그 마지막
+// 1초 동안 탭이 아래 화면에 도달할 수 있다.
+var onyuInputLockDepth = 0;
+function onyuLockInput() { onyuInputLockDepth++; }
+function onyuUnlockInput() { onyuInputLockDepth = Math.max(0, onyuInputLockDepth - 1); }
+
 // 대사를 빠르게 연타해서 넘기다가 그 타이밍에 마침 선택지가 뜨면, 미처 보기도
 // 전에 그 연타가 그대로 선택지를 눌러버릴 위험이 있다(실사용 피드백) — 선택지가
 // 뜨고 나서 이 시간(ms) 동안은 클릭을 무시해 안전 여유를 둔다.
@@ -345,9 +353,12 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
   var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
   var settled = false;
   var hintTimer = null;
+  var inputReady = false;
+  onyuLockInput();
 
   function finish() {
-    if (settled) return;
+    // 페이드인/안내 문구가 끝나기 전의 연타는 CG를 닫지 못하게 한다.
+    if (settled || !inputReady) return;
     settled = true;
     clearTimeout(hintTimer);
     overlay.removeEventListener('click', finish);
@@ -355,13 +366,22 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
     hint.classList.remove('is-visible');
     if (reduceMotion) {
       overlay.hidden = true;
+      onyuUnlockInput();
       onDone();
     } else {
-      setTimeout(function () { overlay.hidden = true; onDone(); }, 1000);
+      setTimeout(function () {
+        overlay.hidden = true;
+        onyuUnlockInput();
+        onDone();
+      }, 1000);
     }
   }
 
-  img.onerror = function () { img.onerror = null; img.onload = null; onDone(); };
+  img.onerror = function () {
+    img.onerror = null; img.onload = null;
+    onyuUnlockInput();
+    onDone();
+  };
   img.onload = function () {
     img.onerror = null;
     onyuUnlockGalleryItem('cg', chapterId);
@@ -371,6 +391,7 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
       overlay.classList.add('is-active');
       img.classList.add('is-visible');
       hint.classList.add('is-visible');
+      inputReady = true;
     } else {
       // 암전(오버레이가 화면 전체를 검게 덮음, 1s) -> 그 위에서 CG 노출 -> 페이드인
       // (img 자체의 별도 1s 트랜지션) 3단계로 분리 - "띡" 하고 바로 뜨지 않게
@@ -388,7 +409,10 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
       void overlay.offsetHeight;
       requestAnimationFrame(function () { overlay.classList.add('is-active'); });
       setTimeout(function () { img.classList.add('is-visible'); }, 1020);
-      hintTimer = setTimeout(function () { hint.classList.add('is-visible'); }, 2020);
+      hintTimer = setTimeout(function () {
+        hint.classList.add('is-visible');
+        inputReady = true;
+      }, 2020);
     }
     overlay.addEventListener('click', finish);
   };
@@ -401,6 +425,8 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
 function onyuOpenCgBrowse(cgFile) {
   var overlay = onyuEl.cgViewerOverlay;
   var img = onyuEl.cgViewerImg;
+  var inputReady = false;
+  onyuLockInput();
   img.onload = null;
   img.onerror = null;
   img.classList.remove('is-visible');
@@ -410,11 +436,16 @@ function onyuOpenCgBrowse(cgFile) {
   requestAnimationFrame(function () {
     overlay.classList.add('is-active');
     img.classList.add('is-visible');
+    setTimeout(function () { inputReady = true; }, 1000);
   });
   function close() {
+    if (!inputReady) return;
     overlay.removeEventListener('click', close);
     overlay.classList.remove('is-active');
-    setTimeout(function () { overlay.hidden = true; }, 1000);
+    setTimeout(function () {
+      overlay.hidden = true;
+      onyuUnlockInput();
+    }, 1000);
   }
   overlay.addEventListener('click', close);
 }
@@ -473,6 +504,7 @@ function onyuCompleteTypewriter() {
 
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
+  if (onyuInputLockDepth > 0) return;
   var node = onyuCurrentNode();
   if (!node || node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal') return; // 선택/입력/CG 팝업 중엔 클릭 무시(각자 자기 오버레이 클릭으로만 해제)
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
@@ -588,6 +620,7 @@ function onyuMaybePlayEndingCredits(onDone) {
 
   var overlay = onyuEl.endingCreditsOverlay;
   var img = onyuEl.endingCreditsImg;
+  onyuLockInput();
   overlay.hidden = false;
   void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유(display:none 직후
                               // 곧바로 opacity 트랜지션을 걸면 스냅되는 문제 방지)
@@ -601,7 +634,11 @@ function onyuMaybePlayEndingCredits(onDone) {
   function showNext() {
     if (i >= files.length) {
       overlay.classList.remove('is-active');
-      setTimeout(function () { overlay.hidden = true; onDone(); }, 1000);
+      setTimeout(function () {
+        overlay.hidden = true;
+        onyuUnlockInput();
+        onDone();
+      }, 1000);
       return;
     }
     img.classList.remove('is-visible');
