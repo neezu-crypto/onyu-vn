@@ -310,17 +310,7 @@ function onyuRenderCurrentNode() {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       window.ONYU_STATE.lastEndingId = branch.id; // 엔딩 화면 타이틀 조회용(onyuFinishChapter)
       onyuFrameStack.push({ list: branch.script, i: 0 });
-      // 우정/썸/연인 갈림길 — 여러 갈래 중 하나가 갈리는 순간이라 일반 선택지
-      // 분기 종료(onyuRenderNextNode)보다도 더 뚜렷한 "이야기 사이" 지점인데,
-      // scoreGate는 최상위 프레임에 있어 pop이 없어서 그 경로를 안 탄다 — 여기서
-      // 직접 같은 암전 트랜지션을 걸어준다. 텍스트 없는 짧은 암전은 화면이
-      // 순간적으로 비는 것처럼 보여 전환이 빠진 것으로 느껴질 수 있으므로,
-      // 분기된 엔딩 제목을 챕터 전환 카드와 같은 방식으로 함께 표시한다.
-      var endingBranchTitle = window.ONYU_ENDING_TITLES && window.ONYU_ENDING_TITLES[branch.id];
-      onyuRunTransition({
-        holdMs: 1000,
-        chapterLabel: endingBranchTitle ? 'ENDING · ' + endingBranchTitle : 'ENDING',
-      }, onyuRenderCurrentNode);
+      onyuRenderCurrentNode();
     } else if (onyuStepToNextNode()) {
       onyuRenderNextNode();
     } else {
