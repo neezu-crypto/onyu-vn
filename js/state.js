@@ -16,10 +16,10 @@ window.ONYU_STATE = {
   settings: {
     textSpeed: 'normal', // 'slow' | 'normal' | 'fast'
     autoPlay: false,
-    skipRead: true,
+    skipRead: false,
     reduceMotion: false,
-    bgmVolume: 0.7,
-    sfxVolume: 0.85,
+    bgmVolume: 0.5,
+    sfxVolume: 0.5,
   },
 };
 
