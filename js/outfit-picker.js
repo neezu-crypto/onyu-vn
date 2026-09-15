@@ -76,27 +76,49 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.situation.textContent = '';
   onyuEl.spriteWrap.classList.add('is-hidden');
 
+  // 설정의 "모션 줄이기"(engine.js onyuRunTransition·onyuSelectChoice와 동일 플래그)가
+  // 켜져 있으면 이 픽커의 페이드도 전부 생략하고 즉시 반영한다 — 접근성 목적은 물론,
+  // 자동 회귀 테스트에서 매 챕터마다 이 페이드를 기다릴 필요가 없어지는 부수 효과도 있다.
+  var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
+
   onyuEl.outfitPickerOverlay.hidden = false;
-  requestAnimationFrame(function () { onyuEl.outfitPickerOverlay.classList.add('is-active'); });
+  if (reduceMotion) {
+    onyuEl.outfitPickerOverlay.classList.add('is-active');
+  } else {
+    requestAnimationFrame(function () { onyuEl.outfitPickerOverlay.classList.add('is-active'); });
+  }
 
   function finish(prefix) {
     window.ONYU_STATE.chosenOutfits[chapterId] = prefix;
     onyuEl.outfitPickerOverlay.classList.remove('is-active');
-    setTimeout(function () {
+    if (reduceMotion) {
       onyuEl.outfitPickerOverlay.hidden = true;
       onDone();
-    }, 260);
+    } else {
+      setTimeout(function () {
+        onyuEl.outfitPickerOverlay.hidden = true;
+        onDone();
+      }, 260);
+    }
   }
 
   function closeConfirm() {
     onyuEl.outfitConfirmModal.classList.remove('is-active');
-    setTimeout(function () { onyuEl.outfitConfirmModal.hidden = true; }, 200);
+    if (reduceMotion) {
+      onyuEl.outfitConfirmModal.hidden = true;
+    } else {
+      setTimeout(function () { onyuEl.outfitConfirmModal.hidden = true; }, 200);
+    }
   }
 
   onyuEl.outfitFreeCard.onclick = function () { finish(choice.free); };
   onyuEl.outfitPaidCard.onclick = function () {
     onyuEl.outfitConfirmModal.hidden = false;
-    requestAnimationFrame(function () { onyuEl.outfitConfirmModal.classList.add('is-active'); });
+    if (reduceMotion) {
+      onyuEl.outfitConfirmModal.classList.add('is-active');
+    } else {
+      requestAnimationFrame(function () { onyuEl.outfitConfirmModal.classList.add('is-active'); });
+    }
   };
   onyuEl.outfitConfirmYes.onclick = function () { closeConfirm(); finish(choice.paid); };
   onyuEl.outfitConfirmNo.onclick = closeConfirm;
