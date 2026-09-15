@@ -118,17 +118,20 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.endingTitle = document.getElementById('ending-title');
 
   // CH27 완주 후 엔딩 화면의 "타이틀로 돌아가기" — state는 그대로 두고(새 게임을
-  // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다.
+  // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다. 기획서
+  // 명시대로, 엔딩 경로에서는 시그니처 오프닝의 "세션당 1회" 제한을 우회해
+  // onyuPlaySigOpening을 직접 호출한다(onyuMaybeShowBootSplash가 아님).
   document.getElementById('ending-title-btn').addEventListener('click', function () {
     var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
     onyuEl.endingOverlay.classList.remove('is-active');
+    var toTitle = function () { onyuPlaySigOpening(function () { onyuShowScreen('title'); }); };
     if (reduceMotion) {
       onyuEl.endingOverlay.hidden = true;
-      onyuShowScreen('title');
+      toTitle();
     } else {
       setTimeout(function () {
         onyuEl.endingOverlay.hidden = true;
-        onyuShowScreen('title');
+        toTitle();
       }, 300);
     }
   });
@@ -195,5 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuInitGallerySubtabs();
   onyuInitSettingsControls();
 
-  onyuShowScreen('title');
+  // 정상 부팅 시엔 시그니처 오프닝을 (localStorage 플래그 기준) 최초 1회만
+  // 보여주고 타이틀로 — 이미 본 적 있으면 onDone이 그 자리에서 바로 불려
+  // 기존과 동일하게 즉시 타이틀로 진입한다.
+  onyuMaybeShowBootSplash(function () { onyuShowScreen('title'); });
 });

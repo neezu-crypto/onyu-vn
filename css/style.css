@@ -461,3 +461,48 @@ button { font-family: inherit; }
   font-family: inherit; transition: background .15s ease;
 }
 .ending-title-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+/* ================= 오목지면시그 시그니처 오프닝 =================
+   6개 게임 공용 브랜드 모먼트(기획서 아티팩트 0ccfdea6 기준 그대로 이식).
+   뷰어 테마·계절 팔레트와 무관하게 항상 이 고정된 어두운 색으로 뜬다. */
+#sig-opening-stage {
+  position: fixed; inset: 0; z-index: 2000; display: none;
+  align-items: center; justify-content: center; overflow: hidden;
+  background: radial-gradient(120% 140% at 50% 20%, #171c26, #10131a 70%);
+  font-family: "Apple SD Gothic Neo", "Pretendard Variable", Pretendard, "Malgun Gothic", -apple-system, sans-serif;
+  cursor: pointer;
+}
+#sig-opening-stage.is-playing { display: flex; }
+.sig-noise { position: absolute; inset: 0; opacity: 0.05; background-image: repeating-linear-gradient(115deg, #fff 0 1px, transparent 1px 3px); pointer-events: none; }
+.sig-series, .sig-title-frame { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+#sig-opening-stage.is-playing .sig-series { animation: sigFadeUp .7s cubic-bezier(.2, .8, .3, 1) forwards, sigFadeOut .5s ease forwards 2.3s; }
+.sig-series-tag { color: #c9a463; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; margin: 0 0 16px; opacity: 0; }
+#sig-opening-stage.is-playing .sig-series-tag { animation: sigFadeUp .45s ease forwards 0s; }
+.sig-reel { height: 44px; overflow: hidden; }
+.sig-reel-track { display: flex; flex-direction: column; align-items: center; }
+.sig-reel-item { height: 44px; display: flex; align-items: center; justify-content: center; color: #f4f1e8; font-size: clamp(24px, 5vw, 38px); font-weight: 800; margin: 0; white-space: nowrap; opacity: .55; }
+.sig-reel-item.is-current { opacity: 1; }
+#sig-opening-stage.is-playing .sig-reel-track { animation: sigReel 1s steps(5, end) forwards .5s; }
+.sig-series-under { width: 0; height: 2px; background: #c9a463; margin-top: 16px; }
+#sig-opening-stage.is-playing .sig-series-under { animation: sigUnderline .5s ease forwards 1.5s; }
+#sig-opening-stage.is-playing .sig-title-frame { animation: sigFadeUp .6s cubic-bezier(.2, .8, .3, 1) forwards 2.6s; }
+.sig-title-kicker { color: #c9a463; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; margin: 0 0 10px; }
+.sig-title-word { color: #f4f1e8; font-size: clamp(22px, 3.8vw, 34px); font-weight: 800; letter-spacing: 0.16em; margin: 0; }
+@keyframes sigFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sigFadeOut { to { opacity: 0; } }
+@keyframes sigUnderline { to { width: 100%; } }
+@keyframes sigReel { from { transform: translateY(0); } to { transform: translateY(-220px); } }
+/* 모션 줄이기(OS 설정 또는 게임 내 설정) — 딜레이 순서는 그대로 두고 각 단계가
+   슬라이드 없이 그 자리에서 바로 나타나게. 기획서 원안의 reduced-motion 처리 그대로. */
+@media (prefers-reduced-motion: reduce) {
+  #sig-opening-stage.is-playing .sig-series,
+  #sig-opening-stage.is-playing .sig-series-under,
+  #sig-opening-stage.is-playing .sig-series-tag,
+  #sig-opening-stage.is-playing .sig-reel-track,
+  #sig-opening-stage.is-playing .sig-title-frame { animation-duration: .01s !important; }
+}
+#sig-opening-stage.is-playing.is-reduced-motion .sig-series,
+#sig-opening-stage.is-playing.is-reduced-motion .sig-series-under,
+#sig-opening-stage.is-playing.is-reduced-motion .sig-series-tag,
+#sig-opening-stage.is-playing.is-reduced-motion .sig-reel-track,
+#sig-opening-stage.is-playing.is-reduced-motion .sig-title-frame { animation-duration: .01s !important; }
