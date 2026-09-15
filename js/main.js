@@ -157,15 +157,22 @@ document.addEventListener('DOMContentLoaded', function () {
   // 표지 CG(기획서 CG #1)가 준비되면 자동으로 타이틀 배경을 그쪽으로 교체.
   // 세로형 스탠딩 컷(.title-figure)과 달리 가로형 풀신이라 화면 전체를 덮는
   // 별도 레이어(#title-cover-bg)로 깔고, 기존 스탠딩 컷은 숨긴다(css의
-  // #screen-title.is-cg-cover 규칙 참고). 아직 없으면(404) 지금처럼 스탠딩
-  // 일러스트를 그대로 쓴다.
+  // #screen-title.is-cg-cover 규칙 참고). 로드가 끝날 때까지(성공이든 404
+  // 실패든) #title-loading 핑크 로딩화면이 전부 가리고 있어서, 스탠딩 컷이
+  // 잠깐 보였다가 CG로 바뀌는 깜빡임이 없다 - 실패 시엔 로딩화면만 걷고
+  // 기존처럼 스탠딩 일러스트 폴백을 그대로 노출.
   (function tryTitleCoverCg() {
     var coverBg = document.getElementById('title-cover-bg');
+    var loading = document.getElementById('title-loading');
     var probe = new Image();
     probe.onload = function () {
       coverBg.src = 'assets/cg/cover.png';
       coverBg.hidden = false;
       document.getElementById('screen-title').classList.add('is-cg-cover');
+      loading.classList.add('is-hidden');
+    };
+    probe.onerror = function () {
+      loading.classList.add('is-hidden');
     };
     probe.src = 'assets/cg/cover.png';
   })();

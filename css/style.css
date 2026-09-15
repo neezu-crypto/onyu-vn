@@ -97,6 +97,33 @@ button { font-family: inherit; }
   background: linear-gradient(100deg, rgba(255, 255, 255, 0) 40%, var(--paper-strong) 92%);
 }
 #screen-title.is-cg-cover .title-figure { display: none; }
+/* 표지 CG 로딩 중 가림막(2026-09-15) - 세로형 스탠딩 컷이 잠깐 보였다가 CG로
+   바뀌는 깜빡임(특히 캐시 없는 첫 로드·느린 연결)을 없애려고, CG 로드가 끝날
+   때까지(성공/실패 모두) 불투명한 핑크 배경 + 타이틀 + 로딩바로 완전히 가린다.
+   계절 변수(--season-wash 등)는 게임 진행에 따라 바뀌므로 쓰지 않고, 타이틀
+   화면은 항상 같은 톤이어야 해서 고정 핑크를 직접 쓴다. tryTitleCoverCg가
+   is-hidden을 붙여 걷어낸다. */
+.title-loading {
+  position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+  background: #f6dbe4; transition: opacity .4s ease;
+}
+.title-loading.is-hidden { opacity: 0; pointer-events: none; }
+.title-loading-name { margin: 0; font-size: clamp(24px, 4vw, 38px); font-weight: 800; color: var(--ink); text-align: center; }
+.title-loading-name .accent { color: var(--season-accent); }
+.title-loading-bar { width: min(50vw, 260px); height: 6px; border-radius: 999px; background: rgba(61, 52, 54, 0.12); overflow: hidden; }
+.title-loading-bar span {
+  display: block; width: 38%; height: 100%; border-radius: 999px; background: var(--season-accent);
+  animation: titleLoadingSlide 1.1s ease-in-out infinite;
+}
+@keyframes titleLoadingSlide {
+  0% { transform: translateX(-110%); }
+  50% { transform: translateX(160%); }
+  100% { transform: translateX(-110%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-loading-bar span { animation: none; left: 31%; position: relative; }
+}
 .title-main {
   position: relative; z-index: 1; height: 100%; padding: 6% 6%;
   display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
