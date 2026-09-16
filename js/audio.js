@@ -144,15 +144,21 @@ var ONYU_SFX_TRACKS = {
 
   function playNow(audio, key) {
     var result;
+    function reportFailure(error) {
+      var blocked = error && (error.name === 'NotAllowedError' || error.code === 9);
+      if (typeof window.onyuTelemetryTrack === 'function') {
+        window.onyuTelemetryTrack(blocked ? 'bgm_autoplay_blocked' : 'bgm_play_failed', { trackId: key || '' });
+      }
+    }
     try { result = audio.play(); } catch (e) {
-      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_failed', { trackId: key || '' });
+      reportFailure(e);
       return;
     }
     if (result && typeof result.then === 'function') {
       result.then(function () {
         if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_started', { trackId: key || audio.dataset.key || '' });
-      }).catch(function () {
-        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_failed', { trackId: key || audio.dataset.key || '' });
+      }).catch(function (error) {
+        reportFailure(error);
       });
     }
   }

@@ -114,6 +114,7 @@ function startPresence(user) {
   const heartbeat = function () {
     if (!presenceRef) return;
     set(presenceRef, { lastSeen: Date.now(), connectedAt: user.metadata && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() }).catch(function () {});
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('presence_heartbeat');
   };
   heartbeat();
   onDisconnect(presenceRef).remove().catch(function () {});
@@ -490,6 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 onAuthStateChanged(auth, async (user) => {
   window.onyuAuthState.user = user;
+  if (typeof window.onyuTelemetrySetIdentity === 'function') {
+    window.onyuTelemetrySetIdentity(user && user.uid ? user.uid : null);
+  }
   window.onyuAuthState.realUser = user && !user.isAnonymous ? user : null;
   if (!user) {
     stopPresence();

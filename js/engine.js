@@ -51,8 +51,16 @@ function onyuChoiceAnalyticsId(chapterId, target) {
   return result;
 }
 
-function onyuPauseGame() { onyuGamePaused = true; }
-function onyuResumeGame() { onyuGamePaused = false; }
+function onyuPauseGame() {
+  if (onyuGamePaused) return;
+  onyuGamePaused = true;
+  onyuTrack('game_paused', { reason: 'settings' });
+}
+function onyuResumeGame() {
+  if (!onyuGamePaused) return;
+  onyuGamePaused = false;
+  onyuTrack('game_resumed', { reason: 'settings' });
+}
 
 // CG/화면 전환 연출 중에는 #screen-play의 전체 화면 클릭 리스너가 대사를
 // 진행시키지 않도록 입력을 잠근다. 오버레이가 페이드아웃을 시작하는 순간
@@ -156,6 +164,8 @@ function onyuStartChapter(chapterId) {
   onyuRunTransition({}, function () {
     var idx = onyuChapterIndexById(chapterId);
     if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
+    window.onyuGameSessionActive = true;
+    window.onyuGameCompleted = false;
     var chapter = window.ONYU_CHAPTERS[idx];
     // 이전 챕터의 타자기·자동진행 타이머가 아직 살아있으면(사복 픽커처럼 이
     // 챕터의 첫 노드 렌더가 뒤로 미뤄지는 경로가 생기면서 발견된 문제) 그 사이에도
@@ -680,10 +690,12 @@ function onyuFinishChapter() {
   } else {
     // CH27(마지막 챕터) 완주 — 연인 엔딩이면 갤러리 CG 크레딧 몽타주(CG 노출 시스템
     // Mechanism 4)를 먼저 보여준 뒤 엔딩 타이틀 화면으로. 우정/썸은 몽타주 없이 바로.
-    onyuMaybePlayEndingCredits(function () {
+      onyuMaybePlayEndingCredits(function () {
       onyuRunTransition({ holdMs: 600 }, function () {
         onyuShowEndingScreen(window.ONYU_STATE.lastEndingId);
         onyuTrack('game_completed', { endingId: window.ONYU_STATE.lastEndingId || '' });
+        window.onyuGameSessionActive = false;
+        window.onyuGameCompleted = true;
       });
     });
   }
@@ -712,6 +724,7 @@ function onyuMaybePlayEndingCredits(onDone) {
     var probe = new Image();
     function settle(fileAvailable) {
       if (fileAvailable) availableFiles[index] = file;
+      else onyuTrack('credits_cg_skipped', { itemId: file, reason: 'asset_missing' });
       probesLeft--;
       if (probesLeft === 0) beginCredits(availableFiles.filter(Boolean));
     }

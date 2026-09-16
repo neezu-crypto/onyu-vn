@@ -140,5 +140,10 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     }
   };
   onyuEl.outfitConfirmYes.onclick = function () { closeConfirm(); finish(choice.paid); };
-  onyuEl.outfitConfirmNo.onclick = closeConfirm;
+  onyuEl.outfitConfirmNo.onclick = function () {
+    if (typeof window.onyuTelemetryTrack === 'function') {
+      window.onyuTelemetryTrack('outfit_selection_cancelled', { chapterId: chapterId, reason: 'payment_prompt' });
+    }
+    closeConfirm();
+  };
 }

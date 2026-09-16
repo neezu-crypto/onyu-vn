@@ -120,6 +120,9 @@ function onyuNavigateTo(name) {
   var current = document.querySelector('.screen.is-active');
   onyuReturnScreen = (current && current.dataset.screen === 'play') ? 'play' : 'title';
   if (name === 'settings' && onyuReturnScreen === 'play') onyuPauseGame();
+  if (name === 'gallery' && typeof window.onyuTelemetryTrack === 'function') {
+    window.onyuTelemetryTrack('gallery_opened', { from: onyuReturnScreen });
+  }
   onyuShowScreen(name);
 }
 
@@ -147,6 +150,16 @@ function onyuRequestFullscreen() {
     onyuTryLockLandscape(); // Fullscreen API 자체가 없는 환경에서도 밑져야 본전으로 시도
   }
 }
+
+document.addEventListener('fullscreenchange', function () {
+  if (typeof window.onyuTelemetryTrack !== 'function') return;
+  window.onyuTelemetryTrack(document.fullscreenElement ? 'fullscreen_entered' : 'fullscreen_exited');
+});
+document.addEventListener('webkitfullscreenchange', function () {
+  if (typeof window.onyuTelemetryTrack !== 'function') return;
+  var active = !!document.webkitFullscreenElement;
+  window.onyuTelemetryTrack(active ? 'fullscreen_entered' : 'fullscreen_exited');
+});
 
 // 모바일에서 스와이프 제스처·홈 버튼 등으로 전체화면이 풀리는 경우가 흔하다.
 // Fullscreen API는 사용자 제스처 없이는 재요청이 막히므로, 게임 진행 중 화면을

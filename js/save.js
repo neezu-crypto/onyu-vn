@@ -33,6 +33,11 @@ function onyuApplySnapshot(snap) {
   s.chosenOutfits = snap.chosenOutfits || {};
 }
 
+function onyuIsValidSnapshot(snap) {
+  return !!(snap && typeof snap === 'object' && typeof snap.currentChapterId === 'string'
+    && typeof onyuChapterIndexById === 'function' && onyuChapterIndexById(snap.currentChapterId) >= 0);
+}
+
 function onyuSaveAutosave() {
   try {
     localStorage.setItem(ONYU_AUTOSAVE_KEY, JSON.stringify(onyuSnapshotState()));

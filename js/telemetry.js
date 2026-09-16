@@ -8,6 +8,9 @@
  */
 (function () {
   var SESSION_KEY = 'onyu_telemetry_session_v1';
+  var QUEUE_KEY = 'onyu_telemetry_queue_v1';
+  var IDENTITY_KEY = 'onyu_telemetry_identity_v1';
+  var CLIENT_VERSION = '2026.09.17';
   var MAX_QUEUE = 100;
   var BATCH_SIZE = 25;
   var queue = [];
@@ -15,6 +18,28 @@
   var flushTimer = null;
   var flushing = false;
   var sessionId = null;
+  var identityKey = null;
+
+  function readSessionJson(key, fallback) {
+    try {
+      var value = sessionStorage.getItem(key);
+      return value ? JSON.parse(value) : fallback;
+    } catch (e) { return fallback; }
+  }
+
+  function persistQueue() {
+    try {
+      sessionStorage.setItem(QUEUE_KEY, JSON.stringify(queue.slice(-MAX_QUEUE)));
+    } catch (e) { /* 저장 공간이 없으면 메모리 큐만 사용 */ }
+  }
+
+  function restoreQueue() {
+    var restored = readSessionJson(QUEUE_KEY, []);
+    if (!Array.isArray(restored)) return;
+    queue = restored.filter(function (event) {
+      return event && typeof event === 'object' && typeof event.event === 'string';
+    }).slice(-MAX_QUEUE);
+  }
 
   function randomId(prefix) {
     var random = (window.crypto && typeof window.crypto.randomUUID === 'function')
@@ -32,6 +57,8 @@
   } catch (e) {
     sessionId = randomId('s');
   }
+  try { identityKey = sessionStorage.getItem(IDENTITY_KEY) || null; } catch (e) { identityKey = null; }
+  restoreQueue();
 
   function cleanData(data) {
     var out = {};
@@ -60,6 +87,7 @@
     var batch = queue.slice(0, BATCH_SIZE);
     Promise.resolve(sender(batch)).then(function () {
       queue.splice(0, batch.length);
+      persistQueue();
     }).catch(function () {
       // 다음 이벤트나 pagehide 때 재시도한다. 실패 이벤트 자체는 저장하지 않는다.
     }).finally(function () {
@@ -75,8 +103,13 @@
     event.eventId = randomId('e');
     event.sessionId = sessionId;
     event.clientAt = Date.now();
+    event.clientVersion = CLIENT_VERSION;
+    event.deviceType = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent || '') ? 'mobile' : 'desktop';
+    event.orientation = (screen.orientation && screen.orientation.type)
+      || (window.innerWidth >= window.innerHeight ? 'landscape' : 'portrait');
     queue.push(event);
     if (queue.length > MAX_QUEUE) queue.splice(0, queue.length - MAX_QUEUE);
+    persistQueue();
     if (queue.length >= BATCH_SIZE) flush();
     else scheduleFlush();
   };
@@ -84,6 +117,19 @@
   window.onyuTelemetrySetSender = function (nextSender) {
     sender = typeof nextSender === 'function' ? nextSender : null;
     if (sender && queue.length) flush();
+  };
+
+  // 인증 계정이 바뀌면 이전 계정의 미전송 이벤트가 새 계정으로 섞이지 않게
+  // 큐를 비운다. 같은 계정의 새로고침은 큐를 유지해 재전송한다.
+  window.onyuTelemetrySetIdentity = function (nextIdentity) {
+    nextIdentity = nextIdentity ? String(nextIdentity) : null;
+    if (identityKey && nextIdentity && identityKey !== nextIdentity) queue = [];
+    identityKey = nextIdentity;
+    try {
+      if (identityKey) sessionStorage.setItem(IDENTITY_KEY, identityKey);
+      else sessionStorage.removeItem(IDENTITY_KEY);
+      persistQueue();
+    } catch (e) { /* sessionStorage 접근 불가 */ }
   };
 
   window.onyuTelemetryFlush = flush;
@@ -94,6 +140,9 @@
     if (document.visibilityState === 'hidden') flush();
   });
   window.addEventListener('pagehide', function () {
+    if (window.onyuGameSessionActive && !window.onyuGameCompleted) {
+      window.onyuTelemetryTrack('game_abandoned', { reason: 'pagehide' });
+    }
     window.onyuTelemetryTrack('session_end');
     flush();
   });

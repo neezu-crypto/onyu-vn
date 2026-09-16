@@ -27,6 +27,7 @@ function onyuRenderChapterList() {
   // 진행상황(어디까지 도달했는지)은 자동저장 기록 기준 — "이어하기"와 같은 데이터.
   // 저장 기록이 있으면 그걸 현재 상태에 반영해서 목록에 그대로 보여준다.
   var snap = onyuLoadAutosave();
+  if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap)) snap = null;
   if (snap) onyuApplySnapshot(snap);
 
   var reached = window.ONYU_STATE.chapterCheckpoints || {};
@@ -174,6 +175,7 @@ function onyuRenderSaveScreen() {
 
   var autosaveContainer = document.getElementById('autosave-slot');
   var snap = onyuLoadAutosave();
+  if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap)) snap = null;
   if (snap) {
     var ch = window.ONYU_CHAPTERS[onyuChapterIndexById(snap.currentChapterId)];
     autosaveContainer.innerHTML =
@@ -186,7 +188,14 @@ function onyuRenderSaveScreen() {
       // 이 카드가 정보 표시 전용이라 타이틀의 "이어하기" 버튼으로만 불러올 수
       // 있었는데, 이 화면 자체가 "불러오기" 화면인 이상 여기서도 가능해야 맞다.
       autosaveContainer.querySelector('.autosave-card').addEventListener('click', function () {
-        onyuApplySnapshot(snap);
+        if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap)) {
+          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'invalid' });
+          return;
+        }
+        try { onyuApplySnapshot(snap); } catch (error) {
+          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'exception' });
+          return;
+        }
         onyuRequestFullscreen();
         if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'auto', chapterId: snap.currentChapterId || '' });
         onyuStartChapter(snap.currentChapterId);
@@ -203,6 +212,7 @@ function onyuRenderSaveScreen() {
   for (var i = 1; i <= 5; i++) {
     (function (slotIndex) {
       var slotSnap = onyuLoadManualSlot(slotIndex);
+      if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(slotSnap)) slotSnap = null;
       var btn = document.createElement('button');
       btn.className = 'save-slot' + (slotSnap ? '' : ' is-empty');
       if (slotSnap) {
@@ -226,7 +236,14 @@ function onyuRenderSaveScreen() {
         // 타이틀에서 진입 — 채워진 슬롯만 불러오기 가능.
         btn.addEventListener('click', function () {
           var loaded = onyuLoadManualSlot(slotIndex);
-          onyuApplySnapshot(loaded);
+          if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(loaded)) {
+            if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'manual', slot: slotIndex, reason: loaded ? 'invalid' : 'missing' });
+            return;
+          }
+          try { onyuApplySnapshot(loaded); } catch (error) {
+            if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'manual', slot: slotIndex, reason: 'exception' });
+            return;
+          }
           onyuRequestFullscreen();
           if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'manual', slot: slotIndex, chapterId: loaded.currentChapterId || '' });
           onyuStartChapter(loaded.currentChapterId);

@@ -221,6 +221,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function startNewGameAfterAccess() {
     onyuResetNewGame();
     onyuRequestFullscreen();
+    window.onyuGameSessionActive = true;
+    window.onyuGameCompleted = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: false });
     onyuStartChapter(window.ONYU_STATE.currentChapterId);
   }
@@ -231,10 +233,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   continueBtn.addEventListener('click', function () {
     var snap = onyuLoadAutosave();
-    if (!snap) return;
+    if (!snap || (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap))) {
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: snap ? 'invalid' : 'missing' });
+      return;
+    }
     function continueAfterAccess() {
-      onyuApplySnapshot(snap);
+      try { onyuApplySnapshot(snap); } catch (error) {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'exception' });
+        return;
+      }
       onyuRequestFullscreen();
+      window.onyuGameSessionActive = true;
+      window.onyuGameCompleted = false;
       if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: true, chapterId: snap.currentChapterId || '' });
       onyuStartChapter(snap.currentChapterId);
     }
