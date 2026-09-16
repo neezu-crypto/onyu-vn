@@ -8,8 +8,8 @@
 
 var ONYU_BGM_TRACKS = {
   title: 'assets/bgm/T title-theme.mp3',
-  // everyday-1/2는 같은 무드의 대체 버전이다. 한 세션에서 하나를 골라 챕터 간
-  // 재생 위치를 이어가므로 같은 무드 전환 때 트랙이 갑자기 바뀌지 않는다.
+  // everyday-1/2는 같은 무드의 대체 버전이다. 챕터에 진입할 때마다 둘 중 하나를
+  // 추첨해 같은 일상 무드라도 챕터별로 다른 곡이 나올 수 있게 한다.
   everyday: ['assets/bgm/01 everyday-1.mp3', 'assets/bgm/01 everyday-2.mp3'],
   flutter: 'assets/bgm/02 flutter.mp3',
   focus: 'assets/bgm/03 focus.mp3',
@@ -38,7 +38,7 @@ var ONYU_BGM_BY_CHAPTER = {
   var preloaders = {};
   var activeIndex = -1;
   var activeKey = null;
-  var selectedEveryday = null;
+  var pendingVariants = {};
   var unlocked = false;
   var muted = false;
   var fadeTimer = null;
@@ -50,11 +50,11 @@ var ONYU_BGM_BY_CHAPTER = {
     return settings ? Math.max(0, Math.min(1, Number(settings.bgmVolume) || 0)) : 0.5;
   }
 
-  function sourceFor(key) {
+  function sourceFor(key, variantIndex) {
     var source = ONYU_BGM_TRACKS[key];
     if (Array.isArray(source)) {
-      if (!selectedEveryday) selectedEveryday = source[Math.floor(Math.random() * source.length)];
-      return selectedEveryday;
+      var index = (variantIndex === undefined) ? Math.floor(Math.random() * source.length) : variantIndex;
+      return source[index % source.length];
     }
     return source || null;
   }
@@ -71,8 +71,8 @@ var ONYU_BGM_BY_CHAPTER = {
     return audio;
   }
 
-  function ensurePlayer(audio, key) {
-    var src = sourceFor(key);
+  function ensurePlayer(audio, key, sourceOverride) {
+    var src = sourceOverride || sourceFor(key);
     if (!src) return false;
     if (audio.dataset.source === src) return true;
     audio.pause();
@@ -85,14 +85,16 @@ var ONYU_BGM_BY_CHAPTER = {
     return true;
   }
 
-  function preload(key) {
-    var src = sourceFor(key);
-    if (!src || preloaders[key]) return;
+  function preload(key, variantIndex) {
+    var src = sourceFor(key, variantIndex);
+    if (!src) return;
+    var cacheKey = key + '|' + src;
+    if (preloaders[cacheKey]) return;
     var audio = new Audio();
     audio.preload = 'auto';
     audio.src = src;
     audio.load();
-    preloaders[key] = audio;
+    preloaders[cacheKey] = audio;
   }
 
   function playNow(audio) {
@@ -105,16 +107,17 @@ var ONYU_BGM_BY_CHAPTER = {
     if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   }
 
-  function switchTrack(key, immediate) {
+  function switchTrack(key, immediate, sourceOverride) {
     if (!initialized || !unlocked || muted || !key || !ONYU_BGM_TRACKS[key]) return;
-    if (activeKey === key && activeIndex >= 0) {
+    var nextSource = sourceOverride || sourceFor(key);
+    if (activeKey === key && players[activeIndex] && players[activeIndex].dataset.source === nextSource) {
       players[activeIndex].volume = volume();
       return;
     }
 
     var nextIndex = (activeIndex + 1) % players.length;
     var next = players[nextIndex];
-    if (!ensurePlayer(next, key)) return;
+    if (!ensurePlayer(next, key, nextSource)) return;
     stopFade();
     next.volume = activeIndex < 0 || immediate ? volume() : 0;
     // 사용자 제스처로 unlock된 이후에는 버퍼가 덜 받아졌어도 play()를 먼저
@@ -189,10 +192,24 @@ var ONYU_BGM_BY_CHAPTER = {
 
   window.onyuAudioPlayForChapter = function (chapterId) {
     var key = ONYU_BGM_BY_CHAPTER[chapterId] || 'everyday';
-    switchTrack(key, false);
+    // 일상 무드는 챕터 진입마다 두 버전 중 하나를 새로 추첨한다.
+    var variantIndex;
+    if (key === 'everyday') {
+      variantIndex = pendingVariants[chapterId];
+      if (variantIndex === undefined) variantIndex = Math.floor(Math.random() * 2);
+    }
+    // 직전 챕터에서 다음 챕터용으로 준비한 추첨 결과만 소비하고, 타임머신
+    // 점프 등으로 남아 있던 다른 예약 결과는 버려 새 진입으로 취급한다.
+    pendingVariants = {};
+    switchTrack(key, false, sourceFor(key, variantIndex));
     var idx = window.ONYU_CHAPTERS ? onyuChapterIndexById(chapterId) : -1;
     var next = idx >= 0 ? window.ONYU_CHAPTERS[idx + 1] : null;
-    if (next) preload(ONYU_BGM_BY_CHAPTER[next.id] || 'everyday');
+    if (next) {
+      var nextKey = ONYU_BGM_BY_CHAPTER[next.id] || 'everyday';
+      var nextVariant = nextKey === 'everyday' ? Math.floor(Math.random() * 2) : undefined;
+      if (nextKey === 'everyday') pendingVariants[next.id] = nextVariant;
+      preload(nextKey, nextVariant);
+    }
   };
 
   window.onyuAudioPlayEnding = function (endingId) {
