@@ -153,12 +153,12 @@ var ONYU_BGM_BY_CHAPTER = {
     preload('title');
 
     var unlockOverlay = document.getElementById('sound-unlock-overlay');
-    var unlockButton = document.getElementById('sound-unlock-btn');
-    var muteButton = document.getElementById('sound-mute-btn');
-    unlockButton.addEventListener('click', function () { onyuAudioUnlock(); });
-    muteButton.addEventListener('click', function () { onyuAudioMute(); });
-    unlockOverlay.addEventListener('click', function (event) {
-      if (event.target === unlockOverlay) onyuAudioUnlock();
+    unlockOverlay.addEventListener('click', function () { onyuAudioUnlock(); });
+    unlockOverlay.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onyuAudioUnlock();
+      }
     });
   }
 

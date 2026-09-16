@@ -599,21 +599,14 @@ button { font-family: inherit; }
 /* ================= 배경음악 자동재생 해제 안내 ================= */
 #sound-unlock-overlay {
   position: fixed; inset: 0; z-index: 1800; display: flex; align-items: center; justify-content: center;
-  padding: 24px; background: rgba(61, 52, 54, 0.42); backdrop-filter: blur(8px);
+  padding: 24px; color: var(--paper); background: rgba(61, 52, 54, 0.38); backdrop-filter: blur(12px); cursor: pointer;
 }
 #sound-unlock-overlay[hidden] { display: none; }
 .sound-unlock-panel {
-  width: min(430px, 100%); padding: 34px 30px 28px; text-align: center;
-  background: var(--paper-strong); border: 1px solid rgba(61, 52, 54, 0.1);
-  border-radius: 22px; box-shadow: 0 24px 80px rgba(61, 52, 54, 0.22);
+  padding: 30px; text-align: center; pointer-events: none;
 }
-.sound-unlock-kicker { margin: 0 0 8px; color: var(--season-accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; }
-.sound-unlock-panel h2 { margin: 0; font-size: 20px; line-height: 1.45; }
-.sound-unlock-sub { margin: 10px 0 22px; color: var(--muted); font-size: 12px; }
-.sound-unlock-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.sound-unlock-btn { border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; color: var(--muted); background: var(--paper); font-size: 12px; font-weight: 800; cursor: pointer; }
-.sound-unlock-btn.is-primary { border-color: var(--season-accent); color: #fff; background: var(--season-accent); }
-.sound-unlock-btn:hover { filter: brightness(.97); }
+.sound-unlock-kicker { margin: 0 0 12px; color: var(--season-wash); font-size: 11px; font-weight: 900; letter-spacing: .2em; }
+.sound-unlock-panel h2 { margin: 0; color: #fff; font-size: clamp(22px, 3vw, 30px); line-height: 1.35; letter-spacing: -.03em; text-shadow: 0 2px 14px rgba(0,0,0,.28); }
 
 /* screen-transition-overlay 안의 학년 전환 컷 CG(09·19) — 기존 chapterLabel 위에 얹는다 */
 #screen-transition-cg {

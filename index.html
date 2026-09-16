@@ -266,15 +266,10 @@
   </div>
 
   <!-- ============ 배경음악 자동재생 해제 안내 ============ -->
-  <div id="sound-unlock-overlay" hidden>
-    <div class="sound-unlock-panel" role="dialog" aria-labelledby="sound-unlock-title">
+  <div id="sound-unlock-overlay" hidden role="button" tabindex="0" aria-label="화면을 클릭해 시작">
+    <div class="sound-unlock-panel">
       <p class="sound-unlock-kicker">SOUND ON</p>
-      <h2 id="sound-unlock-title">화면을 클릭해 배경음악을 재생해주세요</h2>
-      <p class="sound-unlock-sub">첫 클릭 후 장면에 맞는 음악이 자연스럽게 이어집니다.</p>
-      <div class="sound-unlock-actions">
-        <button type="button" class="sound-unlock-btn is-primary" id="sound-unlock-btn">배경음악 재생</button>
-        <button type="button" class="sound-unlock-btn" id="sound-mute-btn">무음으로 계속</button>
-      </div>
+      <h2 id="sound-unlock-title">화면을 클릭해 시작</h2>
     </div>
   </div>
 
