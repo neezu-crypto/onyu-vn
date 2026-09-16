@@ -36,6 +36,7 @@ function onyuApplySnapshot(snap) {
 function onyuSaveAutosave() {
   try {
     localStorage.setItem(ONYU_AUTOSAVE_KEY, JSON.stringify(onyuSnapshotState()));
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
   } catch (e) {
     console.warn('자동저장 실패', e);
   }
@@ -53,6 +54,7 @@ function onyuLoadAutosave() {
 function onyuSaveManualSlot(slotIndex) {
   try {
     localStorage.setItem(ONYU_SLOT_KEY_PREFIX + slotIndex, JSON.stringify(onyuSnapshotState()));
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
   } catch (e) {
     console.warn('수동저장 실패', e);
   }
@@ -84,7 +86,9 @@ function onyuUnlockGalleryItem(kind, id) {
   // kind: 'cg' | 'endings' — 언락 즉시 디스크에 반영(세이브 시점과 무관하게 영구 기록).
   var record = window.ONYU_STATE.unlockedGallery;
   if (!record[kind]) record[kind] = {};
+  var isNew = !record[kind][id];
   record[kind][id] = true;
+  if (isNew && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
   try {
     localStorage.setItem(ONYU_GALLERY_KEY, JSON.stringify(record));
   } catch (e) {

@@ -65,6 +65,7 @@ function onyuRunTransition(options, callback) {
 
   onyuTransitionDepth++;
   onyuLockInput();
+  if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('menu-transition');
   label.textContent = chapterLabel;
   label.classList.toggle('is-visible', !!chapterLabel);
   if (cgFile) {
@@ -78,6 +79,7 @@ function onyuRunTransition(options, callback) {
 
   setTimeout(function () {
     setTimeout(function () {
+      if (chapterLabel && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('chapter-chime');
       callback();
       overlay.classList.remove('is-active');
       label.classList.remove('is-visible');

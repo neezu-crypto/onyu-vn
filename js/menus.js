@@ -262,6 +262,7 @@ function onyuInitSettingsControls() {
   });
   document.querySelectorAll('#setting-autoplay button').forEach(function (b) {
     b.addEventListener('click', function () {
+      if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
       window.ONYU_STATE.settings.autoPlay = (b.dataset.value === 'auto');
       onyuRenderSettingsScreen();
       onyuSaveSettings();
@@ -269,17 +270,20 @@ function onyuInitSettingsControls() {
   });
   document.querySelectorAll('#setting-textspeed button').forEach(function (b) {
     b.addEventListener('click', function () {
+      if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
       window.ONYU_STATE.settings.textSpeed = b.dataset.value;
       onyuRenderSettingsScreen();
       onyuSaveSettings();
     });
   });
   document.getElementById('setting-skipread').addEventListener('click', function () {
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
     window.ONYU_STATE.settings.skipRead = !window.ONYU_STATE.settings.skipRead;
     onyuRenderSettingsScreen();
     onyuSaveSettings();
   });
   document.getElementById('setting-reducemotion').addEventListener('click', function () {
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
     window.ONYU_STATE.settings.reduceMotion = !window.ONYU_STATE.settings.reduceMotion;
     onyuRenderSettingsScreen();
     onyuSaveSettings();

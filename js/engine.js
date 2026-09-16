@@ -278,6 +278,7 @@ function onyuRenderCurrentNode() {
       btn.addEventListener('click', function (evt) { onyuSelectChoice(node, opt, evt, btn, fill); });
       onyuEl.choiceList.appendChild(btn);
     });
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('choice-appear');
     if (!reduceMotionForChoice) {
       // 같은 프레임에서 바로 클래스를 빼면 브라우저가 시작 상태(opacity:0)를
       // 못 그려 트랜지션이 생략된다 — 다음 프레임에서 벗겨야 실제로 재생된다.
@@ -315,6 +316,7 @@ function onyuRenderCurrentNode() {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       window.ONYU_STATE.lastEndingId = branch.id; // 엔딩 화면 타이틀 조회용(onyuFinishChapter)
       if (typeof onyuAudioPlayEnding === 'function') onyuAudioPlayEnding(branch.id);
+      if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ending-title-reveal');
       onyuFrameStack.push({ list: branch.script, i: 0 });
       onyuRenderCurrentNode();
     } else if (onyuStepToNextNode()) {
@@ -542,6 +544,7 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
   evt.stopPropagation();
   if (onyuChoiceInputLocked) return; // 선택지가 막 뜬 직후의 연타성 오클릭 무시
   onyuMaybeRecoverFullscreen();
+  if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('choice-select');
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
 
@@ -583,9 +586,11 @@ function onyuSubmitName() {
   var english = /^[A-Za-z]{2,16}$/;
   if (!korean.test(raw) && !english.test(raw)) {
     onyuEl.nameError.textContent = '음... 다시 말해줄래?';
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('name-submit-error');
     return;
   }
   window.ONYU_STATE.playerName = raw;
+  if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('name-submit-ok');
   onyuEl.nameForm.hidden = true;
   if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();

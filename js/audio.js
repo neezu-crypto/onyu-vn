@@ -33,9 +33,23 @@ var ONYU_BGM_BY_CHAPTER = {
   ch23: 'reconcile', ch26: 'reconcile', ch27: 'reconcile',
 };
 
+var ONYU_SFX_TRACKS = {
+  'choice-select': 'assets/sfx/choice-select.mp3',
+  'ending-title-reveal': 'assets/sfx/ending-title-reveal.mp3',
+  'gallery-unlock': 'assets/sfx/gallery-unlock.mp3',
+  'save-success': 'assets/sfx/save-success.mp3',
+  'ui-toggle': 'assets/sfx/ui-toggle.mp3',
+  'name-submit-error': 'assets/sfx/name-submit-error.mp3',
+  'name-submit-ok': 'assets/sfx/name-submit-ok.mp3',
+  'chapter-chime': 'assets/sfx/chapter-chime.mp3',
+  'menu-transition': 'assets/sfx/menu-transition.mp3',
+  'choice-appear': 'assets/sfx/choice-appear.mp3',
+};
+
 (function () {
   var players = [];
   var preloaders = {};
+  var sfxTemplates = {};
   var activeIndex = -1;
   var activeKey = null;
   var pendingVariants = {};
@@ -97,6 +111,28 @@ var ONYU_BGM_BY_CHAPTER = {
     preloaders[cacheKey] = audio;
   }
 
+  function preloadSfx(key) {
+    var src = ONYU_SFX_TRACKS[key];
+    if (!src || sfxTemplates[key]) return;
+    var audio = new Audio();
+    audio.preload = 'auto';
+    audio.src = src;
+    audio.load();
+    sfxTemplates[key] = audio;
+  }
+
+  function playSfx(key) {
+    if (!initialized || !unlocked || muted) return;
+    var template = sfxTemplates[key];
+    if (!template) return;
+    var effect = template.cloneNode(true);
+    effect.volume = Math.max(0, Math.min(1, Number(window.ONYU_STATE.settings.sfxVolume) || 0));
+    var result;
+    try { result = effect.play(); } catch (e) { return; }
+    if (result && typeof result.catch === 'function') result.catch(function () {});
+    effect.addEventListener('ended', function () { effect.src = ''; });
+  }
+
   function playNow(audio) {
     var result;
     try { result = audio.play(); } catch (e) { return; }
@@ -151,6 +187,7 @@ var ONYU_BGM_BY_CHAPTER = {
     players = [makePlayer(), makePlayer()];
     // 타이틀 BGM은 페이지를 보는 동안 앞부분부터 점진적으로 준비한다.
     preload('title');
+    Object.keys(ONYU_SFX_TRACKS).forEach(preloadSfx);
 
     var unlockOverlay = document.getElementById('sound-unlock-overlay');
     unlockOverlay.addEventListener('click', function () { onyuAudioUnlock(); });
@@ -215,6 +252,8 @@ var ONYU_BGM_BY_CHAPTER = {
   window.onyuAudioPlayEnding = function (endingId) {
     switchTrack('ending-' + endingId, false);
   };
+
+  window.onyuAudioPlaySfx = playSfx;
 
   window.onyuAudioRefreshVolume = function () {
     if (activeIndex >= 0 && !fadeTimer) players[activeIndex].volume = volume();
