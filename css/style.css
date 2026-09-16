@@ -468,6 +468,7 @@ button { font-family: inherit; }
 
 /* ---- 설정 ---- */
 .settings-section-title { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--season-accent); margin: 26px 0 2px; }
+.settings-section-title[hidden], .settings-row[hidden] { display: none; }
 .settings-section-title:first-child { margin-top: 0; }
 .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); }
 .settings-row:last-of-type { border-bottom: none; }
