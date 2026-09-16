@@ -166,7 +166,7 @@ function updateAccessMessage() {
       ? '이전 요청이 반려됐어요. 후원 내역을 확인한 뒤 다시 후원하고 요청할 수 있습니다.'
       : status === 'revoked'
         ? '접근 권한이 회수된 상태입니다. 후원 내역 확인 후 다시 승인을 요청해 주세요.'
-        : '별풍선 100개를 스트리머에게 선물한 뒤 관리자의 확인·승인을 받아 게임을 시작할 수 있습니다.';
+        : '일반 유저는 별풍선 100개를 후원한 뒤 관리자의 확인·승인을 받아 게임을 시작할 수 있습니다.';
 }
 function openAccessModal() { closeAll(); updateAccessMessage(); show(accessOverlay); }
 
