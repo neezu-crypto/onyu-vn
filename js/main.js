@@ -129,22 +129,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // 명시대로, 엔딩 경로에서는 시그니처 오프닝의 "세션당 1회" 제한을 우회해
   // onyuPlaySigOpening을 직접 호출한다(onyuMaybeShowBootSplash가 아님).
   document.getElementById('ending-title-btn').addEventListener('click', function () {
-    var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
     onyuEl.endingOverlay.classList.remove('is-active');
-    // 오프닝 종료 콜백에서 onyuShowScreen이 아니라 onyuSwapScreen(즉시 전환,
-    // 자체 페이드 없음)을 쓴다 — 안 그러면 오프닝 자체의 새 페이드아웃과 화면전환
-    // 오버레이의 또 다른 페이드가 겹쳐서, 오프닝이 채 안 사라진 play 화면이
-    // 한 프레임 비쳤다가 다시 덮이는 이중 깜빡임이 생긴다.
-    var toTitle = function () { onyuPlaySigOpening(function () { onyuSwapScreen('title'); }); };
-    if (reduceMotion) {
-      onyuEl.endingOverlay.hidden = true;
-      toTitle();
-    } else {
-      setTimeout(function () {
-        onyuEl.endingOverlay.hidden = true;
-        toTitle();
-      }, 300);
-    }
+    // 시그니처 오프닝을 띄우기 전에 플레이 화면을 먼저 숨기고 타이틀을
+    // 하위 레이어에 준비한다. 기존에는 엔딩 오버레이를 300ms 뒤에 숨긴 다음
+    // 오프닝을 시작해, 이전 플레이 화면의 CG가 오프닝 아래로 비칠 수 있었다.
+    // 즉시 화면을 교체하므로 시그니처가 재생되는 처음부터 타이틀이 안전하게
+    // 배경으로 깔린다.
+    onyuEl.endingOverlay.hidden = true;
+    onyuSwapScreen('title');
+    onyuPlaySigOpening(function () { onyuSwapScreen('title'); });
   });
 
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
