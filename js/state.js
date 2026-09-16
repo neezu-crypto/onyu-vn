@@ -18,7 +18,7 @@ window.ONYU_STATE = {
     autoPlay: false,
     skipRead: false,
     reduceMotion: false,
-    bgmVolume: 0.5,
+    bgmVolume: 0.2,
     sfxVolume: 0.5,
   },
 };
