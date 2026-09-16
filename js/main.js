@@ -258,5 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 정상 부팅 시엔 시그니처 오프닝을 (localStorage 플래그 기준) 최초 1회만
   // 보여주고 타이틀로 — 이미 본 적 있으면 onDone이 그 자리에서 바로 불려
   // 기존과 동일하게 즉시 타이틀로 진입한다.
-  onyuMaybeShowBootSplash(function () { onyuShowScreen('title'); });
+  onyuMaybeShowBootSplash(function () {
+    onyuShowScreen('title');
+    if (typeof onyuAudioShowUnlockPrompt === 'function') onyuAudioShowUnlockPrompt();
+  });
 });

@@ -29,6 +29,7 @@ function onyuSwapScreen(name) {
   if (name === 'settings' && typeof onyuRenderSettingsScreen === 'function') onyuRenderSettingsScreen();
 
   onyuUpdateBackButtonLabels();
+  if (name === 'title' && typeof onyuAudioPlayTitle === 'function') onyuAudioPlayTitle();
 }
 
 // 모든 메뉴 이동(타이틀↔4개 화면, 플레이 상단바 아이콘 등)에 공용으로 쓰는 가벼운

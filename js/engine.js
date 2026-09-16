@@ -131,6 +131,7 @@ function onyuStartChapter(chapterId) {
     onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
     onyuCurrentBg = chapter.bg || null; // 챕터 기본 배경(없으면 계절 워시만)
     onyuPrefetchNextChapterCg(idx);
+    if (typeof onyuAudioPlayForChapter === 'function') onyuAudioPlayForChapter(chapterId);
 
     onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
     document.body.setAttribute('data-season', chapter.season);
@@ -313,6 +314,7 @@ function onyuRenderCurrentNode() {
     if (branch) {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       window.ONYU_STATE.lastEndingId = branch.id; // 엔딩 화면 타이틀 조회용(onyuFinishChapter)
+      if (typeof onyuAudioPlayEnding === 'function') onyuAudioPlayEnding(branch.id);
       onyuFrameStack.push({ list: branch.script, i: 0 });
       onyuRenderCurrentNode();
     } else if (onyuStepToNextNode()) {

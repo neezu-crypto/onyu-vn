@@ -252,6 +252,7 @@ function onyuInitSettingsControls() {
   document.getElementById('setting-bgm').addEventListener('input', function (e) {
     window.ONYU_STATE.settings.bgmVolume = Number(e.target.value) / 100;
     document.getElementById('setting-bgm-pct').textContent = e.target.value + '%';
+    if (typeof onyuAudioRefreshVolume === 'function') onyuAudioRefreshVolume();
     onyuSaveSettings();
   });
   document.getElementById('setting-sfx').addEventListener('input', function (e) {
