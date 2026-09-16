@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.transitionCg = document.getElementById('screen-transition-cg');
 
   // CH27 완주 후 엔딩 화면의 "타이틀로 돌아가기" — state는 그대로 두고(새 게임을
-  // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다. 기획서
-  // 명시대로, 엔딩 경로에서는 시그니처 오프닝의 "세션당 1회" 제한을 우회해
-  // onyuPlaySigOpening을 직접 호출한다(onyuMaybeShowBootSplash가 아님).
+  // 눌러야 리셋됨, 다른 타이틀 메뉴 이동과 동일 원칙) 화면만 전환한다. 시그니처
+  // 오프닝은 페이지 전용 24시간 주기를 따르므로 직접 재생하지 않고 공통 게이트를
+  // 호출한다.
   document.getElementById('ending-title-btn').addEventListener('click', function () {
     onyuEl.endingOverlay.classList.remove('is-active');
     // 시그니처 오프닝을 띄우기 전에 플레이 화면을 먼저 숨기고 타이틀을
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 배경으로 깔린다.
     onyuEl.endingOverlay.hidden = true;
     onyuSwapScreen('title');
-    onyuPlaySigOpening(function () { onyuSwapScreen('title'); });
+    onyuMaybeShowBootSplash(function () { onyuSwapScreen('title'); });
   });
 
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
@@ -255,9 +255,8 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuInitGallerySubtabs();
   onyuInitSettingsControls();
 
-  // 정상 부팅 시엔 시그니처 오프닝을 (localStorage 플래그 기준) 최초 1회만
-  // 보여주고 타이틀로 — 이미 본 적 있으면 onDone이 그 자리에서 바로 불려
-  // 기존과 동일하게 즉시 타이틀로 진입한다.
+  // 정상 부팅 시엔 페이지 전용 localStorage 타임스탬프 기준으로 24시간에 한 번
+  // 시그니처 오프닝을 보여주고 타이틀로 진입한다.
   onyuMaybeShowBootSplash(function () {
     onyuShowScreen('title');
     if (typeof onyuAudioShowUnlockPrompt === 'function') onyuAudioShowUnlockPrompt();

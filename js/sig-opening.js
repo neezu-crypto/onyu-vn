@@ -4,12 +4,12 @@
  * "스트리머 게임시리즈" 라벨 → 게임 라인업 릴이 이 게임 이름에 정지 → "제작
  * 오목지면시그" 크레딧, 총 약 3.4초. 언제든 클릭/탭 한 번으로 스킵.
  *
- * 정상 부팅 시엔 localStorage 플래그로 최초 1회만 표시하고(onyuMaybeShowBootSplash),
- * CH27 엔딩 완주 후 타이틀 복귀 경로(main.js의 ending-title-btn)에서는 기획서
- * 명시대로 이 1회 제한을 우회해 매번 다시 재생한다(onyuPlaySigOpening 직접 호출).
+ * 정상 부팅·엔딩 후 타이틀 복귀 모두 페이지 전용 localStorage 타임스탬프를
+ * 사용해 24시간에 한 번만 표시한다.
  */
 
-var ONYU_SIG_SEEN_KEY = 'ojmSigSplashSeen_v1';
+var ONYU_SIG_LAST_SHOWN_KEY = 'ojmSigSplashLastShown_onyuVn_v1';
+var ONYU_SIG_INTERVAL_MS = 24 * 60 * 60 * 1000;
 var ONYU_SIG_DURATION_MS = 3400;
 
 function onyuPlaySigOpening(onDone) {
@@ -44,11 +44,16 @@ function onyuPlaySigOpening(onDone) {
 }
 
 function onyuMaybeShowBootSplash(onDone) {
-  var seen = false;
-  try { seen = localStorage.getItem(ONYU_SIG_SEEN_KEY) === '1'; } catch (e) { /* localStorage 접근 불가 시 매번 표시 */ }
-  if (seen) { onDone(); return; }
+  onDone = typeof onDone === 'function' ? onDone : function () {};
+  var now = Date.now();
+  var lastShownAt = 0;
+  try { lastShownAt = Number(localStorage.getItem(ONYU_SIG_LAST_SHOWN_KEY)) || 0; } catch (e) { /* localStorage 접근 불가 시 표시 */ }
+  if (lastShownAt > 0 && now >= lastShownAt && now - lastShownAt < ONYU_SIG_INTERVAL_MS) {
+    onDone();
+    return;
+  }
   onyuPlaySigOpening(function () {
-    try { localStorage.setItem(ONYU_SIG_SEEN_KEY, '1'); } catch (e) { /* 저장 실패해도 진행에는 지장 없음 */ }
+    try { localStorage.setItem(ONYU_SIG_LAST_SHOWN_KEY, String(Date.now())); } catch (e) { /* 저장 실패해도 진행에는 지장 없음 */ }
     onDone();
   });
 }
