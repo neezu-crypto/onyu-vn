@@ -22,10 +22,10 @@ var ONYU_BGM_TRACKS = {
 };
 
 var ONYU_BGM_BY_CHAPTER = {
-  ch01: 'everyday', ch03: 'everyday', ch04: 'everyday', ch06: 'everyday',
+  ch01: 'everyday', ch03: 'everyday', ch06: 'everyday',
   ch09: 'everyday', ch10: 'everyday', ch11: 'everyday', ch14: 'everyday',
   ch17: 'everyday', ch20: 'everyday',
-  ch02: 'flutter', ch08: 'flutter', ch12: 'flutter', ch13: 'flutter',
+  ch02: 'flutter', ch04: 'flutter', ch08: 'flutter', ch12: 'flutter', ch13: 'flutter',
   ch16: 'flutter', ch24: 'flutter',
   ch07: 'focus', ch18: 'focus', ch19: 'focus', ch25: 'focus',
   ch21: 'friction', ch22: 'friction',
