@@ -4,6 +4,8 @@
    두지 않는다. 계절 팔레트만 body[data-season]으로 전환한다. */
 
 :root {
+  /* 상단 devbar가 화면을 가리는 일이 없도록 실제 높이를 devbar.js가 동기화한다. */
+  --devbar-height: 42px;
   --ink: #3d3436;
   --paper: #faf3ee;
   --paper-strong: #ffffff;
@@ -70,7 +72,10 @@ input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select
 img { -webkit-user-drag: none; user-drag: none; }
 button { font-family: inherit; }
 
-.screen { position: fixed; inset: 0; display: none; }
+.screen {
+  position: fixed; inset: 0; top: var(--devbar-height); bottom: auto; height: calc(100% - var(--devbar-height));
+  display: none;
+}
 .screen.is-active { display: block; }
 
 /* ================= 회전 안내 ================= */
@@ -361,7 +366,7 @@ button { font-family: inherit; }
 #screen-chapters, #screen-gallery, #screen-save, #screen-settings { background: var(--paper); overflow-y: auto; }
 
 .sub-topbar {
-  position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 16px;
+  position: sticky; top: var(--devbar-height); z-index: 4; display: flex; align-items: center; gap: 16px;
   padding: 18px 26px; background: var(--paper); border-bottom: 1px solid var(--line);
 }
 .sub-back {
