@@ -372,7 +372,10 @@ button { font-family: inherit; }
 #screen-chapters, #screen-gallery, #screen-save, #screen-settings { background: var(--paper); overflow-y: auto; }
 
 .sub-topbar {
-  position: sticky; top: var(--devbar-height); z-index: 4; display: flex; align-items: center; gap: 16px;
+  /* .screen 자체가 devbar 높이만큼 내려가 있으므로 sticky 기준은 화면 내부의
+     최상단(0)이어야 한다. devbar 높이를 다시 더하면 모바일에서 상단바 뒤에
+     빈 틈이 생긴다. */
+  position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 16px;
   padding: 18px 26px; background: var(--paper); border-bottom: 1px solid var(--line);
 }
 .sub-back {
