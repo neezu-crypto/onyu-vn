@@ -66,10 +66,10 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.outfitFreeImg.src = 'assets/standing/' + choice.free + '1.png';
   onyuEl.outfitPaidImg.src = 'assets/standing/' + choice.paid + '1.png';
   var priceLabel = '별풍선 ' + choice.price + '개';
-  // 유료 의상은 단순 가격 표기가 아니라, 시청자가 해야 할 행동과 그 결과를
-  // 한눈에 이해할 수 있도록 안내한다. 줄바꿈은 CSS의 white-space: pre-line으로
+  // 꾸민 의상은 시청자 후원 조건과 그 결과를 한눈에 이해할 수 있도록 안내한다.
+  // 줄바꿈은 CSS의 white-space: pre-line으로
   // 카드 배지 안에서 그대로 표시되며, 이 공통 로직을 타는 모든 의상 이벤트에 적용된다.
-  onyuEl.outfitPaidBadge.textContent = '⭐ 스트리머에게 ' + priceLabel + '를 선물하고\n의상 선택 가능합니다.';
+  onyuEl.outfitPaidBadge.textContent = '시청자에게 ' + priceLabel + '를 선물받으면\n의상 선택 가능합니다.';
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
 
   // 일반 시청자는 이미 게임 시작 전에 별풍선 후원 및 관리자 승인을 통과했다.
