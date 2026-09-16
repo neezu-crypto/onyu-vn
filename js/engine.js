@@ -628,43 +628,64 @@ function onyuMaybePlayEndingCredits(onDone) {
     return;
   }
   var record = onyuLoadGalleryRecord();
-  var files = window.ONYU_CHAPTERS
+  var discoveredFiles = window.ONYU_CHAPTERS
     .filter(function (c) { return c.cg && record.cg && record.cg[c.id]; })
     .map(function (c) { return c.cg; });
-  if (!files.length) { onDone(); return; }
+  if (!discoveredFiles.length) { onDone(); return; }
 
-  var overlay = onyuEl.endingCreditsOverlay;
-  var img = onyuEl.endingCreditsImg;
-  onyuLockInput();
-  overlay.hidden = false;
-  void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유(display:none 직후
-                              // 곧바로 opacity 트랜지션을 걸면 스냅되는 문제 방지)
-  requestAnimationFrame(function () { overlay.classList.add('is-active'); });
+  // 갤러리 언락 기록이 있어도 파일이 삭제·이동됐거나 아직 배포되지 않은 경우가
+  // 있을 수 있다. 크레딧을 시작하기 전에 실제 이미지가 로드되는 항목만 남겨,
+  // 빈 화면을 한 장씩 기다리지 않고 다음 발견 CG로 바로 이어지게 한다.
+  var availableFiles = new Array(discoveredFiles.length);
+  var probesLeft = discoveredFiles.length;
+  discoveredFiles.forEach(function (file, index) {
+    var probe = new Image();
+    function settle(fileAvailable) {
+      if (fileAvailable) availableFiles[index] = file;
+      probesLeft--;
+      if (probesLeft === 0) beginCredits(availableFiles.filter(Boolean));
+    }
+    probe.onload = function () { settle(true); };
+    probe.onerror = function () { settle(false); };
+    probe.src = 'assets/cg/' + file;
+  });
+
+  function beginCredits(files) {
+    if (!files.length) { onDone(); return; }
+
+    var overlay = onyuEl.endingCreditsOverlay;
+    var img = onyuEl.endingCreditsImg;
+    onyuLockInput();
+    overlay.hidden = false;
+    void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유(display:none 직후
+                                // 곧바로 opacity 트랜지션을 걸면 스냅되는 문제 방지)
+    requestAnimationFrame(function () { overlay.classList.add('is-active'); });
 
   // 이미지 1장당 갭(60ms)+페이드인(1s, CSS #ending-credits-img)이 끝난 뒤에도
   // 잠깐 더 머물다 다음 장으로 넘어가게 hold를 페이드 시간의 2배로 잡는다(기존
   // 300ms 페이드일 때 600ms hold와 같은 비율 - 2026-09-16, 배경·CG 페이드 전부
   // 1s로 통일하면서 같이 조정).
-  var i = 0;
-  function showNext() {
-    if (i >= files.length) {
-      overlay.classList.remove('is-active');
+    var i = 0;
+    function showNext() {
+      if (i >= files.length) {
+        overlay.classList.remove('is-active');
+        setTimeout(function () {
+          overlay.hidden = true;
+          onyuUnlockInput();
+          onDone();
+        }, 1000);
+        return;
+      }
+      img.classList.remove('is-visible');
       setTimeout(function () {
-        overlay.hidden = true;
-        onyuUnlockInput();
-        onDone();
-      }, 1000);
-      return;
+        img.src = 'assets/cg/' + files[i];
+        img.classList.add('is-visible');
+        i++;
+        setTimeout(showNext, 2000);
+      }, 60); // 크로스페이드가 실제로 재생될 최소한의 갭
     }
-    img.classList.remove('is-visible');
-    setTimeout(function () {
-      img.src = 'assets/cg/' + files[i];
-      img.classList.add('is-visible');
-      i++;
-      setTimeout(showNext, 2000);
-    }, 60); // 크로스페이드가 실제로 재생될 최소한의 갭
+    showNext();
   }
-  showNext();
 }
 
 function onyuShowEndingScreen(endingId) {
