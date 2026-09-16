@@ -217,18 +217,26 @@ document.addEventListener('DOMContentLoaded', function () {
     continueBtn.classList.add('is-disabled');
   }
 
-  document.getElementById('title-new-game').addEventListener('click', function () {
+  function startNewGameAfterAccess() {
     onyuResetNewGame();
     onyuRequestFullscreen();
     onyuStartChapter(window.ONYU_STATE.currentChapterId);
+  }
+  document.getElementById('title-new-game').addEventListener('click', function () {
+    if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) startNewGameAfterAccess(); });
+    else startNewGameAfterAccess();
   });
 
   continueBtn.addEventListener('click', function () {
     var snap = onyuLoadAutosave();
     if (!snap) return;
-    onyuApplySnapshot(snap);
-    onyuRequestFullscreen();
-    onyuStartChapter(snap.currentChapterId);
+    function continueAfterAccess() {
+      onyuApplySnapshot(snap);
+      onyuRequestFullscreen();
+      onyuStartChapter(snap.currentChapterId);
+    }
+    if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) continueAfterAccess(); });
+    else continueAfterAccess();
   });
 
   // 회전 안내 화면을 탭하면 그 탭 자체(유효한 사용자 제스처)로 전체화면 재시도 —

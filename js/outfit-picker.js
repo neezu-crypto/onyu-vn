@@ -1,5 +1,6 @@
 /*
- * 사복 후보 2종(편한=무료 / 꾸민=후원) 중 스트리머가 방송 중 직접 고르는 선택 UI.
+ * 사복 후보 2종 선택 UI. 일반 시청자는 게임 접근 승인을 이미 받은 상태이므로 두 의상을
+ * 자유롭게 고르고, 스트리머 인증 유저는 방송 중 직접 후원을 확인한 뒤 꾸민 의상을 고른다.
  * 시청자가 실제로 별풍선을 쐈는지는 코드가 알 방법이 없다(자동 후원 감지 없음) —
  * 스트리머가 스스로 판단해서 고르고, 꾸민 의상은 실수 클릭 방지용 확인 모달을
  * 한 번 더 거친다. game-data.js의 chapter.spriteSet(체육복 등 고정 세트)이 있는
@@ -71,6 +72,14 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.outfitPaidBadge.textContent = '⭐ 스트리머에게 ' + priceLabel + '를 선물하고\n의상 선택 가능합니다.';
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
 
+  // 일반 시청자는 이미 게임 시작 전에 별풍선 후원 및 관리자 승인을 통과했다.
+  // 따라서 이 단계에서는 후원 문구·확인 모달 없이 두 의상을 자유롭게 선택한다.
+  // 스트리머 인증 유저는 기존 방송 후원 확인 UX를 그대로 유지한다.
+  var isViewer = !!(window.onyuAuthState && window.onyuAuthState.role === 'viewer' && window.onyuAuthState.authenticated);
+  onyuEl.outfitPaidCard.classList.toggle('is-paid', !isViewer);
+  onyuEl.outfitPaidBadge.hidden = isViewer;
+  onyuEl.outfitConfirmModal.hidden = isViewer;
+
   // 의상을 고르기 전까진 대사(이전 챕터의 마지막 줄이 아직 남아있는 상태)도,
   // 스탠딩 일러스트(고르기 전이라 아직 어떤 의상인지도 안 정해진 기본 스프라이트)도
   // 노출하지 않는다 — 선택 확정 후 onDone이 부르는 onyuRenderCurrentNode가 다시 채운다.
@@ -116,6 +125,7 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
 
   onyuEl.outfitFreeCard.onclick = function () { finish(choice.free); };
   onyuEl.outfitPaidCard.onclick = function () {
+    if (isViewer) { finish(choice.paid); return; }
     onyuEl.outfitConfirmModal.hidden = false;
     if (reduceMotion) {
       onyuEl.outfitConfirmModal.classList.add('is-active');

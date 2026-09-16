@@ -130,6 +130,60 @@ button { font-family: inherit; }
   background: linear-gradient(100deg, rgba(255, 255, 255, 0) 40%, var(--paper-strong) 92%);
 }
 #screen-title.is-cg-cover .title-figure { display: none; }
+
+/* ================= 로그인·접근 권한 ================= */
+#onyu-auth-bar {
+  position: fixed; top: 12px; right: 18px; z-index: 40;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--muted); font-size: 12px; font-weight: 700;
+}
+#onyu-auth-status { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#onyu-auth-btn {
+  border: 1px solid var(--line); background: rgba(255,255,255,.82); color: var(--ink);
+  border-radius: 999px; padding: 7px 13px; font-size: 12px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(61,52,54,.08);
+}
+#onyu-auth-btn:hover { border-color: var(--season-accent); color: var(--season-accent); }
+.onyu-auth-overlay {
+  position: fixed; inset: 0; z-index: 1800; display: flex; align-items: center; justify-content: center;
+  background: rgba(61,52,54,.48); backdrop-filter: blur(7px); padding: 24px;
+}
+.onyu-auth-overlay[hidden] { display: none; }
+.onyu-auth-panel {
+  width: min(440px, 92vw); background: var(--paper-strong); border: 1px solid rgba(61,52,54,.12);
+  border-radius: 22px; padding: 28px; text-align: center; color: var(--ink);
+  box-shadow: 0 22px 60px rgba(61,52,54,.28);
+}
+.onyu-auth-kicker { margin: 0 0 8px; color: var(--season-accent); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+.onyu-auth-panel h2 { margin: 0; font-size: 23px; }
+.onyu-auth-panel p:not(.onyu-auth-kicker) { margin: 12px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.65; white-space: pre-line; }
+.onyu-auth-actions { display: flex; flex-direction: column; gap: 9px; }
+.onyu-confirm-actions { flex-direction: row; justify-content: center; }
+.onyu-confirm-actions button { min-width: 108px; }
+.onyu-auth-actions button, #onyu-streamer-form button {
+  border: none; border-radius: 999px; padding: 11px 18px; background: var(--season-accent); color: #fff;
+  font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+}
+.onyu-auth-actions button:hover, #onyu-streamer-form button:hover { filter: brightness(1.06); }
+.onyu-auth-actions button.is-secondary, .onyu-auth-link {
+  background: var(--season-soft); color: var(--ink); border: 1px solid var(--line);
+}
+.onyu-auth-close, .onyu-auth-link {
+  margin-top: 14px; border: none; background: transparent; color: var(--muted);
+  font: inherit; font-size: 12px; cursor: pointer;
+}
+.onyu-auth-close:hover, .onyu-auth-link:hover { color: var(--season-accent); }
+#onyu-streamer-form { display: flex; flex-direction: column; gap: 9px; }
+#onyu-streamer-form input {
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px;
+  background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; outline: none;
+}
+#onyu-streamer-form input:focus { border-color: var(--season-accent); }
+@media (max-width: 640px) {
+  #onyu-auth-bar { top: 9px; right: 10px; }
+  #onyu-auth-status { display: none; }
+  .onyu-auth-panel { padding: 24px 20px; }
+}
 /* 표지 CG 로딩 중 가림막(2026-09-15) - 세로형 스탠딩 컷이 잠깐 보였다가 CG로
    바뀌는 깜빡임(특히 캐시 없는 첫 로드·느린 연결)을 없애려고, CG 로드가 끝날
    때까지(성공/실패 모두) 불투명한 핑크 배경 + 타이틀 + 로딩바로 완전히 가린다.

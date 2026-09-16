@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
 <link rel="stylesheet" href="css/style.css">
+<script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
 
@@ -33,6 +34,10 @@
 
   <!-- ============ 타이틀 ============ -->
   <section class="screen is-active" data-screen="title" id="screen-title">
+    <div id="onyu-auth-bar" aria-live="polite">
+      <span id="onyu-auth-status">로그인 준비 중...</span>
+      <button type="button" id="onyu-auth-btn">로그인</button>
+    </div>
     <img class="title-cover-bg" id="title-cover-bg" alt="" draggable="false" hidden>
     <div class="title-figure" id="title-figure"><img src="assets/standing/s1.png" alt="" draggable="false"></div>
     <div class="title-loading" id="title-loading" aria-hidden="true">
@@ -296,6 +301,61 @@
     </div>
   </div>
 
+  <!-- ============ 로그인·접근 권한 ============ -->
+  <div id="onyu-login-overlay" class="onyu-auth-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onyu-login-title">
+    <div class="onyu-auth-panel">
+      <p class="onyu-auth-kicker">ACCOUNT</p>
+      <h2 id="onyu-login-title">계정을 보호해 주세요</h2>
+      <p>게임 진행과 접근 권한을 계정에 연결할 수 있어요.</p>
+      <div class="onyu-auth-actions">
+        <button type="button" id="onyu-google-login">Google로 로그인</button>
+        <button type="button" id="onyu-kakao-login">Kakao로 로그인</button>
+        <button type="button" id="onyu-streamer-verify" class="is-secondary">스트리머 인증으로 보호하기</button>
+      </div>
+      <button type="button" id="onyu-login-close" class="onyu-auth-close">닫기</button>
+    </div>
+  </div>
+
+  <div id="onyu-viewer-access-overlay" class="onyu-auth-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onyu-access-title">
+    <div class="onyu-auth-panel">
+      <p class="onyu-auth-kicker">ACCESS</p>
+      <h2 id="onyu-access-title">게임 시작 전 후원이 필요해요</h2>
+      <p id="onyu-access-message">별풍선 100개를 스트리머에게 선물한 뒤 관리자의 확인·승인을 받아 게임을 시작할 수 있습니다.</p>
+      <div class="onyu-auth-actions">
+        <button type="button" id="onyu-donation-open">후원창 열기</button>
+        <button type="button" id="onyu-access-check" class="is-secondary">승인 상태 확인</button>
+      </div>
+      <button type="button" id="onyu-access-close" class="onyu-auth-close">닫기</button>
+    </div>
+  </div>
+
+  <div id="onyu-streamer-overlay" class="onyu-auth-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onyu-streamer-title">
+    <div class="onyu-auth-panel">
+      <p class="onyu-auth-kicker">STREAMER VERIFY</p>
+      <h2 id="onyu-streamer-title">스트리머 인증</h2>
+      <p id="onyu-streamer-message">방송 닉네임과 SOOP 아이디를 입력하면 관리자 확인 후 무료로 게임을 시작할 수 있어요.</p>
+      <form id="onyu-streamer-form">
+        <input id="onyu-streamer-nickname" type="text" maxlength="20" placeholder="방송 닉네임" autocomplete="off">
+        <input id="onyu-streamer-soopid" type="text" maxlength="20" placeholder="SOOP 아이디 (영문 소문자/숫자)" autocomplete="off">
+        <button type="submit">인증 신청</button>
+      </form>
+      <button type="button" id="onyu-streamer-check" class="onyu-auth-link">승인 상태 확인</button>
+      <button type="button" id="onyu-streamer-close" class="onyu-auth-close">닫기</button>
+    </div>
+  </div>
+
+  <div id="onyu-confirm-overlay" class="onyu-auth-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onyu-confirm-title">
+    <div class="onyu-auth-panel">
+      <p class="onyu-auth-kicker">ACCOUNT SWITCH</p>
+      <h2 id="onyu-confirm-title">계정 전환</h2>
+      <p id="onyu-confirm-message"></p>
+      <div class="onyu-auth-actions onyu-confirm-actions">
+        <button type="button" id="onyu-confirm-yes">이어가기</button>
+        <button type="button" id="onyu-confirm-no" class="is-secondary">취소</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ 오목지면시그 시그니처 오프닝(게임 시리즈 공용 브랜드 모먼트) ============ -->
   <div id="sig-opening-stage" role="button" tabindex="0" aria-label="오프닝, 클릭 시 건너뛰기">
     <div class="sig-noise"></div>
@@ -332,5 +392,6 @@
   <script src="js/sig-opening.js"></script>
   <script src="js/devbar.js"></script>
   <script src="js/devbar-links.js"></script>
+  <script type="module" src="js/auth.js"></script>
 </body>
 </html>

@@ -72,10 +72,14 @@ function onyuRenderChapterList() {
 
 function onyuJumpToChapter(chapterId) {
   // 타임머신 — 그 챕터 "시작 시점" 호감도로 되돌려서 실제로 다시 플레이한다.
-  var checkpoint = window.ONYU_STATE.chapterCheckpoints[chapterId];
-  window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
-  onyuRequestFullscreen();
-  onyuStartChapter(chapterId);
+  function startAfterAccess() {
+    var checkpoint = window.ONYU_STATE.chapterCheckpoints[chapterId];
+    window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
+    onyuRequestFullscreen();
+    onyuStartChapter(chapterId);
+  }
+  if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) startAfterAccess(); });
+  else startAfterAccess();
 }
 
 /* ---------------- 갤러리 ---------------- */
