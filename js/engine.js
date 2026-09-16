@@ -10,6 +10,10 @@ var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
 var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
 var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할 키 — expr과 동일하게 "다음 지정 전까지 유지"
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
+var onyuGamePaused = false; // 플레이 중 설정 화면에 들어갔을 때 대사/자동 진행 일시정지
+
+function onyuPauseGame() { onyuGamePaused = true; }
+function onyuResumeGame() { onyuGamePaused = false; }
 
 // CG/화면 전환 연출 중에는 #screen-play의 전체 화면 클릭 리스너가 대사를
 // 진행시키지 않도록 입력을 잠근다. 오버레이가 페이드아웃을 시작하는 순간
@@ -457,7 +461,13 @@ function onyuScheduleAutoAdvance(text) {
   // 맨 앞에서 항상 취소되므로, 클릭으로 먼저 넘어가도 중복 실행되지 않는다.
   if (!window.ONYU_STATE.settings.autoPlay) return;
   var delay = 500 + text.length * 40;
-  onyuAutoAdvanceTimer = setTimeout(onyuHandleDialogueClick, delay);
+  onyuAutoAdvanceTimer = setTimeout(function waitWhilePaused() {
+    if (onyuGamePaused) {
+      onyuAutoAdvanceTimer = setTimeout(waitWhilePaused, 100);
+      return;
+    }
+    onyuHandleDialogueClick();
+  }, delay);
 }
 
 function onyuStartTypewriter(text, slowMultiplier) {
@@ -480,6 +490,10 @@ function onyuStartTypewriter(text, slowMultiplier) {
   var baseMs = onyuTextSpeedMs() * (slowMultiplier || 1);
 
   function tick() {
+    if (onyuGamePaused) {
+      onyuTyping.timer = setTimeout(tick, 100);
+      return;
+    }
     if (!onyuTyping.active) return;
     onyuTyping.shown++;
     onyuEl.dialogueLine.textContent = onyuTyping.fullText.slice(0, onyuTyping.shown);
@@ -505,7 +519,7 @@ function onyuCompleteTypewriter() {
 
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
-  if (onyuInputLockDepth > 0) return;
+  if (onyuInputLockDepth > 0 || onyuGamePaused) return;
   var node = onyuCurrentNode();
   if (!node || node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal') return; // 선택/입력/CG 팝업 중엔 클릭 무시(각자 자기 오버레이 클릭으로만 해제)
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }

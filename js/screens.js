@@ -111,10 +111,12 @@ function onyuUpdateBackButtonLabels() {
 function onyuNavigateTo(name) {
   var current = document.querySelector('.screen.is-active');
   onyuReturnScreen = (current && current.dataset.screen === 'play') ? 'play' : 'title';
+  if (name === 'settings' && onyuReturnScreen === 'play') onyuPauseGame();
   onyuShowScreen(name);
 }
 
 function onyuNavigateBack() {
+  if (onyuReturnScreen === 'play') onyuResumeGame();
   onyuShowScreen(onyuReturnScreen);
 }
 
