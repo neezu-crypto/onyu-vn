@@ -94,7 +94,16 @@ function onyuRenderGallery() {
       // 네트워크 요청을 안 하려고 아예 <img>를 안 만든다.
       div.innerHTML = '<img src="assets/cg/' + ch.cg + '" alt="" draggable="false">'
         + '<span class="cg-label num">CH' + String(ch.order).padStart(2, '0') + '</span>';
-      div.addEventListener('click', function () { onyuOpenCgBrowse(ch.cg); });
+      // 기록은 풀렸지만 파일이 아직 배포되지 않은 경우에도 브라우저 기본
+      // 깨진 이미지 아이콘을 노출하지 않고 잠금 상태로 표시한다.
+      var cgImg = div.querySelector('img');
+      var openCg = function () { onyuOpenCgBrowse(ch.cg); };
+      cgImg.addEventListener('error', function () {
+        div.classList.add('is-locked');
+        div.innerHTML = '<span class="cg-lock" aria-label="잠긴 CG">🔒</span>';
+        div.removeEventListener('click', openCg);
+      }, { once: true });
+      div.addEventListener('click', openCg);
     } else {
       div.innerHTML = '<span class="cg-lock">🔒</span>';
     }
@@ -111,7 +120,14 @@ function onyuRenderGallery() {
     if (unlocked && cgFile) {
       div.innerHTML = '<img src="assets/cg/' + cgFile + '" alt="" draggable="false">'
         + '<span class="ending-name">' + ed.name + '</span>';
-      div.addEventListener('click', function () { onyuOpenCgBrowse(cgFile); });
+      var endingImg = div.querySelector('img');
+      var openEndingCg = function () { onyuOpenCgBrowse(cgFile); };
+      endingImg.addEventListener('error', function () {
+        div.classList.remove('is-unlocked');
+        div.innerHTML = '<span class="ending-lock" aria-label="잠긴 엔딩 CG">🔒</span><span class="ending-name">???</span>';
+        div.removeEventListener('click', openEndingCg);
+      }, { once: true });
+      div.addEventListener('click', openEndingCg);
     } else {
       div.innerHTML = '<span class="ending-lock">🔒</span><span class="ending-name">???</span>';
     }
