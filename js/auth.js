@@ -10,7 +10,7 @@ import {
   getAuth, GoogleAuthProvider, signInAnonymously, signInWithPopup,
   signInWithCustomToken, signOut, linkWithPopup, onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import { getDatabase } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import { getDatabase, ref, set, onDisconnect } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
 
 const firebaseConfig = {
@@ -36,6 +36,7 @@ const requestStreamerVerificationFn = httpsCallable(functions, 'requestStreamerV
 const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
 const requestViewerAccessFn = httpsCallable(functions, 'onyuRequestViewerAccess');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
+const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
 
 // 주식시장·배팅시장 자산 신청에서 사용하는 공용 SOOP 별풍선 후원창.
 // 개발자 방송국 페이지가 아니라 실제 후원 UI를 바로 연다.
@@ -65,6 +66,17 @@ window.onyuAuthState = {
 window.onyuAuth = auth;
 window.onyuDb = db;
 
+// telemetry.js가 먼저 만든 큐를 인증된 callable에 연결한다. 전송 함수는
+// 이벤트 원문을 그대로 신뢰하지 않고 admin-center 함수에서 허용 목록·uid·역할을
+// 다시 검증한다.
+if (typeof window.onyuTelemetrySetSender === 'function') {
+  window.onyuTelemetrySetSender(function (events) {
+    return trackEventsFn({ events: events }).then(function (result) {
+      return result.data || {};
+    });
+  });
+}
+
 let readyResolve;
 let readyResolved = false;
 window.onyuAuthReady = new Promise((resolve) => { readyResolve = resolve; });
@@ -87,6 +99,26 @@ const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
 const streamerSoopIdInput = document.getElementById('onyu-streamer-soopid');
 const streamerSubmitBtn = document.getElementById('onyu-streamer-submit');
 let streamerRequestSubmitted = false;
+let presenceTimer = null;
+let presenceRef = null;
+
+function stopPresence() {
+  if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
+  presenceRef = null;
+}
+
+function startPresence(user) {
+  stopPresence();
+  if (!user || !user.uid) return;
+  presenceRef = ref(db, 'presence/onyuVn/' + user.uid);
+  const heartbeat = function () {
+    if (!presenceRef) return;
+    set(presenceRef, { lastSeen: Date.now(), connectedAt: user.metadata && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() }).catch(function () {});
+  };
+  heartbeat();
+  onDisconnect(presenceRef).remove().catch(function () {});
+  presenceTimer = setInterval(heartbeat, 60000);
+}
 
 function setStreamerSubmitState(submitted, pending) {
   streamerRequestSubmitted = submitted;
@@ -264,6 +296,7 @@ async function loginWithGoogle() {
       await signInWithPopup(auth, googleProvider);
     }
     await linkGoogleAccountFn();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'google' });
     closeAll();
     await refreshAccessState();
   } catch (e) {
@@ -296,12 +329,14 @@ async function loginWithKakao() {
       try {
         const result = await linkKakaoAccountFn({ kakaoAccessToken: authObj.access_token });
         if (result.data.action === 'switch') {
-          closeAll();
+        closeAll();
+          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'kakao' });
           if (!(await confirmAuthSwitch('이미 보호된 Kakao 계정입니다. 이 기기에서도 그 계정으로 이어서 진행할까요?\n(현재 익명 세션의 기록은 옮겨지지 않습니다.)'))) return;
           await signInWithCustomToken(auth, result.data.customToken);
           window.location.reload();
         } else {
           closeAll();
+          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'kakao' });
           await refreshAccessState();
           alert(result.data.action === 'already-linked' ? '이미 연동된 계정입니다.' : 'Kakao 계정 연동이 완료됐습니다.');
         }
@@ -324,6 +359,7 @@ async function submitStreamerVerification(event) {
   setStreamerSubmitState(false, true);
   try {
     const result = await requestStreamerVerificationFn({ nickname, soopId, source: 'onyu-vn' });
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('streamer_verification_requested');
     const data = result.data || {};
     if (data.action === 'switch') {
       closeAll();
@@ -391,6 +427,7 @@ async function openDonationAndRequestAccess() {
 
 async function checkViewerAccess() {
   await refreshAccessState();
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack(window.onyuAuthState.canStartGame ? 'access_check_success' : 'access_check_denied');
   if (window.onyuAuthState.canStartGame) {
     closeAll();
     return true;
@@ -411,12 +448,14 @@ async function ensureGameAccess() {
       console.error('온 이유 게임 시작 권한 확인 실패:', e);
       await refreshAccessState();
       if (window.onyuAuthState.role === 'streamer') return true;
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
       if (window.onyuAuthState.authenticated) openAccessModal();
       else openLoginModal();
       return false;
     }
   }
-  if (!s.authenticated) { openLoginModal(); return false; }
+  if (!s.authenticated) { if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied'); openLoginModal(); return false; }
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
   openAccessModal();
   return false;
 }
@@ -453,6 +492,7 @@ onAuthStateChanged(auth, async (user) => {
   window.onyuAuthState.user = user;
   window.onyuAuthState.realUser = user && !user.isAnonymous ? user : null;
   if (!user) {
+    stopPresence();
     signInAnonymously(auth)
       .catch((e) => console.error('익명 로그인 실패:', e))
       .finally(() => {
@@ -460,6 +500,7 @@ onAuthStateChanged(auth, async (user) => {
       });
     return;
   }
+  startPresence(user);
   await refreshAccessState();
   if (!readyResolved) { readyResolved = true; readyResolve(); }
 });

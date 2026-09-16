@@ -36,6 +36,7 @@ function onyuApplySnapshot(snap) {
 function onyuSaveAutosave() {
   try {
     localStorage.setItem(ONYU_AUTOSAVE_KEY, JSON.stringify(onyuSnapshotState()));
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('autosave_created', { chapterId: window.ONYU_STATE.currentChapterId || '' });
     if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
   } catch (e) {
     console.warn('자동저장 실패', e);
@@ -54,6 +55,7 @@ function onyuLoadAutosave() {
 function onyuSaveManualSlot(slotIndex) {
   try {
     localStorage.setItem(ONYU_SLOT_KEY_PREFIX + slotIndex, JSON.stringify(onyuSnapshotState()));
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('manual_save_created', { slot: Number(slotIndex) || 0, chapterId: window.ONYU_STATE.currentChapterId || '' });
     if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
   } catch (e) {
     console.warn('수동저장 실패', e);
@@ -89,6 +91,7 @@ function onyuUnlockGalleryItem(kind, id) {
   var isNew = !record[kind][id];
   record[kind][id] = true;
   if (isNew && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
+  if (isNew && typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_unlock', { kind: kind, itemId: id });
   try {
     localStorage.setItem(ONYU_GALLERY_KEY, JSON.stringify(record));
   } catch (e) {

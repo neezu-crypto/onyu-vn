@@ -30,6 +30,7 @@ function onyuSwapScreen(name) {
 
   onyuUpdateBackButtonLabels();
   if (name === 'title' && typeof onyuAudioPlayTitle === 'function') onyuAudioPlayTitle();
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('screen_viewed', { screen: name });
 }
 
 // 모든 메뉴 이동(타이틀↔4개 화면, 플레이 상단바 아이콘 등)에 공용으로 쓰는 가벼운
@@ -65,6 +66,7 @@ function onyuRunTransition(options, callback) {
 
   onyuTransitionDepth++;
   onyuLockInput();
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('transition_started', { transition: chapterLabel ? 'chapter' : 'screen' });
   if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('menu-transition');
   label.textContent = chapterLabel;
   label.classList.toggle('is-visible', !!chapterLabel);
@@ -88,7 +90,10 @@ function onyuRunTransition(options, callback) {
       // .is-active를 제거하면 CSS 페이드아웃(1초)이 시작되지만, 그 즉시
       // 잠금을 풀면 투명해지는 마지막 구간의 클릭/터치가 새 대사를 진행시킨다.
       // 실제 페이드가 끝난 뒤에만 입력을 다시 허용한다.
-      setTimeout(onyuUnlockInput, ONYU_TRANSITION_FADE_MS);
+      setTimeout(function () {
+        onyuUnlockInput();
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('transition_completed', { transition: chapterLabel ? 'chapter' : 'screen' });
+      }, ONYU_TRANSITION_FADE_MS);
     }, holdMs);
   }, ONYU_TRANSITION_FADE_MS);
 }

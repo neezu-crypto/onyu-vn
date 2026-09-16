@@ -17,6 +17,7 @@ function onyuPlaySigOpening(onDone) {
   var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
   stage.classList.toggle('is-reduced-motion', reduceMotion);
   stage.classList.add('is-playing');
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('signature_shown');
 
   var finished = false;
   var timer = setTimeout(finish, ONYU_SIG_DURATION_MS);
@@ -30,6 +31,7 @@ function onyuPlaySigOpening(onDone) {
     // 걸어 게임 화면(또는 타이틀)으로 부드럽게 넘어가게 한다. is-playing은
     // 이 동안 그대로 둬서(display:flex 유지) 트랜지션이 실제로 재생될 시간을 번다.
     stage.classList.add('is-leaving');
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('signature_completed');
     var fadeMs = reduceMotion ? 0 : 400;
     setTimeout(function () {
       stage.classList.remove('is-playing', 'is-leaving');

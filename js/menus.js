@@ -101,7 +101,10 @@ function onyuRenderGallery() {
       // 기록은 풀렸지만 파일이 아직 배포되지 않은 경우에도 브라우저 기본
       // 깨진 이미지 아이콘을 노출하지 않고 잠금 상태로 표시한다.
       var cgImg = div.querySelector('img');
-      var openCg = function () { onyuOpenCgBrowse(ch.cg); };
+      var openCg = function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_item_opened', { kind: 'cg', itemId: ch.id });
+        onyuOpenCgBrowse(ch.cg);
+      };
       cgImg.addEventListener('error', function () {
         div.classList.add('is-locked');
         div.innerHTML = '<span class="cg-lock" aria-label="잠긴 CG">🔒</span>';
@@ -125,7 +128,10 @@ function onyuRenderGallery() {
       div.innerHTML = '<img src="assets/cg/' + cgFile + '" alt="" draggable="false">'
         + '<span class="ending-name">' + ed.name + '</span>';
       var endingImg = div.querySelector('img');
-      var openEndingCg = function () { onyuOpenCgBrowse(cgFile); };
+      var openEndingCg = function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_item_opened', { kind: 'ending', itemId: ed.id });
+        onyuOpenCgBrowse(cgFile);
+      };
       endingImg.addEventListener('error', function () {
         div.classList.remove('is-unlocked');
         div.innerHTML = '<span class="ending-lock" aria-label="잠긴 엔딩 CG">🔒</span><span class="ending-name">???</span>';
@@ -182,6 +188,7 @@ function onyuRenderSaveScreen() {
       autosaveContainer.querySelector('.autosave-card').addEventListener('click', function () {
         onyuApplySnapshot(snap);
         onyuRequestFullscreen();
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'auto', chapterId: snap.currentChapterId || '' });
         onyuStartChapter(snap.currentChapterId);
       });
       autosaveContainer.querySelector('.autosave-card').classList.add('is-clickable');
@@ -221,6 +228,7 @@ function onyuRenderSaveScreen() {
           var loaded = onyuLoadManualSlot(slotIndex);
           onyuApplySnapshot(loaded);
           onyuRequestFullscreen();
+          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'manual', slot: slotIndex, chapterId: loaded.currentChapterId || '' });
           onyuStartChapter(loaded.currentChapterId);
         });
       } else {
@@ -258,11 +266,13 @@ function onyuInitSettingsControls() {
     document.getElementById('setting-bgm-pct').textContent = e.target.value + '%';
     if (typeof onyuAudioRefreshVolume === 'function') onyuAudioRefreshVolume();
     onyuSaveSettings();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'bgmVolume', value: Number(e.target.value) });
   });
   document.getElementById('setting-sfx').addEventListener('input', function (e) {
     window.ONYU_STATE.settings.sfxVolume = Number(e.target.value) / 100;
     document.getElementById('setting-sfx-pct').textContent = e.target.value + '%';
     onyuSaveSettings();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'sfxVolume', value: Number(e.target.value) });
   });
   document.querySelectorAll('#setting-autoplay button').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -270,6 +280,7 @@ function onyuInitSettingsControls() {
       window.ONYU_STATE.settings.autoPlay = (b.dataset.value === 'auto');
       onyuRenderSettingsScreen();
       onyuSaveSettings();
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'autoPlay', value: b.dataset.value });
     });
   });
   document.querySelectorAll('#setting-textspeed button').forEach(function (b) {
@@ -278,6 +289,7 @@ function onyuInitSettingsControls() {
       window.ONYU_STATE.settings.textSpeed = b.dataset.value;
       onyuRenderSettingsScreen();
       onyuSaveSettings();
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'textSpeed', value: b.dataset.value });
     });
   });
   document.getElementById('setting-skipread').addEventListener('click', function () {
@@ -285,12 +297,14 @@ function onyuInitSettingsControls() {
     window.ONYU_STATE.settings.skipRead = !window.ONYU_STATE.settings.skipRead;
     onyuRenderSettingsScreen();
     onyuSaveSettings();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'skipRead', value: window.ONYU_STATE.settings.skipRead });
   });
   document.getElementById('setting-reducemotion').addEventListener('click', function () {
     if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
     window.ONYU_STATE.settings.reduceMotion = !window.ONYU_STATE.settings.reduceMotion;
     onyuRenderSettingsScreen();
     onyuSaveSettings();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('settings_changed', { setting: 'reduceMotion', value: window.ONYU_STATE.settings.reduceMotion });
   });
   var adminModeToggle = document.getElementById('onyu-admin-mode-toggle');
   if (adminModeToggle) adminModeToggle.addEventListener('click', function () {

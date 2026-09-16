@@ -128,15 +128,33 @@ var ONYU_SFX_TRACKS = {
     var effect = template.cloneNode(true);
     effect.volume = Math.max(0, Math.min(1, Number(window.ONYU_STATE.settings.sfxVolume) || 0));
     var result;
-    try { result = effect.play(); } catch (e) { return; }
-    if (result && typeof result.catch === 'function') result.catch(function () {});
+    try { result = effect.play(); } catch (e) {
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('sfx_play_failed', { trackId: key });
+      return;
+    }
+    if (result && typeof result.then === 'function') {
+      result.then(function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('sfx_played', { trackId: key });
+      }).catch(function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('sfx_play_failed', { trackId: key });
+      });
+    }
     effect.addEventListener('ended', function () { effect.src = ''; });
   }
 
-  function playNow(audio) {
+  function playNow(audio, key) {
     var result;
-    try { result = audio.play(); } catch (e) { return; }
-    if (result && typeof result.catch === 'function') result.catch(function () {});
+    try { result = audio.play(); } catch (e) {
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_failed', { trackId: key || '' });
+      return;
+    }
+    if (result && typeof result.then === 'function') {
+      result.then(function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_started', { trackId: key || audio.dataset.key || '' });
+      }).catch(function () {
+        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_failed', { trackId: key || audio.dataset.key || '' });
+      });
+    }
   }
 
   function stopFade() {
@@ -158,11 +176,12 @@ var ONYU_SFX_TRACKS = {
     next.volume = activeIndex < 0 || immediate ? volume() : 0;
     // 사용자 제스처로 unlock된 이후에는 버퍼가 덜 받아졌어도 play()를 먼저
     // 호출할 수 있다. 브라우저가 버퍼를 받는 동안 재생 위치를 준비한다.
-    playNow(next);
+    playNow(next, key);
 
     var oldIndex = activeIndex;
     activeIndex = nextIndex;
     activeKey = key;
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_changed', { trackId: key });
     if (oldIndex < 0 || immediate) {
       players.forEach(function (player, i) { if (i !== nextIndex) player.pause(); });
     } else {
@@ -210,6 +229,7 @@ var ONYU_SFX_TRACKS = {
     init();
     unlocked = true;
     muted = false;
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('sound_unlock_clicked');
     document.getElementById('sound-unlock-overlay').hidden = true;
     // 이 함수는 안내 버튼의 사용자 제스처 안에서 호출되므로 자동재생 제한을
     // 안정적으로 통과한다. 파일 전체 로드를 기다리지 않고 즉시 재생을 시작한다.

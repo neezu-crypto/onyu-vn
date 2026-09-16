@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // 오프닝은 페이지 전용 24시간 주기를 따르므로 직접 재생하지 않고 공통 게이트를
   // 호출한다.
   document.getElementById('ending-title-btn').addEventListener('click', function () {
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('return_to_title');
     onyuEl.endingOverlay.classList.remove('is-active');
     // 시그니처 오프닝을 띄우기 전에 플레이 화면을 먼저 숨기고 타이틀을
     // 하위 레이어에 준비한다. 기존에는 엔딩 오버레이를 300ms 뒤에 숨긴 다음
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function startNewGameAfterAccess() {
     onyuResetNewGame();
     onyuRequestFullscreen();
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: false });
     onyuStartChapter(window.ONYU_STATE.currentChapterId);
   }
   document.getElementById('title-new-game').addEventListener('click', function () {
@@ -233,6 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function continueAfterAccess() {
       onyuApplySnapshot(snap);
       onyuRequestFullscreen();
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: true, chapterId: snap.currentChapterId || '' });
       onyuStartChapter(snap.currentChapterId);
     }
     if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) continueAfterAccess(); });

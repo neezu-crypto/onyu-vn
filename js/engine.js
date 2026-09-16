@@ -12,6 +12,45 @@ var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 var onyuGamePaused = false; // 플레이 중 설정 화면에 들어갔을 때 대사/자동 진행 일시정지
 
+function onyuTrack(eventName, data) {
+  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack(eventName, data);
+}
+
+function onyuChoiceAnalyticsId(chapterId, target) {
+  if (target && target.__analyticsId) return target.__analyticsId;
+  var chapter = window.ONYU_CHAPTERS && window.ONYU_CHAPTERS[onyuChapterIndexById(chapterId)];
+  var count = 0;
+  function walk(list) {
+    if (!Array.isArray(list)) return null;
+    for (var i = 0; i < list.length; i++) {
+      var node = list[i];
+      if (!node || typeof node !== 'object') continue;
+      if (node.type === 'choice') {
+        count++;
+        if (node === target) return chapterId + '-choice-' + count;
+        var nested = node.options || [];
+        for (var j = 0; j < nested.length; j++) {
+          var found = walk(nested[j] && nested[j].script);
+          if (found) return found;
+        }
+      } else if (node.script) {
+        var found = walk(node.script);
+        if (found) return found;
+      }
+      if (node.branches) {
+        for (var k = 0; k < node.branches.length; k++) {
+          var branchFound = walk(node.branches[k] && node.branches[k].script);
+          if (branchFound) return branchFound;
+        }
+      }
+    }
+    return null;
+  }
+  var result = walk(chapter && chapter.script) || chapterId + '-choice-unknown';
+  if (target) target.__analyticsId = result;
+  return result;
+}
+
 function onyuPauseGame() { onyuGamePaused = true; }
 function onyuResumeGame() { onyuGamePaused = false; }
 
@@ -20,6 +59,7 @@ function onyuResumeGame() { onyuGamePaused = false; }
 // pointer-events가 다시 풀리는 CSS 구조라, DOM 오버레이만으로는 그 마지막
 // 1초 동안 탭이 아래 화면에 도달할 수 있다.
 var onyuInputLockDepth = 0;
+var onyuLastBlockedInputAt = 0;
 function onyuLockInput() { onyuInputLockDepth++; }
 function onyuUnlockInput() { onyuInputLockDepth = Math.max(0, onyuInputLockDepth - 1); }
 
@@ -126,6 +166,7 @@ function onyuStartChapter(chapterId) {
     onyuTyping.active = false;
     clearTimeout(onyuAutoAdvanceTimer);
     window.ONYU_STATE.currentChapterId = chapterId;
+    onyuTrack('chapter_started', { chapterId: chapterId });
     window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
     onyuFrameStack = [{ list: chapter.script, i: 0 }];
     onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
@@ -264,6 +305,7 @@ function onyuRenderCurrentNode() {
     setTimeout(function () { onyuChoiceInputLocked = false; }, ONYU_CHOICE_INPUT_LOCK_MS);
 
     node.options.forEach(function (opt, i) {
+      opt.__analyticsIndex = i;
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'choice-bubble' + (reduceMotionForChoice ? '' : ' is-entering');
@@ -278,6 +320,7 @@ function onyuRenderCurrentNode() {
       btn.addEventListener('click', function (evt) { onyuSelectChoice(node, opt, evt, btn, fill); });
       onyuEl.choiceList.appendChild(btn);
     });
+    onyuTrack('choice_shown', { chapterId: window.ONYU_STATE.currentChapterId, choiceId: onyuChoiceAnalyticsId(window.ONYU_STATE.currentChapterId, node), optionCount: node.options.length });
     if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('choice-appear');
     if (!reduceMotionForChoice) {
       // 같은 프레임에서 바로 클래스를 빼면 브라우저가 시작 상태(opacity:0)를
@@ -315,6 +358,7 @@ function onyuRenderCurrentNode() {
     if (branch) {
       if (branch.id) onyuUnlockGalleryItem('endings', branch.id);
       window.ONYU_STATE.lastEndingId = branch.id; // 엔딩 화면 타이틀 조회용(onyuFinishChapter)
+      onyuTrack('ending_branch_entered', { endingId: branch.id });
       if (typeof onyuAudioPlayEnding === 'function') onyuAudioPlayEnding(branch.id);
       if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ending-title-reveal');
       onyuFrameStack.push({ list: branch.script, i: 0 });
@@ -388,12 +432,14 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
 
   img.onerror = function () {
     img.onerror = null; img.onload = null;
+    onyuTrack('asset_load_error', { assetType: 'cg', itemId: cgFile });
     onyuUnlockInput();
     onDone();
   };
   img.onload = function () {
     img.onerror = null;
     onyuUnlockGalleryItem('cg', chapterId);
+    onyuTrack('cg_revealed', { chapterId: chapterId, cgId: cgFile });
     overlay.hidden = false;
     img.classList.remove('is-visible'); // 이전 노출분의 상태가 남아있지 않게 초기화
     if (reduceMotion) {
@@ -523,7 +569,15 @@ function onyuCompleteTypewriter() {
 
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
-  if (onyuInputLockDepth > 0 || onyuGamePaused) return;
+  if (onyuInputLockDepth > 0) {
+    var now = Date.now();
+    if (now - onyuLastBlockedInputAt > 1000) {
+      onyuLastBlockedInputAt = now;
+      onyuTrack('input_blocked_during_transition');
+    }
+    return;
+  }
+  if (onyuGamePaused) return;
   var node = onyuCurrentNode();
   if (!node || node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal') return; // 선택/입력/CG 팝업 중엔 클릭 무시(각자 자기 오버레이 클릭으로만 해제)
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
@@ -545,6 +599,11 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
   if (onyuChoiceInputLocked) return; // 선택지가 막 뜬 직후의 연타성 오클릭 무시
   onyuMaybeRecoverFullscreen();
   if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('choice-select');
+  onyuTrack('choice_selected', {
+    chapterId: window.ONYU_STATE.currentChapterId,
+    choiceId: onyuChoiceAnalyticsId(window.ONYU_STATE.currentChapterId, choiceNode),
+    optionId: option.id || 'option-' + String((option.__analyticsIndex === undefined ? 0 : option.__analyticsIndex) + 1),
+  });
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
 
@@ -587,10 +646,12 @@ function onyuSubmitName() {
   if (!korean.test(raw) && !english.test(raw)) {
     onyuEl.nameError.textContent = '음... 다시 말해줄래?';
     if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('name-submit-error');
+    onyuTrack('name_submitted', { success: false });
     return;
   }
   window.ONYU_STATE.playerName = raw;
   if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('name-submit-ok');
+  onyuTrack('name_submitted', { success: true });
   onyuEl.nameForm.hidden = true;
   if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();
@@ -598,6 +659,7 @@ function onyuSubmitName() {
 
 function onyuFinishChapter() {
   var finishedId = window.ONYU_STATE.currentChapterId;
+  onyuTrack('chapter_completed', { chapterId: finishedId });
   window.ONYU_STATE.completedChapters[finishedId] = true; // "이미 읽은 텍스트 스킵" 판단용
   // CG 갤러리 언락은 챕터 완주 시점이 아니라 cgReveal 노드가 실제로 뜬 순간으로
   // 옮겼다(onyuShowCgReveal) — "봤다 = 갤러리에 남는다"가 더 자연스럽고, 이미지
@@ -621,6 +683,7 @@ function onyuFinishChapter() {
     onyuMaybePlayEndingCredits(function () {
       onyuRunTransition({ holdMs: 600 }, function () {
         onyuShowEndingScreen(window.ONYU_STATE.lastEndingId);
+        onyuTrack('game_completed', { endingId: window.ONYU_STATE.lastEndingId || '' });
       });
     });
   }
@@ -662,6 +725,7 @@ function onyuMaybePlayEndingCredits(onDone) {
 
     var overlay = onyuEl.endingCreditsOverlay;
     var img = onyuEl.endingCreditsImg;
+    onyuTrack('credits_started', { endingId: window.ONYU_STATE.lastEndingId || '' });
     onyuLockInput();
     overlay.hidden = false;
     void overlay.offsetHeight; // 강제 리플로우 - onyuShowCgReveal과 동일한 이유(display:none 직후
@@ -700,6 +764,8 @@ function onyuShowEndingScreen(endingId) {
   var title = (window.ONYU_ENDING_TITLES && window.ONYU_ENDING_TITLES[endingId]) || '';
   onyuEl.endingKicker.textContent = '— ' + (endingKinds[endingId] || '엔딩') + ' —';
   onyuEl.endingTitle.textContent = title;
+  onyuTrack('ending_reached', { endingId: endingId || '' });
+  onyuTrack('ending_title_revealed', { endingId: endingId || '' });
   onyuEl.endingOverlay.hidden = false;
   requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });
 }
