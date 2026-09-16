@@ -270,6 +270,25 @@ button { font-family: inherit; }
   .title-menu { gap: 3px; }
   .title-menu-item, .title-menu-item.is-primary { font-size: clamp(13px, 3.2vh, 17px); padding: 2px; }
   .title-hint { font-size: 10px; margin-top: 4px; }
+
+  /* 모바일 가로 플레이 화면은 세로 높이가 짧으므로 대화·선택지 UI를
+     기본 크기의 약 50%로 줄여 캐릭터와 다음 선택지가 함께 보이게 한다. */
+  #screen-play .play-topbar { padding: 10px 14px; }
+  #screen-play .play-icons { gap: 5px; }
+  #screen-play .play-icon-btn { width: 28px; height: 28px; font-size: 12px; }
+  #screen-play .play-chapter-tag { font-size: 9px; padding: 3px 8px; }
+  #screen-play .play-text-col { gap: 7px; padding-bottom: 2vh; }
+  #screen-play .play-situation:not(:empty) { padding: 5px 12px; }
+  #screen-play .play-situation { font-size: 8px; }
+  #screen-play .choice-list { gap: 6px; }
+  #screen-play .choice-bubble { border-width: 1px; border-radius: 10px; padding: 9px 11px; font-size: 10px; }
+  #screen-play .dialogue-box { border-radius: 12px; padding: 16px 20px; min-height: 80px; }
+  #screen-play .speaker-tag { font-size: 8px; padding: 3px 9px; margin-bottom: 7px; }
+  #screen-play .dialogue-line { font-size: 13px; line-height: 1.45; }
+  #screen-play .name-form { gap: 6px; margin-top: 4px; }
+  #screen-play .name-form input { font-size: 10px; padding: 7px 9px; border-radius: 7px; }
+  #screen-play .name-form button { font-size: 9px; padding: 7px 12px; border-radius: 7px; }
+  #screen-play .name-error { font-size: 7px; }
 }
 
 /* ================= 대화 · 선택 ================= */
