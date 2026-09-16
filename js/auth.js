@@ -37,7 +37,9 @@ const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
 const requestViewerAccessFn = httpsCallable(functions, 'onyuRequestViewerAccess');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 
-const DONATION_URL = 'https://www.sooplive.com/station/skftodwocks2';
+// 주식시장·배팅시장 자산 신청에서 사용하는 공용 SOOP 별풍선 후원창.
+// 개발자 방송국 페이지가 아니라 실제 후원 UI를 바로 연다.
+const DONATION_URL = 'https://st.sooplive.com/app/gift_starballoon.php?szBjId=skftodwocks2&szWork=BJ_STATION&sys_type=web&location=station';
 const KAKAO_JS_KEY = 'ed4f01d6903ca41d5dc0ab32b6ae143c';
 
 window.onyuAuthState = {
