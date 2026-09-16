@@ -170,6 +170,7 @@ button { font-family: inherit; }
   font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
 }
 .onyu-auth-actions button:hover, #onyu-streamer-form button:hover { filter: brightness(1.06); }
+#onyu-streamer-submit:disabled { opacity: .58; cursor: not-allowed; filter: none; }
 .onyu-auth-actions button.is-secondary, .onyu-auth-link {
   background: var(--season-soft); color: var(--ink); border: 1px solid var(--line);
 }

@@ -67,6 +67,15 @@ const streamerMessageEl = document.getElementById('onyu-streamer-message');
 const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
 const streamerSoopIdInput = document.getElementById('onyu-streamer-soopid');
+const streamerSubmitBtn = document.getElementById('onyu-streamer-submit');
+let streamerRequestSubmitted = false;
+
+function setStreamerSubmitState(submitted, pending) {
+  streamerRequestSubmitted = submitted;
+  if (!streamerSubmitBtn) return;
+  streamerSubmitBtn.disabled = submitted || !!pending;
+  streamerSubmitBtn.textContent = pending ? '신청 중...' : submitted ? '신청 완료' : '인증 신청';
+}
 
 function show(el) { if (el) el.hidden = false; }
 function hide(el) { if (el) el.hidden = true; }
@@ -154,6 +163,7 @@ function openLoginModal() { closeAll(); show(loginOverlay); }
 function openStreamerModal() {
   closeAll();
   streamerForm.reset();
+  setStreamerSubmitState(streamerRequestSubmitted);
   streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디를 입력하면 관리자 확인 후 무료로 게임을 시작할 수 있어요.';
   show(streamerOverlay);
 }
@@ -230,10 +240,12 @@ async function loginWithKakao() {
 
 async function submitStreamerVerification(event) {
   event.preventDefault();
+  if (streamerRequestSubmitted) return;
   const nickname = streamerNicknameInput.value.trim();
   const soopId = streamerSoopIdInput.value.trim();
   if (!nickname) { alert('방송 닉네임을 입력해 주세요.'); return; }
   if (!/^[a-z0-9]{2,20}$/.test(soopId)) { alert('SOOP 아이디는 영문 소문자/숫자 2~20자로 입력해 주세요.'); return; }
+  setStreamerSubmitState(false, true);
   try {
     const result = await requestStreamerVerificationFn({ nickname, soopId, source: 'onyu-vn' });
     const data = result.data || {};
@@ -246,11 +258,13 @@ async function submitStreamerVerification(event) {
       await refreshAccessState();
       alert('이미 스트리머 인증이 완료된 계정입니다.');
     } else {
+      setStreamerSubmitState(true);
       streamerMessageEl.textContent = data.isSwitch
         ? '계정 전환 신청이 관리자에게 전달됐어요. 확인 후 승인 상태를 다시 확인해 주세요.'
         : '스트리머 인증 신청이 관리자에게 전달됐어요. 관리자 확인 후 승인 상태를 다시 확인해 주세요.';
     }
   } catch (e) {
+    setStreamerSubmitState(false);
     console.error('스트리머 인증 신청 실패:', e);
     alert('스트리머 인증 신청에 실패했습니다: ' + (e.message || e));
   }
@@ -269,9 +283,11 @@ async function checkStreamerVerification() {
       await signInWithCustomToken(auth, data.customToken);
       window.location.reload();
     } else {
+      if (data.action === 'pending') setStreamerSubmitState(true);
       streamerMessageEl.textContent = '아직 관리자 확인 전이에요. 잠시 후 다시 확인해 주세요.';
     }
   } catch (e) {
+    if (!streamerRequestSubmitted) setStreamerSubmitState(false);
     alert('인증 상태 확인에 실패했습니다: ' + (e.message || e));
   }
 }
