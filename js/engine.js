@@ -689,7 +689,9 @@ function onyuMaybePlayEndingCredits(onDone) {
 }
 
 function onyuShowEndingScreen(endingId) {
+  var endingKinds = { friend: '우정 엔딩', crush: '썸 엔딩', lover: '연인 엔딩' };
   var title = (window.ONYU_ENDING_TITLES && window.ONYU_ENDING_TITLES[endingId]) || '';
+  onyuEl.endingKicker.textContent = '— ' + (endingKinds[endingId] || '엔딩') + ' —';
   onyuEl.endingTitle.textContent = title;
   onyuEl.endingOverlay.hidden = false;
   requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });

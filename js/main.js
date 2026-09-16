@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.nameError = document.getElementById('play-name-error');
   onyuEl.dialogueBox = document.getElementById('dialogue-box');
   onyuEl.endingOverlay = document.getElementById('ending-overlay');
+  onyuEl.endingKicker = document.getElementById('ending-kicker');
   onyuEl.endingTitle = document.getElementById('ending-title');
   onyuEl.cgViewerOverlay = document.getElementById('cg-viewer-overlay');
   onyuEl.cgViewerImg = document.getElementById('cg-viewer-img');
