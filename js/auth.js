@@ -41,6 +41,8 @@ const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 // 개발자 방송국 페이지가 아니라 실제 후원 UI를 바로 연다.
 const DONATION_URL = 'https://st.sooplive.com/app/gift_starballoon.php?szBjId=skftodwocks2&szWork=BJ_STATION&sys_type=web&location=station';
 const KAKAO_JS_KEY = 'ed4f01d6903ca41d5dc0ab32b6ae143c';
+const ONYU_ADMIN_UID = '3Y2N5S5aCxT3bVDvcjx6GLyUaEs1';
+const ADMIN_MODE_STORAGE_KEY = 'onyuVn.adminMode';
 
 window.onyuAuthState = {
   user: null,
@@ -50,6 +52,8 @@ window.onyuAuthState = {
   authenticated: false,
   canStartGame: false,
   loginMethod: null,
+  isAdmin: false,
+  adminMode: false,
 };
 window.onyuAuth = auth;
 window.onyuDb = db;
@@ -66,6 +70,10 @@ const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
 const accessMessageEl = document.getElementById('onyu-access-message');
 const viewerNicknameInput = document.getElementById('onyu-viewer-nickname');
+const adminModeSectionTitle = document.getElementById('onyu-admin-section-title');
+const adminModeRow = document.getElementById('onyu-admin-mode-row');
+const adminModeToggle = document.getElementById('onyu-admin-mode-toggle');
+const adminModeStateEl = document.getElementById('onyu-admin-mode-state');
 const streamerMessageEl = document.getElementById('onyu-streamer-message');
 const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
@@ -107,11 +115,38 @@ function dispatchAuthChanged() {
   document.dispatchEvent(new CustomEvent('onyu-auth-changed', { detail: Object.assign({}, window.onyuAuthState) }));
 }
 
+function getStoredAdminMode() {
+  try { return localStorage.getItem(ADMIN_MODE_STORAGE_KEY) === '1'; }
+  catch (e) { return false; }
+}
+
+function setStoredAdminMode(enabled) {
+  try {
+    if (enabled) localStorage.setItem(ADMIN_MODE_STORAGE_KEY, '1');
+    else localStorage.removeItem(ADMIN_MODE_STORAGE_KEY);
+  } catch (e) { console.warn('관리자 모드 설정 저장 실패:', e); }
+}
+
+function updateAdminModeControl() {
+  const s = window.onyuAuthState;
+  const visible = !!s.isAdmin;
+  if (adminModeSectionTitle) adminModeSectionTitle.hidden = !visible;
+  if (adminModeRow) adminModeRow.hidden = !visible;
+  if (adminModeToggle) {
+    adminModeToggle.classList.toggle('is-on', visible && s.adminMode);
+    adminModeToggle.setAttribute('aria-pressed', String(visible && s.adminMode));
+  }
+  if (adminModeStateEl) adminModeStateEl.textContent = visible && s.adminMode ? '관리자 모드' : '일반 유저 모드';
+}
+
 function updateAuthBar() {
   const s = window.onyuAuthState;
   if (!s.user) {
     authStatusEl.textContent = '로그인 준비 중...';
     authBtn.textContent = '로그인';
+  } else if (s.isAdmin && s.adminMode) {
+    authStatusEl.textContent = '관리자 모드';
+    authBtn.textContent = '계정';
   } else if (s.role === 'streamer') {
     authStatusEl.textContent = '스트리머 인증 완료';
     authBtn.textContent = '계정';
@@ -133,12 +168,15 @@ async function refreshAccessState() {
     window.onyuAuthState.accessStatus = 'none';
     window.onyuAuthState.canStartGame = false;
     window.onyuAuthState.loginMethod = null;
+    window.onyuAuthState.isAdmin = false;
+    window.onyuAuthState.adminMode = false;
     updateAuthBar();
+    updateAdminModeControl();
     dispatchAuthChanged();
     return;
   }
   try {
-    const result = await getViewerAccessFn();
+    const result = await getViewerAccessFn({ adminMode: getStoredAdminMode() });
     const data = result.data || {};
     Object.assign(window.onyuAuthState, {
       role: data.role || (user.isAnonymous ? 'anonymous' : 'viewer'),
@@ -146,6 +184,8 @@ async function refreshAccessState() {
       authenticated: !!data.authenticated,
       canStartGame: !!data.canStartGame,
       loginMethod: data.loginMethod || null,
+      isAdmin: !!data.isAdmin,
+      adminMode: !!data.adminMode,
     });
   } catch (e) {
     // 함수가 일시적으로 지연돼도 인증 UI와 게임 자체가 죽지 않도록 보수적인 기본값을 쓴다.
@@ -155,11 +195,22 @@ async function refreshAccessState() {
       authenticated: !user.isAnonymous,
       canStartGame: false,
       loginMethod: user.isAnonymous ? null : 'google',
+      isAdmin: user.uid === ONYU_ADMIN_UID,
+      adminMode: false,
     });
     console.error('온 이유 접근 상태 조회 실패:', e);
   }
   updateAuthBar();
+  updateAdminModeControl();
   dispatchAuthChanged();
+}
+
+async function toggleAdminMode() {
+  const s = window.onyuAuthState;
+  if (!s.isAdmin) return false;
+  setStoredAdminMode(!s.adminMode);
+  await refreshAccessState();
+  return window.onyuAuthState.adminMode;
 }
 
 function openLoginModal() { closeAll(); show(loginOverlay); }
@@ -332,7 +383,7 @@ async function ensureGameAccess() {
   const s = window.onyuAuthState;
   if (s.role === 'streamer' || s.canStartGame) {
     try {
-      await startSessionFn();
+      await startSessionFn({ adminMode: !!(s.isAdmin && s.adminMode) });
       return true;
     } catch (e) {
       console.error('온 이유 게임 시작 권한 확인 실패:', e);
@@ -352,6 +403,7 @@ window.onyuOpenLoginModal = openLoginModal;
 window.onyuOpenStreamerModal = openStreamerModal;
 window.onyuEnsureGameAccess = ensureGameAccess;
 window.onyuCheckViewerAccess = checkViewerAccess;
+window.onyuToggleAdminMode = toggleAdminMode;
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);

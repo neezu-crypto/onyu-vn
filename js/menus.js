@@ -292,4 +292,9 @@ function onyuInitSettingsControls() {
     onyuRenderSettingsScreen();
     onyuSaveSettings();
   });
+  var adminModeToggle = document.getElementById('onyu-admin-mode-toggle');
+  if (adminModeToggle) adminModeToggle.addEventListener('click', function () {
+    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('ui-toggle');
+    if (window.onyuToggleAdminMode) window.onyuToggleAdminMode();
+  });
 }
