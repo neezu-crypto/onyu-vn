@@ -43,6 +43,12 @@ const DONATION_URL = 'https://st.sooplive.com/app/gift_starballoon.php?szBjId=sk
 const KAKAO_JS_KEY = 'ed4f01d6903ca41d5dc0ab32b6ae143c';
 const ONYU_ADMIN_UID = '3Y2N5S5aCxT3bVDvcjx6GLyUaEs1';
 const ADMIN_MODE_STORAGE_KEY = 'onyuVn.adminMode';
+const ADMIN_ACCESS_MODES = ['admin', 'streamer', 'viewer'];
+const ADMIN_ACCESS_MODE_LABELS = {
+  admin: '관리자 모드',
+  streamer: '스트리머 모드',
+  viewer: '일반 로그인 유저',
+};
 
 window.onyuAuthState = {
   user: null,
@@ -54,6 +60,7 @@ window.onyuAuthState = {
   loginMethod: null,
   isAdmin: false,
   adminMode: false,
+  accessMode: 'viewer',
 };
 window.onyuAuth = auth;
 window.onyuDb = db;
@@ -115,14 +122,17 @@ function dispatchAuthChanged() {
   document.dispatchEvent(new CustomEvent('onyu-auth-changed', { detail: Object.assign({}, window.onyuAuthState) }));
 }
 
-function getStoredAdminMode() {
-  try { return localStorage.getItem(ADMIN_MODE_STORAGE_KEY) === '1'; }
-  catch (e) { return false; }
+function getStoredAdminAccessMode() {
+  try {
+    const stored = localStorage.getItem(ADMIN_MODE_STORAGE_KEY);
+    if (stored === '1') return 'admin'; // 이전 boolean 저장값 호환
+    return ADMIN_ACCESS_MODES.includes(stored) ? stored : 'viewer';
+  } catch (e) { return 'viewer'; }
 }
 
-function setStoredAdminMode(enabled) {
+function setStoredAdminAccessMode(mode) {
   try {
-    if (enabled) localStorage.setItem(ADMIN_MODE_STORAGE_KEY, '1');
+    if (ADMIN_ACCESS_MODES.includes(mode)) localStorage.setItem(ADMIN_MODE_STORAGE_KEY, mode);
     else localStorage.removeItem(ADMIN_MODE_STORAGE_KEY);
   } catch (e) { console.warn('관리자 모드 설정 저장 실패:', e); }
 }
@@ -130,13 +140,16 @@ function setStoredAdminMode(enabled) {
 function updateAdminModeControl() {
   const s = window.onyuAuthState;
   const visible = !!s.isAdmin;
+  const mode = visible && ADMIN_ACCESS_MODES.includes(s.accessMode) ? s.accessMode : 'viewer';
   if (adminModeSectionTitle) adminModeSectionTitle.hidden = !visible;
   if (adminModeRow) adminModeRow.hidden = !visible;
   if (adminModeToggle) {
-    adminModeToggle.classList.toggle('is-on', visible && s.adminMode);
-    adminModeToggle.setAttribute('aria-pressed', String(visible && s.adminMode));
+    adminModeToggle.classList.toggle('is-on', visible && mode === 'admin');
+    adminModeToggle.classList.toggle('is-streamer', visible && mode === 'streamer');
+    adminModeToggle.setAttribute('aria-pressed', String(visible && mode !== 'viewer'));
+    adminModeToggle.setAttribute('aria-label', '현재 ' + ADMIN_ACCESS_MODE_LABELS[mode] + ' · 클릭하여 권한 전환');
   }
-  if (adminModeStateEl) adminModeStateEl.textContent = visible && s.adminMode ? '관리자 모드' : '일반 유저 모드';
+  if (adminModeStateEl) adminModeStateEl.textContent = ADMIN_ACCESS_MODE_LABELS[mode];
 }
 
 function updateAuthBar() {
@@ -144,7 +157,7 @@ function updateAuthBar() {
   if (!s.user) {
     authStatusEl.textContent = '로그인 준비 중...';
     authBtn.textContent = '로그인';
-  } else if (s.isAdmin && s.adminMode) {
+  } else if (s.isAdmin && s.accessMode === 'admin') {
     authStatusEl.textContent = '관리자 모드';
     authBtn.textContent = '계정';
   } else if (s.role === 'streamer') {
@@ -170,14 +183,19 @@ async function refreshAccessState() {
     window.onyuAuthState.loginMethod = null;
     window.onyuAuthState.isAdmin = false;
     window.onyuAuthState.adminMode = false;
+    window.onyuAuthState.accessMode = 'viewer';
     updateAuthBar();
     updateAdminModeControl();
     dispatchAuthChanged();
     return;
   }
   try {
-    const result = await getViewerAccessFn({ adminMode: getStoredAdminMode() });
+    const requestedMode = getStoredAdminAccessMode();
+    const result = await getViewerAccessFn({ accessMode: requestedMode });
     const data = result.data || {};
+    const accessMode = ADMIN_ACCESS_MODES.includes(data.accessMode)
+      ? data.accessMode
+      : data.adminMode ? 'admin' : data.role === 'streamer' ? 'streamer' : 'viewer';
     Object.assign(window.onyuAuthState, {
       role: data.role || (user.isAnonymous ? 'anonymous' : 'viewer'),
       accessStatus: data.accessStatus || 'none',
@@ -185,7 +203,8 @@ async function refreshAccessState() {
       canStartGame: !!data.canStartGame,
       loginMethod: data.loginMethod || null,
       isAdmin: !!data.isAdmin,
-      adminMode: !!data.adminMode,
+      adminMode: accessMode === 'admin',
+      accessMode,
     });
   } catch (e) {
     // 함수가 일시적으로 지연돼도 인증 UI와 게임 자체가 죽지 않도록 보수적인 기본값을 쓴다.
@@ -197,6 +216,7 @@ async function refreshAccessState() {
       loginMethod: user.isAnonymous ? null : 'google',
       isAdmin: user.uid === ONYU_ADMIN_UID,
       adminMode: false,
+      accessMode: 'viewer',
     });
     console.error('온 이유 접근 상태 조회 실패:', e);
   }
@@ -208,9 +228,11 @@ async function refreshAccessState() {
 async function toggleAdminMode() {
   const s = window.onyuAuthState;
   if (!s.isAdmin) return false;
-  setStoredAdminMode(!s.adminMode);
+  const currentIndex = ADMIN_ACCESS_MODES.indexOf(s.accessMode);
+  const nextMode = ADMIN_ACCESS_MODES[(currentIndex + 1) % ADMIN_ACCESS_MODES.length];
+  setStoredAdminAccessMode(nextMode);
   await refreshAccessState();
-  return window.onyuAuthState.adminMode;
+  return window.onyuAuthState.accessMode;
 }
 
 function openLoginModal() { closeAll(); show(loginOverlay); }
@@ -383,7 +405,7 @@ async function ensureGameAccess() {
   const s = window.onyuAuthState;
   if (s.role === 'streamer' || s.canStartGame) {
     try {
-      await startSessionFn({ adminMode: !!(s.isAdmin && s.adminMode) });
+      await startSessionFn({ accessMode: s.isAdmin ? s.accessMode : 'viewer' });
       return true;
     } catch (e) {
       console.error('온 이유 게임 시작 권한 확인 실패:', e);
