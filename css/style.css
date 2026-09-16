@@ -162,6 +162,11 @@ button { font-family: inherit; }
 .onyu-auth-kicker { margin: 0 0 8px; color: var(--season-accent); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
 .onyu-auth-panel h2 { margin: 0; font-size: 23px; }
 .onyu-auth-panel p:not(.onyu-auth-kicker) { margin: 12px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.65; white-space: pre-line; }
+.onyu-access-input {
+  width: 100%; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px;
+  background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; outline: none;
+}
+.onyu-access-input:focus { border-color: var(--season-accent); }
 .onyu-auth-actions { display: flex; flex-direction: column; gap: 9px; }
 .onyu-confirm-actions { flex-direction: row; justify-content: center; }
 .onyu-confirm-actions button { min-width: 108px; }

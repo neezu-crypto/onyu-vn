@@ -65,6 +65,7 @@ const confirmOverlay = document.getElementById('onyu-confirm-overlay');
 const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
 const accessMessageEl = document.getElementById('onyu-access-message');
+const viewerNicknameInput = document.getElementById('onyu-viewer-nickname');
 const streamerMessageEl = document.getElementById('onyu-streamer-message');
 const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
@@ -295,9 +296,15 @@ async function checkStreamerVerification() {
 }
 
 async function openDonationAndRequestAccess() {
+  const nickname = viewerNicknameInput.value.trim();
+  if (!nickname) {
+    alert('SOOP 후원자 닉네임을 입력해 주세요.');
+    viewerNicknameInput.focus();
+    return;
+  }
   const popup = window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
   try {
-    await requestViewerAccessFn({});
+    await requestViewerAccessFn({ nickname });
     window.onyuAuthState.accessStatus = 'pending';
     updateAuthBar();
     dispatchAuthChanged();

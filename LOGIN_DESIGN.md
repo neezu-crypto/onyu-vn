@@ -46,11 +46,12 @@ window.onyuAuthState = {
 1. 사용자가 `새 게임`을 클릭한다.
 2. Google/Kakao 로그인 전이면 로그인 UI를 먼저 보여준다.
 3. 로그인 후 승인 상태가 없으면 안내 모달을 연다.
-4. 모달 확인 버튼을 누르면 SOOP 후원창을 새 탭으로 연다.
-5. 동시에 `onyuRequestViewerAccess` callable로 승인 요청을 생성하거나 기존 대기 요청을 조회한다.
-6. 사용자가 후원을 완료하면 통합 관리 센터에서 후원 내역을 확인한다.
-7. 관리자가 승인하면 서버가 `onyuVn/viewerAccess/{uid}`를 `approved`로 기록한다.
-8. 클라이언트는 해당 UID의 상태를 갱신하고 `새 게임`을 다시 활성화한다.
+4. 모달에 SOOP 후원자 닉네임을 입력한다.
+5. 확인 버튼을 누르면 SOOP 후원창을 새 탭으로 연다.
+6. 동시에 `onyuRequestViewerAccess` callable로 닉네임이 포함된 승인 요청을 생성하거나 기존 대기 요청을 조회한다.
+7. 사용자가 후원을 완료하면 통합 관리 센터와 디스코드 알림에서 닉네임을 확인한다.
+8. 관리자가 승인하면 서버가 `onyuVn/viewerAccess/{uid}`를 `approved`로 기록한다.
+9. 클라이언트는 해당 UID의 상태를 갱신하고 `새 게임`을 다시 활성화한다.
 
 ### 승인 데이터
 
@@ -61,18 +62,28 @@ window.onyuAuthState = {
       "<uid>": {
         "status": "approved",
         "approvedAt": 0,
-        "approvedBy": "<adminUid>",
-        "requestId": "<requestId>"
+        "reviewedAt": 0,
+        "reviewedBy": "<adminUid>"
       }
     },
     "viewerAccessRequests": {
-      "<requestId>": {
+      "<uid>": {
         "uid": "<uid>",
+        "nickname": "<SOOP 후원자 닉네임>",
         "provider": "google|kakao",
         "status": "pending|approved|rejected",
         "requestedAt": 0,
         "reviewedAt": 0,
         "reviewedBy": "<adminUid>"
+      }
+    },
+    "viewerAccessAlerts": {
+      "<alertId>": {
+        "uid": "<uid>",
+        "nickname": "<SOOP 후원자 닉네임>",
+        "provider": "google|kakao",
+        "status": "pending",
+        "requestedAt": 0
       }
     }
   }
