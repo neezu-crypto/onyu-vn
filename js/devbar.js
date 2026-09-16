@@ -11,7 +11,9 @@
   var devbar = document.getElementById('devbar');
   function syncDevbarHeight() {
     if (!devbar) return;
-    document.documentElement.style.setProperty('--devbar-height', devbar.getBoundingClientRect().height + 'px');
+    var fullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    document.body.classList.toggle('is-fullscreen', fullscreen);
+    document.documentElement.style.setProperty('--devbar-height', fullscreen ? '0px' : devbar.getBoundingClientRect().height + 'px');
   }
 
   function setup() {
@@ -39,6 +41,10 @@
 
   setup();
   syncDevbarHeight();
+  // 게임 화면이 전체화면으로 전환되면 devbar를 숨기고 화면 영역을 다시 확장한다.
+  // 모바일 브라우저의 WebKit 이벤트도 함께 처리해 전체화면 해제 시 즉시 복원한다.
+  document.addEventListener('fullscreenchange', syncDevbarHeight);
+  document.addEventListener('webkitfullscreenchange', syncDevbarHeight);
   window.addEventListener('resize', function () {
     clearTimeout(window.__devbarResizeTimer);
     window.__devbarResizeTimer = setTimeout(function () {
