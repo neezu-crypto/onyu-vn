@@ -82,7 +82,10 @@ function onyuRunTransition(options, callback) {
       label.classList.remove('is-visible');
       cgImg.classList.remove('is-visible');
       onyuTransitionDepth--;
-      onyuUnlockInput();
+      // .is-active를 제거하면 CSS 페이드아웃(1초)이 시작되지만, 그 즉시
+      // 잠금을 풀면 투명해지는 마지막 구간의 클릭/터치가 새 대사를 진행시킨다.
+      // 실제 페이드가 끝난 뒤에만 입력을 다시 허용한다.
+      setTimeout(onyuUnlockInput, ONYU_TRANSITION_FADE_MS);
     }, holdMs);
   }, ONYU_TRANSITION_FADE_MS);
 }
