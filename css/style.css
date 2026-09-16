@@ -25,6 +25,38 @@ body[data-season='winter'] { --season-accent: #5d7f95; --season-soft: #e8eef2; -
      기본 효과가 화면 전체를 덮어 번쩍이는 것처럼 보였다. */
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ================= 자매 게임 devbar ================= */
+/* 다른 시리즈 페이지들과 같은 상단 교차 홍보 바. 화면 자체가 fixed인
+   비주얼노벨 구조에서도 항상 위에 보이도록 낮은 전용 z-index를 사용한다. */
+.devbar {
+  flex: none; background: #0e1116; border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: relative; z-index: 30;
+}
+.devbar-inner {
+  max-width: 1180px; margin: 0 auto; padding: 7px 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.devbar-label {
+  font-size: 11px; color: rgba(255,255,255,0.72); letter-spacing: 0.04em;
+  flex-shrink: 0; white-space: nowrap; align-self: center;
+}
+.devbar-viewport { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.devbar-track { display: flex; gap: 8px; width: max-content; }
+.devbar-track.auto-scroll { animation: devbar-scroll var(--devbar-duration, 20s) linear infinite; }
+.devbar-track.auto-scroll:hover { animation-play-state: paused; }
+@keyframes devbar-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .devbar-track.auto-scroll { animation: none; }
+  .devbar-viewport { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+.dev-game-link {
+  flex-shrink: 0; white-space: nowrap; padding: 6px 11px; border-radius: 6px;
+  border: none; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85);
+  font-size: 12px; font-weight: 600; text-decoration: none; transition: background 0.12s ease;
+}
+.dev-game-link:hover { background: rgba(255,255,255,0.18); }
+
 html, body { margin: 0; padding: 0; height: 100%; }
 body {
   background: var(--paper); color: var(--ink);

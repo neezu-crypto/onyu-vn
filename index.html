@@ -8,6 +8,29 @@
 </head>
 <body data-season="spring">
 
+  <!-- ============ 자매 게임 devbar ============
+       admin-center의 devbarLinks 등록 전에도 보이도록 정적 폴백 링크를 둔다.
+       등록 후에는 js/devbar-links.js가 자기 자신(onyuVn)을 제외한 목록으로
+       안전하게 교체한다. -->
+  <div class="devbar" id="devbar">
+    <div class="devbar-inner">
+      <div class="devbar-viewport" id="devbar-viewport">
+        <div class="devbar-track" id="devbar-track">
+          <span class="devbar-label">당신이 여기에 온 이유 · BY 오목지면시그</span>
+          <a class="dev-game-link" href="https://www.sooplive.com/station/skftodwocks2" target="_blank" rel="noopener noreferrer">방송국</a>
+          <a class="dev-game-link" data-game-id="stockMarket" href="https://neezu-crypto.github.io/soop-stock-market/index.html" target="_blank" rel="noopener noreferrer">스트리머 주식시장</a>
+          <a class="dev-game-link" data-game-id="bettingMarket" href="https://neezu-crypto.github.io/StreamBet-Market/" target="_blank" rel="noopener noreferrer">스트리머 배팅시장</a>
+          <a class="dev-game-link" data-game-id="lifeGame" href="https://neezu-crypto.github.io/streamer-life-game/" target="_blank" rel="noopener noreferrer">스트리머 인생게임</a>
+          <a class="dev-game-link" data-game-id="backgroundMarket" href="https://neezu-crypto.github.io/interior-3d-viewer/" target="_blank" rel="noopener noreferrer">스트리머 배경시장</a>
+          <a class="dev-game-link" data-game-id="gallery" href="https://neezu-crypto.github.io/streamer-gallery/" target="_blank" rel="noopener noreferrer">스트리머 갤러리</a>
+          <a class="dev-game-link" data-game-id="rocketGame" href="https://neezu-crypto.github.io/rocket-game/" target="_blank" rel="noopener noreferrer">로켓 게임</a>
+          <a class="dev-game-link" data-game-id="dontClickAds" href="https://neezu-crypto.github.io/dont-click-ads/" target="_blank" rel="noopener noreferrer">절대 광고를 클릭하지 마</a>
+          <a class="dev-game-link" data-game-id="midnightMartRun" href="https://neezu-crypto.github.io/midnight-mart-run/" target="_blank" rel="noopener noreferrer">미드나잇 마트런</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ 타이틀 ============ -->
   <section class="screen is-active" data-screen="title" id="screen-title">
     <img class="title-cover-bg" id="title-cover-bg" alt="" draggable="false" hidden>
@@ -307,5 +330,7 @@
   <script src="js/main.js"></script>
   <script src="js/outfit-picker.js"></script>
   <script src="js/sig-opening.js"></script>
+  <script src="js/devbar.js"></script>
+  <script src="js/devbar-links.js"></script>
 </body>
 </html>
