@@ -43,7 +43,7 @@ const DONATION_URL = 'https://st.sooplive.com/app/gift_starballoon.php?szBjId=sk
 const KAKAO_JS_KEY = 'ed4f01d6903ca41d5dc0ab32b6ae143c';
 const ONYU_ADMIN_UID = '3Y2N5S5aCxT3bVDvcjx6GLyUaEs1';
 const ADMIN_MODE_STORAGE_KEY = 'onyuVn.adminMode';
-const ADMIN_ACCESS_MODES = ['admin', 'streamer', 'viewer'];
+const ADMIN_ACCESS_MODES = ['viewer', 'streamer', 'admin'];
 const ADMIN_ACCESS_MODE_LABELS = {
   admin: '관리자 모드',
   streamer: '스트리머 모드',
