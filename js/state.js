@@ -19,7 +19,7 @@ window.ONYU_STATE = {
     skipRead: false,
     reduceMotion: false,
     bgmVolume: 0.2,
-    sfxVolume: 0.5,
+    sfxVolume: 0.2,
   },
 };
 
