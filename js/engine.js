@@ -450,6 +450,13 @@ function onyuRenderCurrentNode() {
       onyuFinishChapter();
     }
   } else if (node.type === 'cgReveal') {
+    // 관리자 홀드 스킵 중에는 CG 팝업을 열지 않고 트리거 노드만 소비한다.
+    // 실제로 표시하지 않았으므로 갤러리 언락도 기록하지 않는다.
+    if (onyuAdminHoldActive && onyuIsAdminHoldEnabled()) {
+      if (onyuStepToNextNode()) onyuRenderNextNode();
+      else onyuFinishChapter();
+      return;
+    }
     // 본편 CG 팝업(CG 노출 시스템 설계 v1.0, Mechanism 1) — 대본 어디에나 넣을 수
     // 있는 트리거 노드. 필드가 없어 현재 챕터의 chapter.cg를 그대로 쓰되, CH27
     // 엔딩 분기(chapter.cg 없음)에서는 lastEndingId로 ONYU_ENDING_CG를 조회한다.
@@ -650,8 +657,8 @@ function onyuCompleteTypewriter() {
 
 // 관리자 모드 전용 입력 보조. 플레이 화면을 마우스/터치로 1초간 누르고 있으면
 // 첫 진행을 한 번 실행한 뒤 100ms 간격으로 반복한다. 일반 로그인 유저·스트리머
-// 모드에는 이 동작 자체가 배선되지 않으며, 선택지·이름 입력·CG·전환 중에는
-// 즉시 중단해 의도하지 않은 진행을 막는다.
+// 모드에는 이 동작 자체가 배선되지 않으며, 선택지·이름 입력·전환 중에는
+// 즉시 중단하고 CG 트리거는 팝업 없이 건너뛰어 의도하지 않은 진행을 막는다.
 var onyuAdminHoldTimer = null;
 var onyuAdminHoldInterval = null;
 var onyuAdminHoldActive = false;
@@ -668,7 +675,7 @@ function onyuAdminHoldCanAdvance() {
   if (!activeScreen || activeScreen.dataset.screen !== 'play') return false;
   if (!onyuIsAdminHoldEnabled() || onyuInputLockDepth > 0 || onyuGamePaused || onyuUiHidden) return false;
   var node = onyuCurrentNode();
-  return !!node && node.type !== 'choice' && node.type !== 'nameInput' && node.type !== 'cgReveal';
+  return !!node && node.type !== 'choice' && node.type !== 'nameInput';
 }
 
 function onyuResetAdminHoldAdvance() {
@@ -741,7 +748,16 @@ function onyuHandleDialogueClick() {
   }
   if (onyuGamePaused) return;
   var node = onyuCurrentNode();
-  if (!node || node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal') return; // 선택/입력/CG 팝업 중엔 클릭 무시(각자 자기 오버레이 클릭으로만 해제)
+  if (!node || node.type === 'choice' || node.type === 'nameInput') return; // 선택/입력 중엔 클릭 무시
+  if (node.type === 'cgReveal') {
+    // 이미 CG 트리거 노드에 멈춰 있는 상태에서 홀드를 시작한 경우에도
+    // 팝업을 표시하지 않고 다음 대사로 건너뛴다.
+    if (onyuAdminHoldActive && onyuIsAdminHoldEnabled()) {
+      if (onyuStepToNextNode()) onyuRenderNextNode();
+      else onyuFinishChapter();
+    }
+    return;
+  }
   if (onyuTyping.active) { onyuCompleteTypewriter(); return; }
   if (onyuStepToNextNode()) onyuRenderNextNode();
   else onyuFinishChapter();
