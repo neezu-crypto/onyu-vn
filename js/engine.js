@@ -649,7 +649,7 @@ function onyuCompleteTypewriter() {
 }
 
 // 관리자 모드 전용 입력 보조. 플레이 화면을 마우스/터치로 1초간 누르고 있으면
-// 첫 진행을 한 번 실행한 뒤 300ms 간격으로 반복한다. 일반 로그인 유저·스트리머
+// 첫 진행을 한 번 실행한 뒤 100ms 간격으로 반복한다. 일반 로그인 유저·스트리머
 // 모드에는 이 동작 자체가 배선되지 않으며, 선택지·이름 입력·CG·전환 중에는
 // 즉시 중단해 의도하지 않은 진행을 막는다.
 var onyuAdminHoldTimer = null;
@@ -714,7 +714,7 @@ function onyuHandleAdminHoldPointerDown(event) {
     }
     onyuAdminHoldActive = true;
     onyuAdminHoldAdvanceStep();
-    if (onyuAdminHoldActive) onyuAdminHoldInterval = setInterval(onyuAdminHoldAdvanceStep, 300);
+    if (onyuAdminHoldActive) onyuAdminHoldInterval = setInterval(onyuAdminHoldAdvanceStep, 100);
   }, 1000);
 }
 
