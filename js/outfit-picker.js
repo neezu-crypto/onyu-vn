@@ -160,10 +160,14 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   }
   onyuEl.outfitFreeCard.onclick = function (event) { choose(choice.free, event); };
   onyuEl.outfitPaidCard.onclick = handlePaidCard;
-  if (window.PointerEvent) {
-    onyuEl.outfitFreeCard.addEventListener('pointerup', function (event) { choose(choice.free, event); });
-    onyuEl.outfitPaidCard.addEventListener('pointerup', handlePaidCard);
-  }
+  // 챕터마다 픽커가 다시 열리므로 addEventListener로 누적하지 않고 프로퍼티를
+  // 교체한다. 누적 리스너가 남으면 이전 챕터의 finish()가 현재 터치와 함께
+  // 실행되어 카드 선택이 취소되거나 잘못된 의상이 저장될 수 있다.
+  onyuEl.outfitFreeCard.onpointerup = function (event) { choose(choice.free, event); };
+  onyuEl.outfitPaidCard.onpointerup = handlePaidCard;
+  // 구형 모바일 WebView처럼 Pointer Events가 없는 환경도 touchend로 동일하게 처리한다.
+  onyuEl.outfitFreeCard.ontouchend = function (event) { choose(choice.free, event); };
+  onyuEl.outfitPaidCard.ontouchend = handlePaidCard;
   onyuEl.outfitConfirmYes.onclick = function () { closeConfirm(); finish(choice.paid); };
   onyuEl.outfitConfirmNo.onclick = function () {
     if (typeof window.onyuTelemetryTrack === 'function') {
