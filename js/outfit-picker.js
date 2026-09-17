@@ -59,15 +59,16 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.outfitPickerOverlay.addEventListener('click', function (e) { e.stopPropagation(); });
   onyuEl.outfitConfirmModal.addEventListener('click', function (e) { e.stopPropagation(); });
 
-  // 버튼마다 한 번만 등록한다. touchend는 Pointer Events가 없는 WebView를 위한
-  // 폴백이며, active 상태의 selecting/promptOpen 가드가 중복 호출을 제거한다.
-  ['click', 'pointerup', 'touchend'].forEach(function (eventName) {
+  // 버튼마다 한 번만 등록한다. 전체화면 모바일 브라우저는 손가락을 뗄 때
+  // pointerup/touchend를 취소하는 경우가 있어 누르는 순간(pointerdown/touchstart)
+  // 도 함께 받는다. active 상태의 selecting/promptOpen 가드가 중복 호출을 제거한다.
+  ['pointerdown', 'touchstart', 'pointerup', 'touchend', 'click'].forEach(function (eventName) {
     onyuEl.outfitFreeCard.addEventListener(eventName, function (event) {
       onyuHandleOutfitCardActivation('free', event);
-    }, { passive: false });
+    }, { capture: true, passive: false });
     onyuEl.outfitPaidCard.addEventListener(eventName, function (event) {
       onyuHandleOutfitCardActivation('paid', event);
-    }, { passive: false });
+    }, { capture: true, passive: false });
   });
 });
 
