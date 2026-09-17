@@ -695,6 +695,14 @@ button { font-family: inherit; }
 .sig-series-under { width: 0; height: 2px; background: #c9a463; margin-top: 16px; }
 #sig-opening-stage.is-playing .sig-series-under { animation: sigUnderline .5s ease forwards 1.5s; }
 #sig-opening-stage.is-playing .sig-title-frame { animation: sigFadeUp .6s cubic-bezier(.2, .8, .3, 1) forwards 2.6s; }
+/* sig-opening.js가 performance.now() 기준으로 시간축을 직접 그릴 때는 CSS
+   애니메이션과 중복해서 적용되지 않도록 끈다. 이렇게 해야 주사율에 따라 CSS
+   애니메이션 샘플링이 달라져도 오프닝 진행 속도가 변하지 않는다. */
+#sig-opening-stage.is-playing.is-js-timeline .sig-series,
+#sig-opening-stage.is-playing.is-js-timeline .sig-series-tag,
+#sig-opening-stage.is-playing.is-js-timeline .sig-reel-track,
+#sig-opening-stage.is-playing.is-js-timeline .sig-series-under,
+#sig-opening-stage.is-playing.is-js-timeline .sig-title-frame { animation: none; }
 .sig-title-kicker { color: #c9a463; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; margin: 0 0 10px; }
 .sig-title-word { color: #f4f1e8; font-size: clamp(22px, 3.8vw, 34px); font-weight: 800; letter-spacing: 0.16em; margin: 0; }
 @keyframes sigFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
