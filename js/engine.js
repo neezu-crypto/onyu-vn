@@ -10,7 +10,9 @@ var onyuTyping = { timer: null, fullText: '', shown: 0, active: false };
 var onyuCurrentExpr = 'calm'; // 스탠딩 프롬프트 시트의 6종 표정과 1:1 대응
 var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할 키 — expr과 동일하게 "다음 지정 전까지 유지"
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
-var onyuGamePaused = false; // 플레이 중 설정 화면에 들어갔을 때 대사/자동 진행 일시정지
+var onyuGamePaused = false; // 설정·UI 숨김 중 대사/자동 진행 일시정지
+var onyuUiHidden = false; // 플레이 장면 감상용 UI 숨김 상태(세이브하지 않음)
+var onyuPauseReasons = { settings: false, uiHidden: false };
 
 function onyuTrack(eventName, data) {
   if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack(eventName, data);
@@ -51,15 +53,77 @@ function onyuChoiceAnalyticsId(chapterId, target) {
   return result;
 }
 
-function onyuPauseGame() {
-  if (onyuGamePaused) return;
-  onyuGamePaused = true;
-  onyuTrack('game_paused', { reason: 'settings' });
+function onyuRefreshPauseState(reason) {
+  var wasPaused = onyuGamePaused;
+  onyuGamePaused = Object.keys(onyuPauseReasons).some(function (key) { return onyuPauseReasons[key]; });
+  if (!wasPaused && onyuGamePaused) onyuTrack('game_paused', { reason: reason || 'settings' });
+  if (wasPaused && !onyuGamePaused) onyuTrack('game_resumed', { reason: reason || 'settings' });
 }
-function onyuResumeGame() {
-  if (!onyuGamePaused) return;
-  onyuGamePaused = false;
-  onyuTrack('game_resumed', { reason: 'settings' });
+function onyuPauseGame(reason) {
+  reason = reason || 'settings';
+  if (!Object.prototype.hasOwnProperty.call(onyuPauseReasons, reason)) reason = 'settings';
+  if (onyuPauseReasons[reason]) return;
+  onyuPauseReasons[reason] = true;
+  onyuRefreshPauseState(reason);
+}
+function onyuResumeGame(reason) {
+  reason = reason || 'settings';
+  if (!Object.prototype.hasOwnProperty.call(onyuPauseReasons, reason)) reason = 'settings';
+  if (!onyuPauseReasons[reason]) return;
+  onyuPauseReasons[reason] = false;
+  onyuRefreshPauseState(reason);
+}
+
+function onyuCanHideUi() {
+  var playScreen = document.getElementById('screen-play');
+  if (!playScreen || !playScreen.classList.contains('is-active')) return false;
+  if (onyuInputLockDepth > 0) return false;
+  var node = onyuCurrentNode();
+  if (node && (node.type === 'choice' || node.type === 'nameInput' || node.type === 'cgReveal')) return false;
+  if (onyuEl.choiceList && onyuEl.choiceList.children.length) return false;
+  if (onyuEl.nameForm && !onyuEl.nameForm.hidden) return false;
+  if (onyuEl.outfitPickerOverlay && !onyuEl.outfitPickerOverlay.hidden) return false;
+  if (onyuEl.outfitConfirmModal && !onyuEl.outfitConfirmModal.hidden) return false;
+  if (onyuEl.cgViewerOverlay && !onyuEl.cgViewerOverlay.hidden) return false;
+  if (onyuEl.endingCreditsOverlay && !onyuEl.endingCreditsOverlay.hidden) return false;
+  if (onyuEl.endingOverlay && !onyuEl.endingOverlay.hidden) return false;
+  return true;
+}
+
+function onyuSetUiHidden(hidden) {
+  hidden = !!hidden;
+  if (hidden && !onyuCanHideUi()) return false;
+  if (onyuUiHidden === hidden) return true;
+  onyuUiHidden = hidden;
+  var playScreen = document.getElementById('screen-play');
+  var topbar = document.querySelector('#screen-play .play-topbar');
+  var textCol = document.querySelector('#screen-play .play-text-col');
+  var toggleBtn = onyuEl.uiToggleBtn || document.getElementById('play-ui-toggle-btn');
+  playScreen.classList.toggle('is-ui-hidden', hidden);
+  if (topbar) topbar.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+  if (textCol) textCol.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+  if (toggleBtn) {
+    toggleBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+    toggleBtn.setAttribute('aria-label', hidden ? 'UI 표시' : 'UI 숨기기');
+  }
+  if (hidden) {
+    onyuPauseGame('uiHidden');
+    onyuTrack('play_ui_hidden');
+  } else {
+    onyuResumeGame('uiHidden');
+    onyuTrack('play_ui_shown');
+  }
+  return true;
+}
+
+function onyuToggleUi() {
+  var changed = onyuSetUiHidden(!onyuUiHidden);
+  if (changed && typeof window.onyuAudioPlaySfx === 'function') window.onyuAudioPlaySfx('ui-toggle');
+  return changed;
+}
+
+function onyuShowUi() {
+  return onyuSetUiHidden(false);
 }
 
 // CG/화면 전환 연출 중에는 #screen-play의 전체 화면 클릭 리스너가 대사를
@@ -156,6 +220,8 @@ function onyuPrefetchNextChapterCg(currentIdx) {
 }
 
 function onyuStartChapter(chapterId) {
+  // 새 챕터·이어하기·타임머신 진입은 항상 UI가 보이는 상태에서 시작한다.
+  onyuShowUi();
   // 새 게임/이어하기/타임머신 점프/불러오기 등 이 함수로 들어오는 모든 경로가
   // 전환 오버레이로 덮인 채 초기화되게 감싼다 — onyuFinishChapter가 이미 자기
   // 전환(챕터 타이틀 카드+대기)을 걸어둔 채로 이 함수를 부르는 경우엔
@@ -579,6 +645,12 @@ function onyuCompleteTypewriter() {
 
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
+  // UI 숨김 상태의 첫 입력은 장면 감상 모드에서 UI를 복구하는 데만 사용한다.
+  // 복구와 동시에 대사가 넘어가면 모바일 탭에서 한 줄이 건너뛰어질 수 있다.
+  if (onyuUiHidden) {
+    onyuShowUi();
+    return;
+  }
   if (onyuInputLockDepth > 0) {
     var now = Date.now();
     if (now - onyuLastBlockedInputAt > 1000) {

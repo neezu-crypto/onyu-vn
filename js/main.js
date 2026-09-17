@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuEl.nameInput = document.getElementById('play-name-input');
   onyuEl.nameError = document.getElementById('play-name-error');
   onyuEl.dialogueBox = document.getElementById('dialogue-box');
+  onyuEl.uiToggleBtn = document.getElementById('play-ui-toggle-btn');
   onyuEl.endingOverlay = document.getElementById('ending-overlay');
   onyuEl.endingKicker = document.getElementById('ending-kicker');
   onyuEl.endingTitle = document.getElementById('ending-title');
@@ -144,6 +145,24 @@ document.addEventListener('DOMContentLoaded', function () {
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
   // 선택지·이름입력 중에는 onyuHandleDialogueClick 자체가 no-op이라 별도 예외 처리가 필요 없다.
   document.getElementById('screen-play').addEventListener('click', onyuHandleDialogueClick);
+  onyuEl.uiToggleBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    onyuToggleUi();
+  });
+  document.addEventListener('keydown', function (e) {
+    var activeScreen = document.querySelector('.screen.is-active');
+    if (!activeScreen || activeScreen.dataset.screen !== 'play') return;
+    var target = e.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) return;
+    if (e.key === 'h' || e.key === 'H') {
+      e.preventDefault();
+      onyuToggleUi();
+    } else if (e.key === 'Escape' && onyuUiHidden) {
+      e.preventDefault();
+      onyuShowUi();
+    }
+  });
   onyuEl.nameForm.addEventListener('submit', function (e) {
     e.preventDefault();
     onyuSubmitName();

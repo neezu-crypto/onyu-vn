@@ -119,6 +119,7 @@ function onyuUpdateBackButtonLabels() {
 function onyuNavigateTo(name) {
   var current = document.querySelector('.screen.is-active');
   onyuReturnScreen = (current && current.dataset.screen === 'play') ? 'play' : 'title';
+  if (onyuReturnScreen === 'play' && typeof onyuShowUi === 'function') onyuShowUi();
   if (name === 'settings' && onyuReturnScreen === 'play') onyuPauseGame();
   if (name === 'gallery' && typeof window.onyuTelemetryTrack === 'function') {
     window.onyuTelemetryTrack('gallery_opened', { from: onyuReturnScreen });
@@ -127,7 +128,10 @@ function onyuNavigateTo(name) {
 }
 
 function onyuNavigateBack() {
-  if (onyuReturnScreen === 'play') onyuResumeGame();
+  if (onyuReturnScreen === 'play') {
+    if (typeof onyuShowUi === 'function') onyuShowUi();
+    onyuResumeGame();
+  }
   onyuShowScreen(onyuReturnScreen);
 }
 
