@@ -132,6 +132,10 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   function finish(prefix) {
     onyuActiveOutfitPicker = null;
     window.ONYU_STATE.chosenOutfits[chapterId] = prefix;
+    // 카드 선택이 확정되면 해당 의상의 6개 표정만 캐시에 데운다. 페이지
+    // 진입 시에는 후보별 첫 이미지 존재 확인만 하므로 불필요한 사복 세트를
+    // 전부 내려받지 않는다.
+    if (typeof onyuPreloadSpriteSet === 'function') onyuPreloadSpriteSet(prefix);
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('outfit_selected', {
       chapterId: chapterId,
       outfitId: prefix === choice.paid ? 'paid' : 'free',

@@ -222,6 +222,9 @@ function onyuPrefetchNextChapterCg(currentIdx) {
 function onyuStartChapter(chapterId) {
   // 새 챕터·이어하기·타임머신 진입은 항상 UI가 보이는 상태에서 시작한다.
   onyuShowUi();
+  // 타이틀에서 이미 CH01을 데웠고, 이후 챕터는 진입 시점에 필요한 에셋만
+  // 지연 로드한다. 프리로드는 비동기로 진행되므로 기존 전환 연출을 막지 않는다.
+  if (typeof onyuPreloadChapterAssets === 'function') onyuPreloadChapterAssets(chapterId);
   // 새 게임/이어하기/타임머신 점프/불러오기 등 이 함수로 들어오는 모든 경로가
   // 전환 오버레이로 덮인 채 초기화되게 감싼다 — onyuFinishChapter가 이미 자기
   // 전환(챕터 타이틀 카드+대기)을 걸어둔 채로 이 함수를 부르는 경우엔
