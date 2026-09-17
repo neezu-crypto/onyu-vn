@@ -120,6 +120,21 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     }
   }
 
+  // 모바일 Safari/Chrome에서는 전환 오버레이가 막 사라지는 프레임에 발생한
+  // touchend→click 합성 이벤트가 상위 #screen-play로 전달되거나 click 자체가
+  // 지연될 수 있다. pointerup을 먼저 소비하고 한 번만 선택을 확정해 카드 터치를
+  // 안정적으로 처리한다.
+  var selecting = false;
+  function choose(prefix, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (selecting) return;
+    selecting = true;
+    finish(prefix);
+  }
+
   function closeConfirm() {
     onyuEl.outfitConfirmModal.classList.remove('is-active');
     if (reduceMotion) {
@@ -129,16 +144,26 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     }
   }
 
-  onyuEl.outfitFreeCard.onclick = function () { finish(choice.free); };
-  onyuEl.outfitPaidCard.onclick = function () {
-    if (isViewer) { finish(choice.paid); return; }
+  function handlePaidCard(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (selecting) return;
+    if (isViewer) { selecting = true; finish(choice.paid); return; }
     onyuEl.outfitConfirmModal.hidden = false;
     if (reduceMotion) {
       onyuEl.outfitConfirmModal.classList.add('is-active');
     } else {
       requestAnimationFrame(function () { onyuEl.outfitConfirmModal.classList.add('is-active'); });
     }
-  };
+  }
+  onyuEl.outfitFreeCard.onclick = function (event) { choose(choice.free, event); };
+  onyuEl.outfitPaidCard.onclick = handlePaidCard;
+  if (window.PointerEvent) {
+    onyuEl.outfitFreeCard.addEventListener('pointerup', function (event) { choose(choice.free, event); });
+    onyuEl.outfitPaidCard.addEventListener('pointerup', handlePaidCard);
+  }
   onyuEl.outfitConfirmYes.onclick = function () { closeConfirm(); finish(choice.paid); };
   onyuEl.outfitConfirmNo.onclick = function () {
     if (typeof window.onyuTelemetryTrack === 'function') {
