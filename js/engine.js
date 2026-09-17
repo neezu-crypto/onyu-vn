@@ -203,17 +203,18 @@ function onyuTextSpeedMs() {
   return map[window.ONYU_STATE.settings.textSpeed] || 35;
 }
 
-// CG(32장)는 스탠딩·배경과 달리 챕터당 한 장만 쓰이고 장당 용량도 더 클 가능성이
-// 높아서, 32장을 전부 미리 받아두면 초기 로딩이 너무 무거워진다. 대신 지금 챕터를
-// 읽는 동안 "다음 챕터"에 쓸 CG 한 장만 미리 fetch해둔다 — 플레이어가 실제로 그
-// 챕터에 도달할 때쯤엔 이미 캐시에 있어 지연이 없다. CH01~26은 chapter.cg 파일명이
-// 이미 확정돼 있지만(2026-09-15), 실제 이미지 파일은 아직 생성 전이라 지금은 전부
-// 조용한 404로 끝난다(에러 없음, 프리페치 실패는 그냥 캐시 워밍 실패일 뿐이라
-// 무시해도 안전) — 파일이 생기는 대로 자동으로 정상 동작한다.
+// 현재 챕터가 시작될 때 다음 챕터의 배경·스탠딩·CG를 함께 캐시에 데운다.
+// 모든 챕터를 부팅 시 내려받지는 않으면서, 플레이어가 다음 챕터로 넘어갈
+// 때는 이미지 네트워크 대기로 흐름이 끊기지 않게 하는 단계형 프리로드다.
 var onyuPrefetchedCg = [];
 function onyuPrefetchNextChapterCg(currentIdx) {
   var next = window.ONYU_CHAPTERS[currentIdx + 1];
-  if (!next || !next.cg) return;
+  if (!next) return;
+  if (typeof onyuPreloadChapterAssets === 'function') {
+    onyuPreloadChapterAssets(next.id);
+    return;
+  }
+  if (!next.cg) return;
   var img = new Image();
   img.src = 'assets/cg/' + next.cg;
   onyuPrefetchedCg.push(img);
@@ -225,6 +226,8 @@ function onyuStartChapter(chapterId) {
   // 타이틀에서 이미 CH01을 데웠고, 이후 챕터는 진입 시점에 필요한 에셋만
   // 지연 로드한다. 프리로드는 비동기로 진행되므로 기존 전환 연출을 막지 않는다.
   if (typeof onyuPreloadChapterAssets === 'function') onyuPreloadChapterAssets(chapterId);
+  var requestedChapterIdx = onyuChapterIndexById(chapterId);
+  if (requestedChapterIdx >= 0) onyuPrefetchNextChapterCg(requestedChapterIdx);
   // 새 게임/이어하기/타임머신 점프/불러오기 등 이 함수로 들어오는 모든 경로가
   // 전환 오버레이로 덮인 채 초기화되게 감싼다 — onyuFinishChapter가 이미 자기
   // 전환(챕터 타이틀 카드+대기)을 걸어둔 채로 이 함수를 부르는 경우엔
@@ -250,7 +253,6 @@ function onyuStartChapter(chapterId) {
     onyuFrameStack = [{ list: chapter.script, i: 0 }];
     onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
     onyuCurrentBg = chapter.bg || null; // 챕터 기본 배경(없으면 계절 워시만)
-    onyuPrefetchNextChapterCg(idx);
     if (typeof onyuAudioPlayForChapter === 'function') onyuAudioPlayForChapter(chapterId);
 
     onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
