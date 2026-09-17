@@ -514,7 +514,7 @@ function onyuShowCgReveal(cgFile, chapterId, onDone) {
   };
   img.onload = function () {
     img.onerror = null;
-    onyuUnlockGalleryItem('cg', chapterId);
+    onyuUnlockGalleryItem('cg', chapterId, { file: cgFile });
     onyuTrack('cg_revealed', { chapterId: chapterId, cgId: cgFile });
     overlay.hidden = false;
     img.classList.remove('is-visible'); // 이전 노출분의 상태가 남아있지 않게 초기화
@@ -783,8 +783,9 @@ function onyuMaybePlayEndingCredits(onDone) {
   }
   var record = onyuLoadGalleryRecord();
   var discoveredFiles = window.ONYU_CHAPTERS
-    .filter(function (c) { return c.cg && record.cg && record.cg[c.id]; })
-    .map(function (c) { return c.cg; });
+    .filter(function (c) { return record.cg && record.cg[c.id]; })
+    .map(function (c) { return onyuGalleryCgFileForChapter(c, record); })
+    .filter(Boolean);
   if (!discoveredFiles.length) { onDone(); return; }
 
   // 갤러리 언락 기록이 있어도 파일이 삭제·이동됐거나 아직 배포되지 않은 경우가

@@ -92,19 +92,22 @@ function onyuRenderGallery() {
   cgPanel.innerHTML = '';
   window.ONYU_CHAPTERS.filter(function (c) { return c.id !== 'ch27'; }).forEach(function (ch) {
     var unlocked = !!(record.cg && record.cg[ch.id]);
+    var cgFile = unlocked && typeof onyuGalleryCgFileForChapter === 'function'
+      ? onyuGalleryCgFileForChapter(ch, record)
+      : '';
     var div = document.createElement('div');
     div.className = 'cg-thumb' + (unlocked ? '' : ' is-locked');
-    if (unlocked && ch.cg) {
+    if (unlocked && cgFile) {
       // 풀린 것만 실제 이미지를 요청한다 — 잠긴 항목은 스포일러 방지 겸 불필요한
       // 네트워크 요청을 안 하려고 아예 <img>를 안 만든다.
-      div.innerHTML = '<img src="assets/cg/' + ch.cg + '" alt="" draggable="false">'
+      div.innerHTML = '<img src="assets/cg/' + cgFile + '" alt="" draggable="false">'
         + '<span class="cg-label num">CH' + String(ch.order).padStart(2, '0') + '</span>';
       // 기록은 풀렸지만 파일이 아직 배포되지 않은 경우에도 브라우저 기본
       // 깨진 이미지 아이콘을 노출하지 않고 잠금 상태로 표시한다.
       var cgImg = div.querySelector('img');
       var openCg = function () {
         if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_item_opened', { kind: 'cg', itemId: ch.id });
-        onyuOpenCgBrowse(ch.cg);
+        onyuOpenCgBrowse(cgFile);
       };
       cgImg.addEventListener('error', function () {
         div.classList.add('is-locked');

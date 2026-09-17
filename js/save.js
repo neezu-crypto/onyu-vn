@@ -83,18 +83,41 @@ function onyuDeleteManualSlot(slotIndex) {
 function onyuLoadGalleryRecord() {
   try {
     var raw = localStorage.getItem(ONYU_GALLERY_KEY);
-    return raw ? JSON.parse(raw) : { cg: {}, endings: {} };
+    var record = raw ? JSON.parse(raw) : null;
+    if (!record || typeof record !== 'object') record = {};
+    if (!record.cg || typeof record.cg !== 'object') record.cg = {};
+    if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
+    if (!record.endings || typeof record.endings !== 'object') record.endings = {};
+    return record;
   } catch (e) {
-    return { cg: {}, endings: {} };
+    return { cg: {}, cgFiles: {}, endings: {} };
   }
 }
 
-function onyuUnlockGalleryItem(kind, id) {
+// 로컬 저장값은 사용자 측에서 임의로 바꿀 수 있으므로, 갤러리에서 사용할 CG는
+// 해당 챕터에 실제로 허용된 파일명만 통과시킨다. 기존 버전에서 파일명 없이
+// boolean만 저장된 기록은 의상 변형의 무료판을 기본값으로 복구한다.
+function onyuGalleryCgFileForChapter(chapter, record) {
+  if (!chapter || !record) return '';
+  var variants = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[chapter.id];
+  var allowed = variants ? [variants.free, variants.paid] : (chapter.cg ? [chapter.cg] : []);
+  var saved = record.cgFiles && record.cgFiles[chapter.id];
+  if (saved && allowed.indexOf(saved) !== -1) return saved;
+  return allowed[0] || '';
+}
+
+function onyuUnlockGalleryItem(kind, id, metadata) {
   // kind: 'cg' | 'endings' — 언락 즉시 디스크에 반영(세이브 시점과 무관하게 영구 기록).
   var record = window.ONYU_STATE.unlockedGallery;
   if (!record[kind]) record[kind] = {};
+  if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
   var isNew = !record[kind][id];
   record[kind][id] = true;
+  if (kind === 'cg' && metadata && metadata.file) {
+    var chapter = (window.ONYU_CHAPTERS || []).find(function (item) { return item.id === id; });
+    var allowedFile = onyuGalleryCgFileForChapter(chapter, { cgFiles: { [id]: metadata.file } });
+    if (allowedFile === metadata.file) record.cgFiles[id] = metadata.file;
+  }
   if (isNew && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
   if (isNew && typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_unlock', { kind: kind, itemId: id });
   try {
