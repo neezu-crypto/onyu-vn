@@ -482,7 +482,7 @@ button { font-family: inherit; }
 }
 .autosave-card.is-clickable { cursor: pointer; transition: border-color .12s ease; }
 .autosave-card.is-clickable:hover { border-color: var(--season-accent); }
-.autosave-thumb { width: 64px; aspect-ratio: 4/3; border-radius: 10px; flex-shrink: 0; background: linear-gradient(150deg, var(--season-wash), var(--season-soft)); }
+.autosave-thumb { width: 64px; aspect-ratio: 4/3; border-radius: 10px; flex-shrink: 0; background: linear-gradient(150deg, var(--season-wash), var(--season-soft)); background-size: cover; background-position: center; }
 .autosave-info { flex: 1; min-width: 0; }
 .autosave-name-row { display: flex; align-items: center; gap: 8px; }
 .autosave-badge { font-size: 11px; font-weight: 800; color: #fff; background: var(--season-accent); padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
@@ -497,7 +497,7 @@ button { font-family: inherit; }
   border-radius: 14px; overflow: hidden; background: var(--paper-strong); cursor: pointer;
   box-shadow: 0 4px 14px rgba(61, 52, 54, 0.1); text-align: left; border: none; font-family: inherit; padding: 0;
 }
-.save-slot-thumb { aspect-ratio: 4/3; position: relative; display: flex; align-items: flex-end; padding: 8px; background: linear-gradient(150deg, var(--season-wash), var(--season-soft)); }
+.save-slot-thumb { aspect-ratio: 4/3; position: relative; display: flex; align-items: flex-end; padding: 8px; background: linear-gradient(150deg, var(--season-wash), var(--season-soft)); background-size: cover; background-position: center; }
 .save-slot-chapter { font-size: 10px; font-weight: 800; color: var(--ink); background: rgba(255, 255, 255, 0.75); padding: 3px 7px; border-radius: 999px; }
 .save-slot-meta { padding: 8px 10px 10px; }
 .save-slot-name { font-size: 12px; font-weight: 700; color: var(--ink); margin: 0 0 3px; }

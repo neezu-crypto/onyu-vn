@@ -21,6 +21,15 @@ function onyuFormatDate(ts) {
   catch (e) { return ''; }
 }
 
+function onyuSaveThumbnailStyle(snap, chapter) {
+  var bg = snap && snap.thumbnail && snap.thumbnail.background;
+  // localStorage 값은 사용자가 직접 바꿀 수 있으므로 파일명으로 쓸 수 있는
+  // 문자만 허용하고, 이전 버전 세이브는 챕터 기본 배경으로 복구한다.
+  if (typeof bg !== 'string' || !/^[a-z0-9-]+$/i.test(bg)) bg = chapter && chapter.bg;
+  if (typeof bg !== 'string' || !/^[a-z0-9-]+$/i.test(bg)) return '';
+  return ' style="background-image: linear-gradient(150deg, rgba(255,255,255,.14), rgba(61,52,54,.24)), url(assets/backgrounds/' + bg + '.png)"';
+}
+
 /* ---------------- 챕터 선택 · 타임머신 ---------------- */
 
 function onyuRenderChapterList() {
@@ -182,7 +191,7 @@ function onyuRenderSaveScreen() {
   if (snap) {
     var ch = window.ONYU_CHAPTERS[onyuChapterIndexById(snap.currentChapterId)];
     autosaveContainer.innerHTML =
-      '<div class="autosave-card"><div class="autosave-thumb"></div><div class="autosave-info">'
+      '<div class="autosave-card"><div class="autosave-thumb"' + onyuSaveThumbnailStyle(snap, ch) + '></div><div class="autosave-info">'
       + '<div class="autosave-name-row"><span class="autosave-badge">자동</span>'
       + '<p class="autosave-name">CH.' + String(ch.order).padStart(2, '0') + ' · ' + ch.title + '</p></div>'
       + '<p class="autosave-date num">' + onyuFormatDate(snap.savedAt) + '</p></div></div>';
@@ -221,7 +230,7 @@ function onyuRenderSaveScreen() {
       if (slotSnap) {
         var sch = window.ONYU_CHAPTERS[onyuChapterIndexById(slotSnap.currentChapterId)];
         btn.innerHTML =
-          '<div class="save-slot-thumb"><span class="save-slot-chapter num">CH.' + String(sch.order).padStart(2, '0') + '</span></div>'
+          '<div class="save-slot-thumb"' + onyuSaveThumbnailStyle(slotSnap, sch) + '><span class="save-slot-chapter num">CH.' + String(sch.order).padStart(2, '0') + '</span></div>'
           + '<div class="save-slot-meta"><p class="save-slot-name">' + sch.title + '</p>'
           + '<p class="save-slot-date num">' + onyuFormatDate(slotSnap.savedAt) + '</p></div>';
       } else {

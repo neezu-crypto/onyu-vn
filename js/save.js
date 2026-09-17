@@ -10,6 +10,11 @@ var ONYU_SETTINGS_KEY = 'onyu_settings_v1';
 
 function onyuSnapshotState() {
   var s = window.ONYU_STATE;
+  var chapter = (window.ONYU_CHAPTERS || []).find(function (item) { return item.id === s.currentChapterId; });
+  var thumbnailBackground = chapter && chapter.bg ? chapter.bg : '';
+  // 플레이 중 실제로 보고 있던 배경(챕터 안에서 장소가 바뀐 경우 포함)을
+  // 저장한다. 엔진이 아직 초기화되지 않은 타이틀 화면에서는 챕터 기본값을 쓴다.
+  if (typeof onyuCurrentBg !== 'undefined' && onyuCurrentBg) thumbnailBackground = onyuCurrentBg;
   return {
     playerName: s.playerName,
     affection: s.affection,
@@ -18,6 +23,7 @@ function onyuSnapshotState() {
     chapterCheckpoints: s.chapterCheckpoints,
     completedChapters: s.completedChapters,
     chosenOutfits: s.chosenOutfits,
+    thumbnail: { background: thumbnailBackground },
     savedAt: Date.now(),
   };
 }
