@@ -168,7 +168,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
   // 선택지·이름입력 중에는 onyuHandleDialogueClick 자체가 no-op이라 별도 예외 처리가 필요 없다.
-  document.getElementById('screen-play').addEventListener('click', onyuHandleDialogueClick);
+  var playScreen = document.getElementById('screen-play');
+  playScreen.addEventListener('click', onyuHandleDialogueClick);
+  // Pointer Events는 마우스와 터치를 같은 경로로 전달하므로 관리자 전용 홀드
+  // 진행을 두 입력 방식에서 동일하게 처리한다. pointerup은 화면 밖에서 손을
+  // 떼는 경우도 놓치지 않도록 document 캡처 단계에서 받는다.
+  playScreen.addEventListener('pointerdown', onyuHandleAdminHoldPointerDown, { passive: true });
+  document.addEventListener('pointerup', onyuStopAdminHoldAdvance, true);
+  document.addEventListener('pointercancel', onyuStopAdminHoldAdvance, true);
+  window.addEventListener('blur', onyuStopAdminHoldAdvance);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) onyuStopAdminHoldAdvance();
+  });
+  document.addEventListener('onyu-auth-changed', function () {
+    if (!onyuIsAdminHoldEnabled()) onyuStopAdminHoldAdvance();
+  });
   onyuEl.uiToggleBtn.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();

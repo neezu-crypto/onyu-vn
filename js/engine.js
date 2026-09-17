@@ -648,8 +648,83 @@ function onyuCompleteTypewriter() {
   onyuEl.dialogueLine.textContent = onyuTyping.fullText;
 }
 
+// 관리자 모드 전용 입력 보조. 플레이 화면을 마우스/터치로 1초간 누르고 있으면
+// 첫 진행을 한 번 실행한 뒤 300ms 간격으로 반복한다. 일반 로그인 유저·스트리머
+// 모드에는 이 동작 자체가 배선되지 않으며, 선택지·이름 입력·CG·전환 중에는
+// 즉시 중단해 의도하지 않은 진행을 막는다.
+var onyuAdminHoldTimer = null;
+var onyuAdminHoldInterval = null;
+var onyuAdminHoldActive = false;
+var onyuAdminHoldSuppressClick = false;
+var onyuAdminHoldSuppressTimer = null;
+
+function onyuIsAdminHoldEnabled() {
+  var auth = window.onyuAuthState;
+  return !!(auth && auth.isAdmin && auth.accessMode === 'admin');
+}
+
+function onyuAdminHoldCanAdvance() {
+  var activeScreen = document.querySelector('.screen.is-active');
+  if (!activeScreen || activeScreen.dataset.screen !== 'play') return false;
+  if (!onyuIsAdminHoldEnabled() || onyuInputLockDepth > 0 || onyuGamePaused || onyuUiHidden) return false;
+  var node = onyuCurrentNode();
+  return !!node && node.type !== 'choice' && node.type !== 'nameInput' && node.type !== 'cgReveal';
+}
+
+function onyuResetAdminHoldAdvance() {
+  clearTimeout(onyuAdminHoldTimer);
+  clearInterval(onyuAdminHoldInterval);
+  onyuAdminHoldTimer = null;
+  onyuAdminHoldInterval = null;
+  onyuAdminHoldActive = false;
+}
+
+function onyuStopAdminHoldAdvance() {
+  var wasActive = onyuAdminHoldActive;
+  onyuResetAdminHoldAdvance();
+  if (!wasActive) return;
+  // hold 진행 직후 pointerup이 만드는 합성 click은 한 줄을 더 넘기므로 소비한다.
+  onyuAdminHoldSuppressClick = true;
+  clearTimeout(onyuAdminHoldSuppressTimer);
+  onyuAdminHoldSuppressTimer = setTimeout(function () {
+    onyuAdminHoldSuppressClick = false;
+  }, 600);
+}
+
+function onyuAdminHoldAdvanceStep() {
+  if (!onyuAdminHoldCanAdvance()) {
+    onyuStopAdminHoldAdvance();
+    return;
+  }
+  onyuHandleDialogueClick();
+}
+
+function onyuHandleAdminHoldPointerDown(event) {
+  if (event && event.isPrimary === false) return;
+  if (event && event.button !== undefined && event.button !== 0) return;
+  var target = event && event.target;
+  if (target && target.closest && target.closest('button, input, textarea, select, a, [role="button"], .choice-bubble, .outfit-picker-overlay, .outfit-confirm-modal')) return;
+  if (!onyuIsAdminHoldEnabled() || !onyuAdminHoldCanAdvance()) return;
+
+  onyuResetAdminHoldAdvance();
+  onyuAdminHoldTimer = setTimeout(function () {
+    if (!onyuAdminHoldCanAdvance()) {
+      onyuResetAdminHoldAdvance();
+      return;
+    }
+    onyuAdminHoldActive = true;
+    onyuAdminHoldAdvanceStep();
+    if (onyuAdminHoldActive) onyuAdminHoldInterval = setInterval(onyuAdminHoldAdvanceStep, 300);
+  }, 1000);
+}
+
 function onyuHandleDialogueClick() {
   onyuMaybeRecoverFullscreen();
+  if (onyuAdminHoldSuppressClick) {
+    onyuAdminHoldSuppressClick = false;
+    clearTimeout(onyuAdminHoldSuppressTimer);
+    return;
+  }
   // UI 숨김 상태의 첫 입력은 장면 감상 모드에서 UI를 복구하는 데만 사용한다.
   // 복구와 동시에 대사가 넘어가면 모바일 탭에서 한 줄이 건너뛰어질 수 있다.
   if (onyuUiHidden) {
