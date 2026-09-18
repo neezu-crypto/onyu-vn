@@ -465,6 +465,7 @@ button { font-family: inherit; }
 .cg-thumb .cg-label { font-size: 10px; font-weight: 700; color: var(--ink); background: rgba(255, 255, 255, 0.75); padding: 3px 7px; border-radius: 999px; }
 .cg-thumb.is-locked { background: rgba(61, 52, 54, 0.08); display: flex; align-items: center; justify-content: center; }
 .cg-thumb.is-locked .cg-label { display: none; }
+.cg-thumb.is-locked .cg-label-locked { display: block; position: absolute; bottom: 8px; color: var(--muted); background: rgba(255, 255, 255, 0.72); }
 .cg-thumb .cg-lock { color: var(--muted); font-size: 18px; }
 .gallery-panel.ending-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .ending-thumb {

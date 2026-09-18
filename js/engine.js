@@ -878,10 +878,14 @@ function onyuMaybePlayEndingCredits(onDone) {
     return;
   }
   var record = onyuLoadGalleryRecord();
-  var discoveredFiles = window.ONYU_CHAPTERS
-    .filter(function (c) { return record.cg && record.cg[c.id]; })
-    .map(function (c) { return onyuGalleryCgFileForChapter(c, record); })
-    .filter(Boolean);
+  var discoveredFiles = [];
+  window.ONYU_CHAPTERS.filter(function (c) { return c.id !== 'ch27'; }).forEach(function (chapter) {
+    var files = typeof onyuGalleryUnlockedCgFilesForChapter === 'function'
+      ? onyuGalleryUnlockedCgFilesForChapter(chapter, record) : [];
+    files.forEach(function (file) {
+      if (discoveredFiles.indexOf(file) === -1) discoveredFiles.push(file);
+    });
+  });
   if (!discoveredFiles.length) { onDone(); return; }
 
   // 갤러리 언락 기록이 있어도 파일이 삭제·이동됐거나 아직 배포되지 않은 경우가

@@ -93,11 +93,12 @@ function onyuLoadGalleryRecord() {
     if (!record || typeof record !== 'object') record = {};
     if (!record.cg || typeof record.cg !== 'object') record.cg = {};
     if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
+    if (!record.cgVariants || typeof record.cgVariants !== 'object') record.cgVariants = {};
     if (!record.endings || typeof record.endings !== 'object') record.endings = {};
     if (!record.bgm || typeof record.bgm !== 'object') record.bgm = {};
     return record;
   } catch (e) {
-    return { cg: {}, cgFiles: {}, endings: {}, bgm: {} };
+    return { cg: {}, cgFiles: {}, cgVariants: {}, endings: {}, bgm: {} };
   }
 }
 
@@ -110,7 +111,43 @@ function onyuGalleryCgFileForChapter(chapter, record) {
   var allowed = variants ? [variants.free, variants.paid] : (chapter.cg ? [chapter.cg] : []);
   var saved = record.cgFiles && record.cgFiles[chapter.id];
   if (saved && allowed.indexOf(saved) !== -1) return saved;
+  if (variants && record.cgVariants && record.cgVariants[chapter.id]) {
+    for (var i = 0; i < allowed.length; i++) {
+      if (record.cgVariants[chapter.id][allowed[i]]) return allowed[i];
+    }
+  }
   return allowed[0] || '';
+}
+
+// 갤러리에서 보여줄 CG 변형 목록. 의상 선택 챕터는 무료·꾸민 의상을
+// 별도 카드로 만들고, 기존 챕터는 기존처럼 한 장만 만든다.
+function onyuGalleryCgEntriesForChapter(chapter, record) {
+  if (!chapter) return [];
+  var variants = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[chapter.id];
+  var files = variants ? [
+    { file: variants.free, label: '편한 의상' },
+    { file: variants.paid, label: '꾸민 의상' },
+  ] : (chapter.cg ? [{ file: chapter.cg, label: '' }] : []);
+  return files.map(function (entry) {
+    var variantRecord = record && record.cgVariants && record.cgVariants[chapter.id];
+    var savedFile = record && record.cgFiles && record.cgFiles[chapter.id];
+    var hasVariantRecord = !!(variantRecord && typeof variantRecord === 'object'
+      && Object.keys(variantRecord).length);
+    // cgVariants 도입 전의 기록은 cgFiles에 저장된 선택 변형만 복구한다.
+    // 파일 정보가 전혀 없는 오래된 기록은 무료 변형을 기본 복구한다.
+    var unlocked = !!(variantRecord && variantRecord[entry.file])
+      || savedFile === entry.file
+      || (!hasVariantRecord && !savedFile && record && record.cg && record.cg[chapter.id]
+        && (!variants || entry.file === variants.free));
+    return { file: entry.file, label: entry.label, unlocked: unlocked };
+  });
+}
+
+// 엔딩 크레딧에서 재생할, 실제로 해금된 파일만 반환한다.
+function onyuGalleryUnlockedCgFilesForChapter(chapter, record) {
+  return onyuGalleryCgEntriesForChapter(chapter, record).filter(function (entry) {
+    return entry.unlocked;
+  }).map(function (entry) { return entry.file; });
 }
 
 function onyuUnlockGalleryItem(kind, id, metadata) {
@@ -118,15 +155,28 @@ function onyuUnlockGalleryItem(kind, id, metadata) {
   var record = window.ONYU_STATE.unlockedGallery;
   if (!record[kind]) record[kind] = {};
   if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
+  if (!record.cgVariants || typeof record.cgVariants !== 'object') record.cgVariants = {};
   var isNew = !record[kind][id];
+  var isNewCgVariant = false;
   record[kind][id] = true;
   if (kind === 'cg' && metadata && metadata.file) {
     var chapter = (window.ONYU_CHAPTERS || []).find(function (item) { return item.id === id; });
     var allowedFile = onyuGalleryCgFileForChapter(chapter, { cgFiles: { [id]: metadata.file } });
-    if (allowedFile === metadata.file) record.cgFiles[id] = metadata.file;
+    if (allowedFile === metadata.file) {
+      if (!record.cgVariants[id] || typeof record.cgVariants[id] !== 'object') record.cgVariants[id] = {};
+      var outfitVariants = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[id];
+      var wasLegacyUnlocked = !record.cgVariants[id][metadata.file]
+        && record.cg[id]
+        && (!record.cgFiles[id] && (!outfitVariants || metadata.file === outfitVariants.free));
+      isNewCgVariant = !record.cgVariants[id][metadata.file] && !record.cgFiles[id] && !wasLegacyUnlocked;
+      record.cgVariants[id][metadata.file] = true;
+      record.cgFiles[id] = metadata.file;
+    }
   }
-  if (isNew && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
-  if (isNew && typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('gallery_unlock', { kind: kind, itemId: id });
+  if ((isNew || isNewCgVariant) && typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
+  if ((isNew || isNewCgVariant) && typeof window.onyuTelemetryTrack === 'function') {
+    window.onyuTelemetryTrack('gallery_unlock', { kind: kind, itemId: id, variant: metadata && metadata.file || '' });
+  }
   try {
     localStorage.setItem(ONYU_GALLERY_KEY, JSON.stringify(record));
   } catch (e) {
