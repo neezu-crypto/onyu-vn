@@ -156,6 +156,39 @@ function onyuRenderGallery() {
     }
     endingPanel.appendChild(div);
   });
+
+  var bgmPanel = document.getElementById('gallery-panel-bgm');
+  bgmPanel.innerHTML = '';
+  var activeBgmId = typeof window.onyuAudioGetActiveTrackId === 'function'
+    ? window.onyuAudioGetActiveTrackId() : '';
+  (window.ONYU_BGM_GALLERY_TRACKS || []).forEach(function (track) {
+    var unlocked = !!(record.bgm && record.bgm[track.id]);
+    var card = document.createElement('article');
+    card.className = 'bgm-card' + (unlocked ? '' : ' is-locked') + (activeBgmId === track.id ? ' is-playing' : '');
+    var title = document.createElement('h3');
+    title.className = 'bgm-title';
+    title.textContent = unlocked ? track.title : '잠긴 BGM';
+    var subtitle = document.createElement('p');
+    subtitle.className = 'bgm-subtitle';
+    subtitle.textContent = unlocked ? track.subtitle : '게임에서 한 번 재생하면 해금됩니다.';
+    var action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'bgm-play-btn';
+    action.disabled = !unlocked;
+    action.textContent = unlocked ? (activeBgmId === track.id ? '재생 중' : '▶ 재생') : '🔒 잠김';
+    card.appendChild(title);
+    card.appendChild(subtitle);
+    card.appendChild(action);
+    if (unlocked) {
+      action.addEventListener('click', function () {
+        if (typeof window.onyuAudioPlayGalleryTrack === 'function') {
+          window.onyuAudioPlayGalleryTrack(track.id);
+          onyuRenderGallery();
+        }
+      });
+    }
+    bgmPanel.appendChild(card);
+  });
 }
 
 function onyuInitGallerySubtabs() {
@@ -166,6 +199,7 @@ function onyuInitGallerySubtabs() {
       var tab = btn.dataset.galleryTab;
       document.getElementById('gallery-panel-cg').hidden = (tab !== 'cg');
       document.getElementById('gallery-panel-endings').hidden = (tab !== 'endings');
+      document.getElementById('gallery-panel-bgm').hidden = (tab !== 'bgm');
     });
   });
 }

@@ -21,6 +21,22 @@ var ONYU_BGM_TRACKS = {
   'ending-lover': 'assets/bgm/09 ending-lover.mp3',
 };
 
+// 갤러리에 표시할 BGM 목록. everyday는 같은 무드의 두 파일을 별도 곡으로
+// 기록해, 실제로 한 번 재생한 버전만 다시 들을 수 있게 한다.
+var ONYU_BGM_GALLERY_TRACKS = [
+  { id: 'title', key: 'title', title: '타이틀 테마', subtitle: '타이틀 화면' },
+  { id: 'everyday-1', key: 'everyday', variantIndex: 0, title: '평범한 하루 1', subtitle: '일상 무드' },
+  { id: 'everyday-2', key: 'everyday', variantIndex: 1, title: '평범한 하루 2', subtitle: '일상 무드' },
+  { id: 'flutter', key: 'flutter', title: '설렘', subtitle: '설렘 무드' },
+  { id: 'focus', key: 'focus', title: '집중', subtitle: '집중 무드' },
+  { id: 'friction', key: 'friction', title: '마찰', subtitle: '갈등 무드' },
+  { id: 'festival', key: 'festival', title: '축제', subtitle: '축제 무드' },
+  { id: 'reconcile', key: 'reconcile', title: '화해', subtitle: '화해 무드' },
+  { id: 'ending-friend', key: 'ending-friend', title: '우정 엔딩', subtitle: '엔딩 BGM' },
+  { id: 'ending-crush', key: 'ending-crush', title: '썸 엔딩', subtitle: '엔딩 BGM' },
+  { id: 'ending-lover', key: 'ending-lover', title: '연인 엔딩', subtitle: '엔딩 BGM' },
+];
+
 var ONYU_BGM_BY_CHAPTER = {
   ch01: 'everyday', ch03: 'everyday', ch06: 'everyday',
   ch09: 'everyday', ch10: 'everyday', ch11: 'everyday', ch14: 'everyday',
@@ -52,6 +68,7 @@ var ONYU_SFX_TRACKS = {
   var sfxTemplates = {};
   var activeIndex = -1;
   var activeKey = null;
+  var activeTrackId = null;
   var pendingVariants = {};
   var unlocked = false;
   var muted = false;
@@ -142,7 +159,25 @@ var ONYU_SFX_TRACKS = {
     effect.addEventListener('ended', function () { effect.src = ''; });
   }
 
-  function playNow(audio, key) {
+  function galleryTrackIdFor(key, source) {
+    var tracks = window.ONYU_BGM_GALLERY_TRACKS || [];
+    for (var i = 0; i < tracks.length; i++) {
+      var track = tracks[i];
+      if (track.key !== key) continue;
+      if (source && sourceFor(track.key, track.variantIndex) !== source) continue;
+      return track.id;
+    }
+    return key || '';
+  }
+
+  function markBgmPlayed(trackId) {
+    if (!trackId) return;
+    if (typeof window.onyuUnlockGalleryItem === 'function') {
+      window.onyuUnlockGalleryItem('bgm', trackId);
+    }
+  }
+
+  function playNow(audio, key, trackId) {
     var result;
     function reportFailure(error) {
       var blocked = error && (error.name === 'NotAllowedError' || error.code === 9);
@@ -156,6 +191,7 @@ var ONYU_SFX_TRACKS = {
     }
     if (result && typeof result.then === 'function') {
       result.then(function () {
+        markBgmPlayed(trackId || galleryTrackIdFor(key, audio.dataset.source));
         if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('bgm_play_started', { trackId: key || audio.dataset.key || '' });
       }).catch(function (error) {
         reportFailure(error);
@@ -167,10 +203,14 @@ var ONYU_SFX_TRACKS = {
     if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   }
 
-  function switchTrack(key, immediate, sourceOverride) {
+  function switchTrack(key, immediate, sourceOverride, restart) {
     if (!initialized || !unlocked || muted || !key || !ONYU_BGM_TRACKS[key]) return;
     var nextSource = sourceOverride || sourceFor(key);
     if (activeKey === key && players[activeIndex] && players[activeIndex].dataset.source === nextSource) {
+      if (restart) {
+        players[activeIndex].currentTime = 0;
+        playNow(players[activeIndex], key, galleryTrackIdFor(key, nextSource));
+      }
       players[activeIndex].volume = volume();
       return;
     }
@@ -182,7 +222,8 @@ var ONYU_SFX_TRACKS = {
     next.volume = activeIndex < 0 || immediate ? volume() : 0;
     // 사용자 제스처로 unlock된 이후에는 버퍼가 덜 받아졌어도 play()를 먼저
     // 호출할 수 있다. 브라우저가 버퍼를 받는 동안 재생 위치를 준비한다.
-    playNow(next, key);
+    activeTrackId = galleryTrackIdFor(key, nextSource);
+    playNow(next, key, activeTrackId);
 
     var oldIndex = activeIndex;
     activeIndex = nextIndex;
@@ -248,6 +289,7 @@ var ONYU_SFX_TRACKS = {
     unlocked = false;
     document.getElementById('sound-unlock-overlay').hidden = true;
     stopFade();
+    activeTrackId = null;
     players.forEach(function (player) { player.pause(); player.volume = 0; });
   };
 
@@ -278,6 +320,22 @@ var ONYU_SFX_TRACKS = {
   window.onyuAudioPlayEnding = function (endingId) {
     switchTrack('ending-' + endingId, false);
   };
+
+  window.onyuAudioPlayGalleryTrack = function (trackId) {
+    init();
+    var tracks = window.ONYU_BGM_GALLERY_TRACKS || [];
+    var track = tracks.find(function (item) { return item.id === trackId; });
+    if (!track || muted) return false;
+    // 갤러리 카드 클릭 자체가 사용자 제스처이므로, 아직 사운드 안내를
+    // 거치지 않은 경우에도 선택한 곡을 바로 재생할 수 있다.
+    unlocked = true;
+    var overlay = document.getElementById('sound-unlock-overlay');
+    if (overlay) overlay.hidden = true;
+    switchTrack(track.key, false, sourceFor(track.key, track.variantIndex), true);
+    return true;
+  };
+
+  window.onyuAudioGetActiveTrackId = function () { return activeTrackId; };
 
   window.onyuAudioPlaySfx = playSfx;
 

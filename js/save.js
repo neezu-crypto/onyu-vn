@@ -94,9 +94,10 @@ function onyuLoadGalleryRecord() {
     if (!record.cg || typeof record.cg !== 'object') record.cg = {};
     if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
     if (!record.endings || typeof record.endings !== 'object') record.endings = {};
+    if (!record.bgm || typeof record.bgm !== 'object') record.bgm = {};
     return record;
   } catch (e) {
-    return { cg: {}, cgFiles: {}, endings: {} };
+    return { cg: {}, cgFiles: {}, endings: {}, bgm: {} };
   }
 }
 
@@ -113,7 +114,7 @@ function onyuGalleryCgFileForChapter(chapter, record) {
 }
 
 function onyuUnlockGalleryItem(kind, id, metadata) {
-  // kind: 'cg' | 'endings' — 언락 즉시 디스크에 반영(세이브 시점과 무관하게 영구 기록).
+  // kind: 'cg' | 'endings' | 'bgm' — 언락 즉시 디스크에 반영(세이브 시점과 무관하게 영구 기록).
   var record = window.ONYU_STATE.unlockedGallery;
   if (!record[kind]) record[kind] = {};
   if (!record.cgFiles || typeof record.cgFiles !== 'object') record.cgFiles = {};
