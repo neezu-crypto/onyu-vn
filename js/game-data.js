@@ -31,8 +31,10 @@
  *   호감도(window.ONYU_STATE.affection)만으로 그 구간에 맞는 script를 프레임으로
  *   push한다(min/max 생략 시 -Infinity/Infinity). 우정≤8 / 썸 9~64 / 연인≥65.
  *   id는 갤러리 엔딩 언락 키로 쓰인다(onyuUnlockGalleryItem('endings', id)).
- * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(assets/cg/ 기준). engine.js가 챕터
- *   시작 시 "다음 챕터"의 cg를 미리 프리페치하는 데 쓴다. 파일명은 CG 프롬프트
+ * chapter.cg: (선택) 이 챕터의 이벤트 CG 파일명(assets/cg/ 기준). main.js가 챕터
+ *   시작 시 현재/다음 챕터의 CG를 미리 프리로드하는 데 쓴다. 의상 선택 챕터처럼
+ *   ONYU_OUTFIT_CG_VARIANTS에 무료/꾸민 변형이 따로 있으면 그 두 파일을 우선한다.
+ *   파일명은 CG 프롬프트
  *   시트(onyu-vn-cg-prompts.html)의 번호(00~31)를 그대로 따서 'cg-01.png'~'cg-28.png'
  *   로 확정(2026-09-15) — 00(표지)은 예외로 별도 로직(main.js)이 'cover.png'를
  *   찾으므로 chapter.cg 체계 밖. CH01~08은 01~08, CH09~17은 10~18, CH18~26은

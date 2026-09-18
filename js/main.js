@@ -30,6 +30,14 @@ function onyuPreloadBackgroundFile(name) {
 var onyuPreloadedCgs = [];
 var onyuPreloadedCgNames = {};
 
+function onyuPreloadCgFile(file) {
+  if (!file || onyuPreloadedCgNames[file]) return;
+  var cg = new Image();
+  cg.src = 'assets/cg/' + file;
+  onyuPreloadedCgNames[file] = true;
+  onyuPreloadedCgs.push(cg); // 로드 중 GC로 취소되지 않도록 참조를 유지
+}
+
 // 일부 배경엔 계절 요소가 원화 자체에 그려져 있어(예: 교문 배경의 벚꽃) 다른
 // 계절 챕터에 재사용하면 텍스트와 안 맞는 경우가 실사로 확인됐다(2026-09-14) —
 // 가장 두드러진 곳들에 계절 전용 변형을 준비 중. 챕터 진입 시 해당 챕터에
@@ -102,13 +110,16 @@ function onyuPreloadChapterAssets(chapterId) {
       onyuProbeBackgroundVariant(chapter.bg, season);
     });
   }
-  if (chapter.cg) {
-    if (!onyuPreloadedCgNames[chapter.cg]) {
-      var cg = new Image();
-      cg.src = 'assets/cg/' + chapter.cg;
-      onyuPreloadedCgNames[chapter.cg] = true;
-      onyuPreloadedCgs.push(cg);
-    }
+  // 의상 선택 챕터는 기본 chapter.cg 파일이 없고 무료/꾸민 의상별 CG만
+  // 존재한다. 두 변형을 모두 미리 받아 두면 실제 선택 결과와 무관하게
+  // CG 팝업이 즉시 뜨고, 존재하지 않는 기본 파일(cg-13.png 등)을
+  // 프리로드하는 404 요청도 발생하지 않는다.
+  var outfitCgVariants = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[chapterId];
+  if (outfitCgVariants) {
+    onyuPreloadCgFile(outfitCgVariants.free);
+    onyuPreloadCgFile(outfitCgVariants.paid);
+  } else if (chapter.cg) {
+    onyuPreloadCgFile(chapter.cg);
   }
 }
 
