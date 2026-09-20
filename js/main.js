@@ -6,36 +6,65 @@
 // 시점에 필요한 파일만 같은 방식으로 지연 로드한다.
 var onyuPreloadedSprites = [];
 var onyuPreloadedSpriteNames = {};
-function onyuPreloadSpriteFile(name) {
-  if (!name || onyuPreloadedSpriteNames[name]) return;
+var onyuPreloadAssetPromises = {};
+
+// Image 객체를 만든 뒤 로드가 끝날 때까지 기다릴 수 있는 공용 프리로드 헬퍼.
+// 같은 파일을 여러 경로(타이틀 부팅·챕터 진입·새 게임 버튼)에서 요청해도
+// 네트워크 요청과 대기 Promise를 하나만 공유한다. 존재하지 않는 선택 CG처럼
+// 폴백 가능한 파일은 오류여도 settled 상태로 처리하고, 새 게임처럼 필수 에셋을
+// 엄격히 확인하는 호출만 아래 결과의 ok 값을 검사한다.
+function onyuPreloadAsset(src, collection) {
+  if (!src) return Promise.resolve({ ok: false, src: src });
+  if (onyuPreloadAssetPromises[src]) return onyuPreloadAssetPromises[src];
   var img = new Image();
-  img.src = 'assets/standing/' + name + '.png';
+  var promise = new Promise(function (resolve) {
+    var settled = false;
+    function settle(ok) {
+      if (settled) return;
+      settled = true;
+      resolve({ ok: ok, src: src });
+    }
+    img.onload = function () { settle(true); };
+    img.onerror = function () { settle(false); };
+  });
+  onyuPreloadAssetPromises[src] = promise;
+  collection.push(img); // 로드 중 GC로 취소되지 않도록 참조를 유지
+  img.src = src;
+  return promise;
+}
+
+function onyuPreloadSpriteFile(name) {
+  if (!name) return Promise.resolve({ ok: false, src: name });
+  var src = 'assets/standing/' + name + '.png';
+  if (onyuPreloadedSpriteNames[name]) return onyuPreloadAssetPromises[src] || Promise.resolve({ ok: true, src: src });
   onyuPreloadedSpriteNames[name] = true;
-  onyuPreloadedSprites.push(img); // 로드 중 GC로 취소되지 않도록 참조를 유지
+  return onyuPreloadAsset(src, onyuPreloadedSprites);
 }
 function onyuPreloadSpriteSet(prefix) {
-  if (!prefix) return;
-  for (var n = 1; n <= 6; n++) onyuPreloadSpriteFile(prefix + n);
+  if (!prefix) return Promise.resolve([]);
+  var pending = [];
+  for (var n = 1; n <= 6; n++) pending.push(onyuPreloadSpriteFile(prefix + n));
+  return Promise.all(pending);
 }
 
 var onyuPreloadedBackgrounds = [];
 var onyuPreloadedBackgroundNames = {};
 function onyuPreloadBackgroundFile(name) {
-  if (!name || onyuPreloadedBackgroundNames[name]) return;
-  var img = new Image();
-  img.src = 'assets/backgrounds/' + name + '.png';
+  if (!name) return Promise.resolve({ ok: false, src: name });
+  var src = 'assets/backgrounds/' + name + '.png';
+  if (onyuPreloadedBackgroundNames[name]) return onyuPreloadAssetPromises[src] || Promise.resolve({ ok: true, src: src });
   onyuPreloadedBackgroundNames[name] = true;
-  onyuPreloadedBackgrounds.push(img);
+  return onyuPreloadAsset(src, onyuPreloadedBackgrounds);
 }
 var onyuPreloadedCgs = [];
 var onyuPreloadedCgNames = {};
 
 function onyuPreloadCgFile(file) {
-  if (!file || onyuPreloadedCgNames[file]) return;
-  var cg = new Image();
-  cg.src = 'assets/cg/' + file;
+  if (!file) return Promise.resolve({ ok: false, src: file });
+  var src = 'assets/cg/' + file;
+  if (onyuPreloadedCgNames[file]) return onyuPreloadAssetPromises[src] || Promise.resolve({ ok: true, src: src });
   onyuPreloadedCgNames[file] = true;
-  onyuPreloadedCgs.push(cg); // 로드 중 GC로 취소되지 않도록 참조를 유지
+  return onyuPreloadAsset(src, onyuPreloadedCgs);
 }
 
 // 일부 배경엔 계절 요소가 원화 자체에 그려져 있어(예: 교문 배경의 벚꽃) 다른
@@ -88,13 +117,15 @@ var ONYU_SPRITE_CANDIDATES = {
   ch27: ['GR-'], // 졸업식 — 졸업 가운, 후보 없이 하나뿐
 };
 
-function onyuPreloadChapterAssets(chapterId) {
+function onyuPreloadChapterAssets(chapterId, options) {
+  options = options || {};
   var chapters = window.ONYU_CHAPTERS || [];
   var chapter = null;
   for (var i = 0; i < chapters.length; i++) {
     if (chapters[i].id === chapterId) { chapter = chapters[i]; break; }
   }
-  if (!chapter) return;
+  if (!chapter) return Promise.resolve([]);
+  var pending = [];
 
   var chosen = window.ONYU_STATE && window.ONYU_STATE.chosenOutfits
     ? window.ONYU_STATE.chosenOutfits[chapterId] : null;
@@ -102,10 +133,10 @@ function onyuPreloadChapterAssets(chapterId) {
   var prefix = chapter.spriteSet || chosen || candidate
     || ((chapter.season === 'autumn' || chapter.season === 'winter') ? 'w' : 's');
   if (candidate && !chosen && !chapter.spriteSet) onyuProbeSpritePrefix(prefix);
-  else onyuPreloadSpriteSet(prefix);
+  else pending.push(onyuPreloadSpriteSet(prefix));
 
   if (chapter.bg) {
-    onyuPreloadBackgroundFile(chapter.bg);
+    pending.push(onyuPreloadBackgroundFile(chapter.bg));
     (ONYU_BG_SEASON_VARIANTS[chapter.bg] || []).forEach(function (season) {
       onyuProbeBackgroundVariant(chapter.bg, season);
     });
@@ -116,11 +147,22 @@ function onyuPreloadChapterAssets(chapterId) {
   // 프리로드하는 404 요청도 발생하지 않는다.
   var outfitCgVariants = window.ONYU_OUTFIT_CG_VARIANTS && window.ONYU_OUTFIT_CG_VARIANTS[chapterId];
   if (outfitCgVariants) {
-    onyuPreloadCgFile(outfitCgVariants.free);
-    onyuPreloadCgFile(outfitCgVariants.paid);
+    pending.push(onyuPreloadCgFile(outfitCgVariants.free));
+    pending.push(onyuPreloadCgFile(outfitCgVariants.paid));
   } else if (chapter.cg) {
-    onyuPreloadCgFile(chapter.cg);
+    pending.push(onyuPreloadCgFile(chapter.cg));
   }
+  return Promise.all(pending).then(function (results) {
+    var flatResults = [];
+    results.forEach(function (result) {
+      if (Array.isArray(result)) flatResults = flatResults.concat(result);
+      else flatResults.push(result);
+    });
+    if (options.required && flatResults.some(function (result) { return !result || !result.ok; })) {
+      throw new Error('필수 챕터 에셋 로드 실패: ' + chapterId);
+    }
+    return flatResults;
+  });
 }
 
 function onyuResolveSpriteCandidate(chapterId) {
@@ -291,17 +333,64 @@ document.addEventListener('DOMContentLoaded', function () {
     continueBtn.classList.add('is-disabled');
   }
 
-  function startNewGameAfterAccess() {
-    onyuResetNewGame();
-    onyuRequestFullscreen();
-    window.onyuGameSessionActive = true;
-    window.onyuGameCompleted = false;
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: false });
-    onyuStartChapter(window.ONYU_STATE.currentChapterId);
+  var newGameBtn = document.getElementById('title-new-game');
+  var newGamePreparing = false;
+  var newGameAccessChecking = false;
+  function setNewGamePreparing(preparing) {
+    newGamePreparing = !!preparing;
+    newGameBtn.disabled = newGamePreparing;
+    newGameBtn.classList.toggle('is-disabled', newGamePreparing);
+    newGameBtn.setAttribute('aria-busy', newGamePreparing ? 'true' : 'false');
+    newGameBtn.textContent = newGamePreparing ? '게임을 시작하는 중' : '새 게임';
   }
-  document.getElementById('title-new-game').addEventListener('click', function () {
-    if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) startNewGameAfterAccess(); });
-    else startNewGameAfterAccess();
+  function startNewGameAfterAccess(preloadedAssets) {
+    if (newGamePreparing && !preloadedAssets) return;
+    setNewGamePreparing(true);
+    onyuResetNewGame();
+    // 타이틀 부팅 때 시작한 CH01 프리로드 Promise를 재사용한다. 배경·스탠딩
+    // 6종·첫 CG가 모두 성공적으로 준비된 뒤에만 플레이 화면으로 넘어가 첫 대사
+    // 직후 네트워크 대기가 끼지 않게 한다.
+    var ready = preloadedAssets || (typeof onyuPreloadChapterAssets === 'function'
+      ? onyuPreloadChapterAssets(window.ONYU_STATE.currentChapterId, { required: true })
+      : Promise.resolve([]));
+    Promise.resolve(ready).then(function () {
+      onyuRequestFullscreen();
+      window.onyuGameSessionActive = true;
+      window.onyuGameCompleted = false;
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: false });
+      onyuStartChapter(window.ONYU_STATE.currentChapterId);
+      // 플레이 전환이 시작됐으므로 다음에 타이틀로 돌아왔을 때 새 게임을
+      // 다시 누를 수 있도록 버튼 상태를 원래대로 돌린다.
+      setNewGamePreparing(false);
+    }).catch(function (error) {
+      console.error('새 게임 에셋 준비 실패:', error);
+      setNewGamePreparing(false);
+      alert('게임 이미지를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    });
+  }
+  newGameBtn.addEventListener('click', function () {
+    if (newGamePreparing || newGameAccessChecking) return;
+    newGameAccessChecking = true;
+    setNewGamePreparing(true);
+    // 권한 확인과 동시에 첫 챕터 에셋을 준비한다. 권한 모달을 거치는 동안에도
+    // 이미지 다운로드가 진행되며, 허용되는 순간에는 이미 준비된 Promise를
+    // 그대로 이어받는다.
+    var ready = typeof onyuPreloadChapterAssets === 'function'
+      ? onyuPreloadChapterAssets(window.ONYU_CHAPTERS[0].id, { required: true })
+      : Promise.resolve([]);
+    // 권한이 거절되어도 백그라운드 프리로드 실패가 unhandled rejection이 되지
+    // 않도록 즉시 소비한다. 허용된 경우에는 아래에서 같은 Promise를 다시 기다린다.
+    ready.catch(function () {});
+    var access = window.onyuEnsureGameAccess ? window.onyuEnsureGameAccess() : Promise.resolve(true);
+    Promise.resolve(access).then(function (allowed) {
+      newGameAccessChecking = false;
+      if (allowed) startNewGameAfterAccess(ready);
+      else setNewGamePreparing(false);
+    }).catch(function (error) {
+      newGameAccessChecking = false;
+      setNewGamePreparing(false);
+      console.error('게임 접근 권한 확인 실패:', error);
+    });
   });
 
   continueBtn.addEventListener('click', function () {
