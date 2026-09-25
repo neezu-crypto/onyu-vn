@@ -36,7 +36,13 @@ const requestStreamerVerificationFn = httpsCallable(functions, 'requestStreamerV
 const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
 const requestViewerAccessFn = httpsCallable(functions, 'onyuRequestViewerAccess');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
+const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
+
+window.onyuSubmitPlayerReview = async function (payload) {
+  const result = await submitPlayerReviewFn(payload || {});
+  return result.data || {};
+};
 
 // 주식시장·배팅시장 자산 신청에서 사용하는 공용 SOOP 별풍선 후원창.
 // 개발자 방송국 페이지가 아니라 실제 후원 UI를 바로 연다.

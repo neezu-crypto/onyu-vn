@@ -950,6 +950,9 @@ function onyuShowEndingScreen(endingId) {
   var title = (window.ONYU_ENDING_TITLES && window.ONYU_ENDING_TITLES[endingId]) || '';
   onyuEl.endingKicker.textContent = '— ' + (endingKinds[endingId] || '엔딩') + ' —';
   onyuEl.endingTitle.textContent = title;
+  var isLoverEnding = endingId === 'lover';
+  document.getElementById('ending-title-btn').hidden = isLoverEnding;
+  document.getElementById('ending-review-btn').hidden = !isLoverEnding;
   onyuTrack('ending_reached', { endingId: endingId || '' });
   onyuTrack('ending_title_revealed', { endingId: endingId || '' });
   onyuEl.endingOverlay.hidden = false;

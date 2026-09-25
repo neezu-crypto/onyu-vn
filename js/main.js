@@ -219,6 +219,69 @@ document.addEventListener('DOMContentLoaded', function () {
     onyuMaybeShowBootSplash(function () { onyuSwapScreen('title'); });
   });
 
+  document.getElementById('ending-review-btn').addEventListener('click', function () {
+    onyuEl.endingOverlay.classList.remove('is-active');
+    onyuEl.endingOverlay.hidden = true;
+    document.getElementById('review-text').value = '';
+    document.getElementById('review-text').disabled = false;
+    document.getElementById('review-save-btn').hidden = false;
+    document.getElementById('review-save-btn').disabled = false;
+    document.getElementById('review-save-btn').classList.remove('is-saved');
+    document.getElementById('review-save-btn').textContent = '후기 저장';
+    document.getElementById('review-status').textContent = '';
+    onyuShowScreen('review');
+  });
+
+  document.getElementById('review-save-btn').addEventListener('click', async function () {
+    var saveBtn = document.getElementById('review-save-btn');
+    var reviewText = document.getElementById('review-text');
+    var status = document.getElementById('review-status');
+    var text = reviewText.value.trim();
+    if (saveBtn.disabled) return;
+    if (!text) {
+      status.textContent = '후기 내용을 입력해 주세요.';
+      reviewText.focus();
+      return;
+    }
+    if (text.length > 1000) {
+      status.textContent = '후기는 1,000자 이내로 작성해 주세요.';
+      return;
+    }
+    if (window.ONYU_STATE.lastEndingId !== 'lover') {
+      status.textContent = '연인 엔딩을 완료한 뒤 후기를 저장할 수 있어요.';
+      return;
+    }
+    if (typeof window.onyuSubmitPlayerReview !== 'function') {
+      status.textContent = '후기 저장을 준비 중이에요. 잠시 후 다시 시도해 주세요.';
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중…';
+    reviewText.disabled = true;
+    status.textContent = '';
+    try {
+      await window.onyuSubmitPlayerReview({ endingId: 'lover', review: text });
+      saveBtn.classList.add('is-saved');
+      status.textContent = '후기가 저장됐어요.';
+      setTimeout(function () { saveBtn.hidden = true; }, 380);
+    } catch (error) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '후기 저장';
+      reviewText.disabled = false;
+      status.textContent = (error && error.message)
+        ? '후기를 저장하지 못했어요. 로그인 상태와 네트워크를 확인한 뒤 다시 시도해 주세요.'
+        : '후기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      console.error('온이유 플레이 후기 저장 실패:', error);
+    }
+  });
+
+  document.getElementById('review-title-btn').addEventListener('click', function () {
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('return_to_title');
+    onyuSwapScreen('title');
+    onyuMaybeShowBootSplash(function () { onyuSwapScreen('title'); });
+  });
+
   // 대사창뿐 아니라 플레이 화면 빈 곳 아무 데나 클릭해도 진행되게(모바일 시청 편의).
   // 선택지·이름입력 중에는 onyuHandleDialogueClick 자체가 no-op이라 별도 예외 처리가 필요 없다.
   var playScreen = document.getElementById('screen-play');
