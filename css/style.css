@@ -118,6 +118,19 @@ button { font-family: inherit; }
   opacity: 0; transform: translateY(6px); transition: opacity 1s ease, transform 1s ease;
 }
 #screen-transition-label.is-visible { opacity: 1; transform: translateY(0); }
+.game-entry-loading[hidden] { display: none !important; }
+.game-entry-loading {
+  position: fixed; inset: 0; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; box-sizing: border-box; background: var(--paper); color: var(--ink); text-align: center;
+}
+.game-entry-spinner {
+  width: 38px; height: 38px; border: 3px solid var(--season-wash); border-top-color: var(--season-accent);
+  border-radius: 50%; animation: gameEntrySpin .8s linear infinite;
+}
+@keyframes gameEntrySpin { to { transform: rotate(360deg); } }
+.game-entry-loading-title { margin: 4px 0 0; color: var(--season-accent); font-size: clamp(18px, 2.4vw, 24px); font-weight: 800; }
+.game-entry-loading-sub { margin: 0; color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .game-entry-spinner { animation-duration: 1.8s; } }
 @media (prefers-reduced-motion: reduce) {
   #screen-transition-overlay, #screen-transition-label { transition: none; }
 }

@@ -73,7 +73,12 @@ function onyuRenderChapterList() {
       btn.innerHTML = '<span class="ch-no num">' + numLabel + '</span><span class="ch-name">' + ch.title + '</span>'
         + (unlocked ? '' : '<span class="ch-lock">🔒</span>');
       if (unlocked) {
-        btn.addEventListener('click', function () { onyuJumpToChapter(ch.id); });
+        btn.addEventListener('click', function () {
+          btn.disabled = true;
+          btn.setAttribute('aria-busy', 'true');
+          btn.innerHTML = '<span class="ch-no num">' + numLabel + '</span><span class="ch-name">준비 중…</span>';
+          onyuJumpToChapter(ch.id);
+        });
       } else {
         btn.disabled = true;
       }
@@ -86,14 +91,18 @@ function onyuRenderChapterList() {
 
 function onyuJumpToChapter(chapterId) {
   // 타임머신 — 그 챕터 "시작 시점" 호감도로 되돌려서 실제로 다시 플레이한다.
-  function startAfterAccess() {
-    var checkpoint = window.ONYU_STATE.chapterCheckpoints[chapterId];
-    window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
-    onyuRequestFullscreen();
-    onyuStartChapter(chapterId);
-  }
-  if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) startAfterAccess(); });
-  else startAfterAccess();
+  var chapter = window.ONYU_CHAPTERS.find(function (item) { return item.id === chapterId; });
+  var checkpoint = window.ONYU_STATE.chapterCheckpoints[chapterId];
+  var result = window.onyuPrepareChapterEntry(chapterId, {
+    message: (chapter ? chapter.title + ' 챕터' : '챕터') + '를 불러오고 있어요',
+    beforeLoad: function () {
+      // 이전 챕터의 체크포인트 호감도에서 시작한다.
+      window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
+    },
+    telemetry: { name: 'game_started', data: { resumed: true, chapterId: chapterId, source: 'chapter-select' } },
+    onSettled: function (started) { if (!started) onyuRenderChapterList(); },
+  });
+  return result;
 }
 
 /* ---------------- 갤러리 ---------------- */
@@ -322,13 +331,23 @@ function onyuRenderSaveScreen() {
           if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'invalid' });
           return;
         }
-        try { onyuApplySnapshot(snap); } catch (error) {
-          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'exception' });
-          return;
-        }
-        onyuRequestFullscreen();
-        if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'auto', chapterId: snap.currentChapterId || '' });
-        onyuStartChapter(snap.currentChapterId);
+        var card = autosaveContainer.querySelector('.autosave-card');
+        if (card.dataset.loading === 'true') return;
+        card.dataset.loading = 'true';
+        card.setAttribute('aria-busy', 'true');
+        window.onyuPrepareChapterEntry(snap.currentChapterId, {
+          beforeLoad: function () { onyuApplySnapshot(snap); },
+          message: '자동 저장한 장면을 불러오고 있어요',
+          afterStart: function () {
+            if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'auto', chapterId: snap.currentChapterId || '' });
+          },
+          onFailure: function (error) {
+            if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'exception' });
+            console.error('자동저장 불러오기 실패:', error);
+            alert('저장된 장면을 불러오지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
+          },
+          onSettled: function (started) { if (!started) onyuRenderSaveScreen(); },
+        });
       });
       autosaveContainer.querySelector('.autosave-card').classList.add('is-clickable');
     }
@@ -370,13 +389,21 @@ function onyuRenderSaveScreen() {
             if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'manual', slot: slotIndex, reason: loaded ? 'invalid' : 'missing' });
             return;
           }
-          try { onyuApplySnapshot(loaded); } catch (error) {
-            if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'manual', slot: slotIndex, reason: 'exception' });
-            return;
-          }
-          onyuRequestFullscreen();
-          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'manual', slot: slotIndex, chapterId: loaded.currentChapterId || '' });
-          onyuStartChapter(loaded.currentChapterId);
+          btn.disabled = true;
+          btn.setAttribute('aria-busy', 'true');
+          window.onyuPrepareChapterEntry(loaded.currentChapterId, {
+            beforeLoad: function () { onyuApplySnapshot(loaded); },
+            message: '저장 슬롯 ' + slotIndex + '을 불러오고 있어요',
+            afterStart: function () {
+              if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'manual', slot: slotIndex, chapterId: loaded.currentChapterId || '' });
+            },
+            onFailure: function (error) {
+              if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'manual', slot: slotIndex, reason: 'exception' });
+              console.error('수동 저장 불러오기 실패:', error);
+              alert('저장된 장면을 불러오지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
+            },
+            onSettled: function (started) { if (!started) onyuRenderSaveScreen(); },
+          });
         });
       } else {
         btn.disabled = true;

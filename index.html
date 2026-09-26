@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
-<link rel="stylesheet" href="css/style.css?v=20260926-3">
+<link rel="stylesheet" href="css/style.css?v=20260926-4">
 <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
@@ -357,6 +357,13 @@
     <p id="screen-transition-label"></p>
   </div>
 
+  <!-- 챕터 에셋을 실제로 준비하는 동안 진입 화면 위에 진행 상태를 표시한다. -->
+  <div id="game-entry-loading" class="game-entry-loading" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span class="game-entry-spinner" aria-hidden="true"></span>
+    <p class="game-entry-loading-title" id="game-entry-loading-title">게임 장면을 준비하고 있어요</p>
+    <p class="game-entry-loading-sub">잠시만 기다려 주세요</p>
+  </div>
+
   <!-- ============ CG 뷰어(본편 팝업 + 갤러리 브라우징 공용) ============ -->
   <div id="cg-viewer-overlay" hidden>
     <img id="cg-viewer-img" alt="" draggable="false">
@@ -462,8 +469,8 @@
   <script src="js/particles.js"></script>
   <script src="js/engine.js?v=20260918-5"></script>
   <script src="js/screens.js"></script>
-  <script src="js/menus.js?v=20260926-3"></script>
-  <script src="js/main.js?v=20260926-3"></script>
+  <script src="js/menus.js?v=20260926-4"></script>
+  <script src="js/main.js?v=20260926-4"></script>
   <script src="js/outfit-picker.js?v=20260921-1"></script>
   <script src="js/sig-opening.js?v=20260917-1"></script>
   <script src="js/telemetry.js"></script>

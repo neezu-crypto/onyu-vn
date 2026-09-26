@@ -165,6 +165,56 @@ function onyuPreloadChapterAssets(chapterId, options) {
   });
 }
 
+var onyuChapterEntryBusy = false;
+function onyuPrepareChapterEntry(chapterId, options) {
+  options = options || {};
+  if (onyuChapterEntryBusy) {
+    if (typeof options.onSettled === 'function') options.onSettled(false);
+    return Promise.resolve(false);
+  }
+  onyuChapterEntryBusy = true;
+  var loading = document.getElementById('game-entry-loading');
+  var loadingTitle = document.getElementById('game-entry-loading-title');
+  function closeLoading() { if (loading) loading.hidden = true; }
+  function fail(error) {
+    closeLoading();
+    console.error('챕터 진입 준비 실패:', error);
+    if (typeof options.onFailure === 'function') options.onFailure(error);
+    else alert('게임 장면을 준비하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
+    return false;
+  }
+  var access = options.skipAccess || !window.onyuEnsureGameAccess
+    ? Promise.resolve(true)
+    : window.onyuEnsureGameAccess();
+  return Promise.resolve(access).then(function (allowed) {
+    if (!allowed) return false;
+    if (typeof options.beforeLoad === 'function') options.beforeLoad();
+    if (loadingTitle) loadingTitle.textContent = options.message || '게임 장면을 준비하고 있어요';
+    if (loading) loading.hidden = false;
+    var assets = options.preloadedAssets || onyuPreloadChapterAssets(chapterId, { required: true });
+    return Promise.resolve(assets).then(function () {
+      onyuRequestFullscreen();
+      window.onyuGameSessionActive = true;
+      window.onyuGameCompleted = false;
+      if (options.telemetry && typeof window.onyuTelemetryTrack === 'function') {
+        window.onyuTelemetryTrack(options.telemetry.name || 'game_started', options.telemetry.data || {});
+      }
+      onyuStartChapter(chapterId);
+      if (typeof options.afterStart === 'function') options.afterStart();
+      closeLoading();
+      return true;
+    });
+  }).catch(fail).then(function (started) {
+    onyuChapterEntryBusy = false;
+    if (!started && typeof options.onSettled === 'function') options.onSettled(false);
+    return started;
+  }, function (error) {
+    onyuChapterEntryBusy = false;
+    return fail(error);
+  });
+}
+window.onyuPrepareChapterEntry = onyuPrepareChapterEntry;
+
 function onyuResolveSpriteCandidate(chapterId) {
   var candidates = ONYU_SPRITE_CANDIDATES[chapterId];
   if (!candidates) return null;
@@ -470,26 +520,19 @@ document.addEventListener('DOMContentLoaded', function () {
   function startNewGameAfterAccess(preloadedAssets) {
     if (newGamePreparing && !preloadedAssets) return;
     setNewGamePreparing(true);
-    onyuResetNewGame();
-    // 타이틀 부팅 때 시작한 CH01 프리로드 Promise를 재사용한다. 배경·스탠딩
-    // 6종·첫 CG가 모두 성공적으로 준비된 뒤에만 플레이 화면으로 넘어가 첫 대사
-    // 직후 네트워크 대기가 끼지 않게 한다.
-    var ready = preloadedAssets || (typeof onyuPreloadChapterAssets === 'function'
-      ? onyuPreloadChapterAssets(window.ONYU_STATE.currentChapterId, { required: true })
-      : Promise.resolve([]));
-    Promise.resolve(ready).then(function () {
-      onyuRequestFullscreen();
-      window.onyuGameSessionActive = true;
-      window.onyuGameCompleted = false;
-      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: false });
-      onyuStartChapter(window.ONYU_STATE.currentChapterId);
-      // 플레이 전환이 시작됐으므로 다음에 타이틀로 돌아왔을 때 새 게임을
-      // 다시 누를 수 있도록 버튼 상태를 원래대로 돌린다.
+    var firstChapterId = window.ONYU_CHAPTERS[0].id;
+    // 타이틀 화면의 프리로드를 재사용하되, 진입 전용 로딩 화면을 덮어
+    // 에셋 준비가 끝날 때까지 현재 화면에서 기다리고 있음을 분명히 알린다.
+    onyuPrepareChapterEntry(firstChapterId, {
+      skipAccess: true,
+      beforeLoad: onyuResetNewGame,
+      preloadedAssets: preloadedAssets || onyuPreloadChapterAssets(firstChapterId, { required: true }),
+      message: '첫 장면을 준비하고 있어요',
+      telemetry: { name: 'game_started', data: { resumed: false } },
+      onSettled: function (started) { if (!started) setNewGamePreparing(false); },
+    }).then(function (started) {
       setNewGamePreparing(false);
-    }).catch(function (error) {
-      console.error('새 게임 에셋 준비 실패:', error);
-      setNewGamePreparing(false);
-      alert('게임 이미지를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      if (!started) return;
     });
   }
   newGameBtn.addEventListener('click', function () {
@@ -517,25 +560,39 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  var continueLoading = false;
   continueBtn.addEventListener('click', function () {
+    if (continueLoading) return;
     var snap = onyuLoadAutosave();
     if (!snap || (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap))) {
       if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: snap ? 'invalid' : 'missing' });
       return;
     }
-    function continueAfterAccess() {
-      try { onyuApplySnapshot(snap); } catch (error) {
+    continueLoading = true;
+    continueBtn.disabled = true;
+    continueBtn.classList.add('is-disabled');
+    continueBtn.setAttribute('aria-busy', 'true');
+    continueBtn.textContent = '이어하는 중…';
+    onyuPrepareChapterEntry(snap.currentChapterId, {
+      beforeLoad: function () { onyuApplySnapshot(snap); },
+      message: '이어하기 데이터를 불러오고 있어요',
+      telemetry: { name: 'game_started', data: { resumed: true, chapterId: snap.currentChapterId || '' } },
+      onFailure: function (error) {
         if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: 'exception' });
-        return;
-      }
-      onyuRequestFullscreen();
-      window.onyuGameSessionActive = true;
-      window.onyuGameCompleted = false;
-      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_started', { resumed: true, chapterId: snap.currentChapterId || '' });
-      onyuStartChapter(snap.currentChapterId);
-    }
-    if (window.onyuEnsureGameAccess) window.onyuEnsureGameAccess().then(function (allowed) { if (allowed) continueAfterAccess(); });
-    else continueAfterAccess();
+        console.error('이어하기 준비 실패:', error);
+        alert('저장된 진행을 불러오지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
+      },
+      onSettled: function (started) {
+        if (started) return;
+        continueLoading = false;
+        continueBtn.disabled = false;
+        continueBtn.classList.remove('is-disabled');
+        continueBtn.removeAttribute('aria-busy');
+        continueBtn.textContent = '이어하기';
+      },
+    }).then(function (started) {
+      if (started) continueLoading = false;
+    });
   });
 
   // 회전 안내 화면을 탭하면 그 탭 자체(유효한 사용자 제스처)로 전체화면 재시도 —
