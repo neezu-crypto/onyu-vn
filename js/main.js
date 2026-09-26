@@ -561,6 +561,15 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   var continueLoading = false;
+  function setContinueLoading(loading) {
+    continueLoading = loading;
+    continueBtn.disabled = loading;
+    continueBtn.classList.toggle('is-disabled', loading);
+    if (loading) continueBtn.setAttribute('aria-busy', 'true');
+    else continueBtn.removeAttribute('aria-busy');
+    continueBtn.textContent = loading ? '이어하는 중…' : '이어하기';
+  }
+
   continueBtn.addEventListener('click', function () {
     if (continueLoading) return;
     var snap = onyuLoadAutosave();
@@ -568,12 +577,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_load_failed', { kind: 'auto', reason: snap ? 'invalid' : 'missing' });
       return;
     }
-    continueLoading = true;
-    continueBtn.disabled = true;
-    continueBtn.classList.add('is-disabled');
-    continueBtn.setAttribute('aria-busy', 'true');
-    continueBtn.textContent = '이어하는 중…';
-    onyuPrepareChapterEntry(snap.currentChapterId, {
+    setContinueLoading(true);
+    Promise.resolve().then(function () { return onyuPrepareChapterEntry(snap.currentChapterId, {
       beforeLoad: function () { onyuApplySnapshot(snap); },
       message: '이어하기 데이터를 불러오고 있어요',
       telemetry: { name: 'game_started', data: { resumed: true, chapterId: snap.currentChapterId || '' } },
@@ -584,14 +589,15 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       onSettled: function (started) {
         if (started) return;
-        continueLoading = false;
-        continueBtn.disabled = false;
-        continueBtn.classList.remove('is-disabled');
-        continueBtn.removeAttribute('aria-busy');
-        continueBtn.textContent = '이어하기';
+        setContinueLoading(false);
       },
-    }).then(function (started) {
-      if (started) continueLoading = false;
+    }); }).then(function () {
+      // 성공 시에도 화면을 나중에 다시 타이틀로 돌아오는 경우를 대비해
+      // 버튼 상태를 복구한다. 현재 플레이 화면에선 보이지 않으므로 영향 없다.
+      setContinueLoading(false);
+    }).catch(function (error) {
+      console.error('이어하기 진입 처리 실패:', error);
+      setContinueLoading(false);
     });
   });
 
