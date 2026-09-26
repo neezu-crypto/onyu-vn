@@ -37,11 +37,19 @@ const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
 const requestViewerAccessFn = httpsCallable(functions, 'onyuRequestViewerAccess');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
+const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
 
 window.onyuSubmitPlayerReview = async function (payload) {
   const result = await submitPlayerReviewFn(payload || {});
   return result.data || {};
+};
+
+window.onyuListPublicPlayerReviews = async function (payload) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('익명 로그인을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.');
+  const result = await listPublicPlayerReviewsFn(payload || {});
+  return result.data || { reviews: [], hasMore: false, nextCursor: null };
 };
 
 // 주식시장·배팅시장 자산 신청에서 사용하는 공용 SOOP 별풍선 후원창.

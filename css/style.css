@@ -456,6 +456,7 @@ button { font-family: inherit; }
 .subtab-btn.is-active { background: var(--ink); color: var(--paper); }
 .gallery-panel.cg-grid[hidden], .gallery-panel.ending-grid[hidden] { display: none; }
 .gallery-panel.bgm-grid[hidden] { display: none; }
+.gallery-panel.review-gallery-panel[hidden] { display: none; }
 .gallery-panel.cg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 @media (max-width: 640px) { .gallery-panel.cg-grid { grid-template-columns: repeat(3, 1fr); } }
 .cg-thumb {
@@ -488,6 +489,15 @@ button { font-family: inherit; }
 .bgm-subtitle { margin: 6px 0 14px; font-size: 11px; color: var(--muted); line-height: 1.4; }
 .bgm-play-btn { align-self: flex-start; border: 0; border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 11px; font-weight: 800; background: var(--ink); color: var(--paper); cursor: pointer; }
 .bgm-play-btn:disabled { background: rgba(61, 52, 54, 0.18); color: var(--muted); cursor: not-allowed; }
+.review-gallery-panel { max-width: 900px; }
+.review-gallery-status { color: var(--muted); font-size: 13px; }
+.review-gallery-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.review-gallery-card { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper-strong); }
+.review-gallery-card h3 { margin: 0 0 8px; color: var(--season-accent); font-size: 12px; }
+.review-gallery-card p { margin: 0; color: var(--ink); font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-gallery-card time { display: block; margin-top: 10px; color: var(--muted); font-size: 10px; }
+.review-gallery-more { display: block; margin: 18px auto 0; padding: 9px 18px; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+@media (max-width: 640px) { .review-gallery-list { grid-template-columns: 1fr; } }
 
 /* ---- 저장 · 불러오기 ---- */
 .autosave-card {

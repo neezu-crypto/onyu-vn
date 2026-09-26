@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
-<link rel="stylesheet" href="css/style.css?v=20260926-1">
+<link rel="stylesheet" href="css/style.css?v=20260926-2">
 <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
@@ -139,7 +139,7 @@
     <div class="scroll-inner review-inner">
       <div class="scroll-head">
         <p class="scroll-title">이번 이야기는 어땠나요?</p>
-        <p class="scroll-sub">온 이유와 함께한 순간을 자유롭게 남겨주세요. 후기는 계정별로 안전하게 저장됩니다.</p>
+        <p class="scroll-sub">후기는 계정별 최신 1건으로 저장되며, 갤러리에서 익명 공개됩니다. 계정 UID와 닉네임은 공개되지 않아요.</p>
       </div>
       <label class="review-label" for="review-text">플레이 후기</label>
       <textarea id="review-text" class="review-textarea" maxlength="1000" placeholder="이야기를 마친 소감을 들려주세요. (최대 1,000자)" rows="8"></textarea>
@@ -181,10 +181,16 @@
         <button class="subtab-btn is-active" data-gallery-tab="cg">이벤트 CG</button>
         <button class="subtab-btn" data-gallery-tab="endings">엔딩</button>
         <button class="subtab-btn" data-gallery-tab="bgm">BGM</button>
+        <button class="subtab-btn" data-gallery-tab="reviews">플레이 후기</button>
       </nav>
       <div class="gallery-panel cg-grid" id="gallery-panel-cg"></div>
       <div class="gallery-panel ending-grid" id="gallery-panel-endings" hidden></div>
       <div class="gallery-panel bgm-grid" id="gallery-panel-bgm" hidden></div>
+      <section class="gallery-panel review-gallery-panel" id="gallery-panel-reviews" hidden aria-live="polite">
+        <p class="review-gallery-status" id="gallery-review-status">후기를 불러오려면 잠시만 기다려 주세요.</p>
+        <div class="review-gallery-list" id="gallery-review-list"></div>
+        <button class="review-gallery-more" id="gallery-review-more" type="button" hidden>이전 후기 더 보기</button>
+      </section>
     </div>
   </section>
 
@@ -438,13 +444,13 @@
   <script src="js/particles.js"></script>
   <script src="js/engine.js?v=20260918-5"></script>
   <script src="js/screens.js"></script>
-  <script src="js/menus.js?v=20260918-4"></script>
+  <script src="js/menus.js?v=20260926-2"></script>
   <script src="js/main.js?v=20260926-1"></script>
   <script src="js/outfit-picker.js?v=20260921-1"></script>
   <script src="js/sig-opening.js?v=20260917-1"></script>
   <script src="js/telemetry.js"></script>
   <script src="js/devbar.js"></script>
   <script src="js/devbar-links.js"></script>
-  <script type="module" src="js/auth.js?v=20260926-1"></script>
+  <script type="module" src="js/auth.js?v=20260926-2"></script>
 </body>
 </html>

@@ -15,6 +15,10 @@ var ONYU_ENDING_DEFS = [
   { id: 'crush', name: '여백' },
   { id: 'lover', name: '온 이유' },
 ];
+var onyuPublicReviewsCache = [];
+var onyuPublicReviewsCursor = null;
+var onyuPublicReviewsHasMore = false;
+var onyuPublicReviewsLoaded = false;
 
 function onyuFormatDate(ts) {
   try { return new Date(ts).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
@@ -192,6 +196,61 @@ function onyuRenderGallery() {
     }
     bgmPanel.appendChild(card);
   });
+
+  var activeGalleryTab = document.querySelector('[data-gallery-tab].is-active');
+  if (activeGalleryTab && activeGalleryTab.dataset.galleryTab === 'reviews') {
+    if (!onyuPublicReviewsLoaded) onyuLoadPublicReviews(true);
+    else onyuRenderPublicReviews();
+  }
+}
+
+function onyuRenderPublicReviews() {
+  var list = document.getElementById('gallery-review-list');
+  var status = document.getElementById('gallery-review-status');
+  var more = document.getElementById('gallery-review-more');
+  if (!list || !status || !more) return;
+  list.innerHTML = onyuPublicReviewsCache.map(function (item) {
+    var card = document.createElement('article');
+    card.className = 'review-gallery-card';
+    var heading = document.createElement('h3');
+    heading.textContent = '온 이유 · 플레이 후기';
+    var body = document.createElement('p');
+    body.textContent = item.review || '';
+    var date = document.createElement('time');
+    date.dateTime = new Date(item.updatedAt || item.createdAt || Date.now()).toISOString();
+    date.textContent = onyuFormatDate(item.updatedAt || item.createdAt || Date.now());
+    card.appendChild(heading);
+    card.appendChild(body);
+    card.appendChild(date);
+    return card.outerHTML;
+  }).join('');
+  if (!onyuPublicReviewsCache.length) status.textContent = '아직 공개된 플레이 후기가 없습니다.';
+  else status.textContent = '익명으로 등록된 플레이 후기입니다.';
+  more.hidden = !onyuPublicReviewsHasMore;
+}
+
+async function onyuLoadPublicReviews(reset) {
+  var status = document.getElementById('gallery-review-status');
+  var more = document.getElementById('gallery-review-more');
+  if (!status || !more) return;
+  status.textContent = '후기를 불러오는 중...';
+  more.disabled = true;
+  try {
+    var page = await window.onyuListPublicPlayerReviews({ cursor: reset ? null : onyuPublicReviewsCursor });
+    var reviews = Array.isArray(page.reviews) ? page.reviews : [];
+    onyuPublicReviewsCache = reset ? reviews : onyuPublicReviewsCache.concat(reviews);
+    onyuPublicReviewsCursor = page.nextCursor || null;
+    onyuPublicReviewsHasMore = !!page.hasMore;
+    onyuPublicReviewsLoaded = true;
+    onyuRenderPublicReviews();
+  } catch (error) {
+    console.warn('온 이유 공개 후기 조회 실패:', error);
+    status.textContent = '후기를 불러오지 못했습니다. 네트워크를 확인하고 다시 시도해 주세요.';
+    more.hidden = false;
+    more.textContent = '다시 불러오기';
+  } finally {
+    more.disabled = false;
+  }
 }
 
 function onyuInitGallerySubtabs() {
@@ -203,7 +262,15 @@ function onyuInitGallerySubtabs() {
       document.getElementById('gallery-panel-cg').hidden = (tab !== 'cg');
       document.getElementById('gallery-panel-endings').hidden = (tab !== 'endings');
       document.getElementById('gallery-panel-bgm').hidden = (tab !== 'bgm');
+      document.getElementById('gallery-panel-reviews').hidden = (tab !== 'reviews');
+      if (tab === 'reviews' && !onyuPublicReviewsLoaded) onyuLoadPublicReviews(true);
     });
+  });
+  var more = document.getElementById('gallery-review-more');
+  if (more) more.addEventListener('click', function () {
+    if (onyuPublicReviewsLoaded && !onyuPublicReviewsHasMore && onyuPublicReviewsCache.length) return;
+    if (more.textContent === '다시 불러오기') { more.textContent = '이전 후기 더 보기'; onyuLoadPublicReviews(true); return; }
+    onyuLoadPublicReviews(false);
   });
 }
 
