@@ -214,13 +214,27 @@ function onyuRenderPublicReviews() {
     card.className = 'review-gallery-card';
     var heading = document.createElement('h3');
     heading.textContent = '온 이유 · 플레이 후기';
+    var rating = document.createElement('p');
+    rating.className = 'review-gallery-rating';
+    rating.setAttribute('aria-label', item.rating ? item.rating + '점 별점' : '별점 없음');
+    rating.textContent = item.rating ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating) : '별점 미등록';
     var body = document.createElement('p');
     body.textContent = item.review || '';
     var date = document.createElement('time');
     date.dateTime = new Date(item.updatedAt || item.createdAt || Date.now()).toISOString();
     date.textContent = onyuFormatDate(item.updatedAt || item.createdAt || Date.now());
     card.appendChild(heading);
+    card.appendChild(rating);
     card.appendChild(body);
+    if (item.nickname && /^[a-z0-9]{2,20}$/.test(item.soopId || '')) {
+      var profile = document.createElement('a');
+      profile.className = 'review-gallery-profile';
+      profile.href = 'https://www.sooplive.com/station/' + encodeURIComponent(item.soopId);
+      profile.target = '_blank';
+      profile.rel = 'noopener noreferrer';
+      profile.textContent = '📢 ' + item.nickname + ' 방송국 방문';
+      card.appendChild(profile);
+    }
     card.appendChild(date);
     return card.outerHTML;
   }).join('');

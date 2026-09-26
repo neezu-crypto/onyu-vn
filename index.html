@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
-<link rel="stylesheet" href="css/style.css?v=20260926-2">
+<link rel="stylesheet" href="css/style.css?v=20260926-3">
 <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
@@ -139,10 +139,28 @@
     <div class="scroll-inner review-inner">
       <div class="scroll-head">
         <p class="scroll-title">이번 이야기는 어땠나요?</p>
-        <p class="scroll-sub">후기는 계정별 최신 1건으로 저장되며, 갤러리에서 익명 공개됩니다. 계정 UID와 닉네임은 공개되지 않아요.</p>
+        <p class="scroll-sub">후기는 계정별 최신 1건으로 저장되며 갤러리에서 공개됩니다. 방송국 홍보를 선택하면 입력한 닉네임과 SOOP 아이디가 함께 표시돼요.</p>
       </div>
+      <fieldset class="review-rating" id="review-rating" aria-label="별점 선택">
+        <legend class="review-label">별점</legend>
+        <div class="review-stars" role="group" aria-label="별점 1점부터 5점">
+          <button type="button" class="review-star" data-rating="1" aria-label="1점" aria-pressed="false">☆</button>
+          <button type="button" class="review-star" data-rating="2" aria-label="2점" aria-pressed="false">☆</button>
+          <button type="button" class="review-star" data-rating="3" aria-label="3점" aria-pressed="false">☆</button>
+          <button type="button" class="review-star" data-rating="4" aria-label="4점" aria-pressed="false">☆</button>
+          <button type="button" class="review-star" data-rating="5" aria-label="5점" aria-pressed="false">☆</button>
+        </div>
+      </fieldset>
       <label class="review-label" for="review-text">플레이 후기</label>
       <textarea id="review-text" class="review-textarea" maxlength="1000" placeholder="이야기를 마친 소감을 들려주세요. (최대 1,000자)" rows="8"></textarea>
+      <label class="review-promote-toggle"><input type="checkbox" id="review-promote"> 스트리머 방송국 홍보하기</label>
+      <p class="review-promote-help" id="review-promote-help">선택하면 후기와 함께 스트리머 닉네임 및 SOOP 아이디가 공개되고, 스트리머 인증 신청도 접수돼요.</p>
+      <div class="review-promote-fields" id="review-promote-fields" hidden>
+        <label class="review-label" for="review-nickname">스트리머 닉네임</label>
+        <input class="review-profile-input" id="review-nickname" type="text" maxlength="20" autocomplete="nickname" placeholder="방송 닉네임">
+        <label class="review-label" for="review-soop-id">SOOP 아이디</label>
+        <input class="review-profile-input" id="review-soop-id" type="text" maxlength="20" autocomplete="off" placeholder="영문·숫자 2~20자">
+      </div>
       <div class="review-actions">
         <button type="button" class="review-save-btn" id="review-save-btn">후기 저장</button>
         <button type="button" class="review-title-btn" id="review-title-btn">타이틀 화면</button>
@@ -444,13 +462,13 @@
   <script src="js/particles.js"></script>
   <script src="js/engine.js?v=20260918-5"></script>
   <script src="js/screens.js"></script>
-  <script src="js/menus.js?v=20260926-2"></script>
-  <script src="js/main.js?v=20260926-1"></script>
+  <script src="js/menus.js?v=20260926-3"></script>
+  <script src="js/main.js?v=20260926-3"></script>
   <script src="js/outfit-picker.js?v=20260921-1"></script>
   <script src="js/sig-opening.js?v=20260917-1"></script>
   <script src="js/telemetry.js"></script>
   <script src="js/devbar.js"></script>
   <script src="js/devbar-links.js"></script>
-  <script type="module" src="js/auth.js?v=20260926-2"></script>
+  <script type="module" src="js/auth.js?v=20260926-3"></script>
 </body>
 </html>

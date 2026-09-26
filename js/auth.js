@@ -45,6 +45,11 @@ window.onyuSubmitPlayerReview = async function (payload) {
   return result.data || {};
 };
 
+window.onyuRequestStreamerVerification = async function (payload) {
+  const result = await requestStreamerVerificationFn(Object.assign({}, payload || {}, { source: 'onyu-vn' }));
+  return result.data || {};
+};
+
 window.onyuListPublicPlayerReviews = async function (payload) {
   const user = auth.currentUser;
   if (!user) throw new Error('익명 로그인을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.');

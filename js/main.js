@@ -229,7 +229,46 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('review-save-btn').classList.remove('is-saved');
     document.getElementById('review-save-btn').textContent = '후기 저장';
     document.getElementById('review-status').textContent = '';
+    window.onyuReviewRating = 0;
+    document.querySelectorAll('.review-star').forEach(function (star) {
+      star.textContent = '☆';
+      star.classList.remove('active');
+      star.setAttribute('aria-pressed', 'false');
+    });
+    document.getElementById('review-promote').checked = false;
+    document.getElementById('review-promote-fields').hidden = true;
+    document.getElementById('review-nickname').value = '';
+    document.getElementById('review-soop-id').value = '';
+    document.getElementById('review-promote').closest('.review-promote-toggle').hidden = false;
+    document.getElementById('review-promote-help').hidden = false;
     onyuShowScreen('review');
+  });
+
+  document.querySelectorAll('.review-star').forEach(function (star) {
+    star.addEventListener('click', function () {
+      var rating = Number(star.dataset.rating);
+      window.onyuReviewRating = rating;
+      document.querySelectorAll('.review-star').forEach(function (item) {
+        var active = Number(item.dataset.rating) <= rating;
+        item.textContent = active ? '★' : '☆';
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-pressed', String(Number(item.dataset.rating) === rating));
+      });
+    });
+  });
+  document.getElementById('review-promote').addEventListener('change', function () {
+    document.getElementById('review-promote-fields').hidden = !this.checked;
+  });
+
+  document.addEventListener('onyu-auth-changed', function (event) {
+    var verifiedStreamer = event.detail && event.detail.role === 'streamer';
+    var toggle = document.querySelector('.review-promote-toggle');
+    var help = document.getElementById('review-promote-help');
+    if (toggle) toggle.hidden = verifiedStreamer;
+    if (help) {
+      help.hidden = verifiedStreamer;
+      if (verifiedStreamer) help.textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
+    }
   });
 
   document.getElementById('review-save-btn').addEventListener('click', async function () {
@@ -237,6 +276,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var reviewText = document.getElementById('review-text');
     var status = document.getElementById('review-status');
     var text = reviewText.value.trim();
+    var rating = Number(window.onyuReviewRating || 0);
+    var promote = document.getElementById('review-promote').checked;
+    var nickname = document.getElementById('review-nickname').value.trim();
+    var soopId = document.getElementById('review-soop-id').value.trim().toLowerCase();
     if (saveBtn.disabled) return;
     if (!text) {
       status.textContent = '후기 내용을 입력해 주세요.';
@@ -245,6 +288,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (text.length > 1000) {
       status.textContent = '후기는 1,000자 이내로 작성해 주세요.';
+      return;
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      status.textContent = '별점을 선택해 주세요.';
+      document.getElementById('review-rating').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (promote && (!nickname || !/^[a-z0-9]{2,20}$/.test(soopId))) {
+      status.textContent = !nickname ? '스트리머 닉네임을 입력해 주세요.' : 'SOOP 아이디는 영문 소문자·숫자 2~20자로 입력해 주세요.';
       return;
     }
     if (window.ONYU_STATE.lastEndingId !== 'lover') {
@@ -261,16 +313,25 @@ document.addEventListener('DOMContentLoaded', function () {
     reviewText.disabled = true;
     status.textContent = '';
     try {
-      await window.onyuSubmitPlayerReview({ endingId: 'lover', review: text });
+      var saved = await window.onyuSubmitPlayerReview({ endingId: 'lover', review: text, rating: rating, promoteBroadcast: promote, nickname: promote ? nickname : '', soopId: promote ? soopId : '' });
       saveBtn.classList.add('is-saved');
       status.textContent = '후기가 저장됐어요.';
+      if (saved && saved.promoteRequested && typeof window.onyuRequestStreamerVerification === 'function') {
+        try {
+          await window.onyuRequestStreamerVerification({ nickname: saved.nickname || nickname, soopId: saved.soopId || soopId });
+          status.textContent = '후기가 저장됐고 스트리머 인증 신청도 접수됐어요.';
+        } catch (verificationError) {
+          console.error('후기 연동 스트리머 인증 신청 실패:', verificationError);
+          status.textContent = '후기는 저장됐지만 인증 신청은 접수되지 않았어요. 설정에서 다시 신청해 주세요.';
+        }
+      }
       setTimeout(function () { saveBtn.hidden = true; }, 380);
     } catch (error) {
       saveBtn.disabled = false;
       saveBtn.textContent = '후기 저장';
       reviewText.disabled = false;
-      status.textContent = (error && error.message)
-        ? '후기를 저장하지 못했어요. 로그인 상태와 네트워크를 확인한 뒤 다시 시도해 주세요.'
+      status.textContent = error && error.message
+        ? '후기를 저장하지 못했어요: ' + error.message
         : '후기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
       console.error('온이유 플레이 후기 저장 실패:', error);
     }
