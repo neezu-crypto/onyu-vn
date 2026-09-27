@@ -534,7 +534,8 @@ async function ensureGameAccess() {
   }
   if (s.isAdmin && s.accessMode === 'viewer' && !s.canStartGame) {
     pendingGameStartAuthorization = false;
-    window.alert('일반 로그인 유저 모드에서는 승인된 접근 권한이 필요합니다.');
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
+    openAccessModal();
     return false;
   }
   try {
