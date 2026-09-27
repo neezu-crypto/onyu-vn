@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" preserveAspectRatio="none">
+  <style>
+    .petal { fill: #f7b5ca; stroke: #fff3f7; stroke-width: 1.5; opacity: .88; transform-box: fill-box; transform-origin: center; animation: fall linear infinite; }
+    @keyframes fall { 0% { transform: translate3d(0,-90px,0) rotate(0deg); opacity: 0; } 12% { opacity: .88; } 88% { opacity: .78; } 100% { transform: translate3d(100px,850px,0) rotate(420deg); opacity: 0; } }
+    .p1{animation-duration:8s;animation-delay:-5s}.p2{animation-duration:10s;animation-delay:-8s}.p3{animation-duration:7.5s;animation-delay:-3s}.p4{animation-duration:9s;animation-delay:-7s}.p5{animation-duration:11s;animation-delay:-10s}.p6{animation-duration:8.5s;animation-delay:-4s}.p7{animation-duration:9.5s;animation-delay:-6s}.p8{animation-duration:7s;animation-delay:-2s}.p9{animation-duration:10.5s;animation-delay:-9s}.p10{animation-duration:8s;animation-delay:-1s}.p11{animation-duration:9s;animation-delay:-4s}.p12{animation-duration:11s;animation-delay:-7s}
+  </style>
+  <g class="petal p1" transform="translate(70 80) rotate(20)"><path d="M0 0C-16-25-5-40 3-23 17-39 29-22 8 1 5 7 2 7 0 0Z"/></g>
+  <g class="petal p2" transform="translate(175 190) rotate(-24)"><path d="M0 0C-13-20-4-32 3-19 14-31 24-18 7 1 4 6 1 6 0 0Z"/></g>
+  <g class="petal p3" transform="translate(275 40) rotate(45)"><path d="M0 0C-12-19-4-31 3-18 14-30 23-17 7 1 4 6 1 6 0 0Z"/></g>
+  <g class="petal p4" transform="translate(375 270) rotate(-10)"><path d="M0 0C-15-23-5-37 3-22 16-35 27-20 8 1 5 7 2 7 0 0Z"/></g>
+  <g class="petal p5" transform="translate(480 110) rotate(32)"><path d="M0 0C-11-18-4-29 3-17 13-28 21-16 6 1 4 5 1 5 0 0Z"/></g>
+  <g class="petal p6" transform="translate(585 220) rotate(-38)"><path d="M0 0C-14-22-5-35 3-21 15-33 25-19 8 1 5 6 2 6 0 0Z"/></g>
+  <g class="petal p7" transform="translate(690 65) rotate(15)"><path d="M0 0C-13-20-4-32 3-19 14-31 24-18 7 1 4 6 1 6 0 0Z"/></g>
+  <g class="petal p8" transform="translate(790 300) rotate(55)"><path d="M0 0C-15-23-5-37 3-22 16-35 27-20 8 1 5 7 2 7 0 0Z"/></g>
+  <g class="petal p9" transform="translate(900 150) rotate(-30)"><path d="M0 0C-12-19-4-31 3-18 14-30 23-17 7 1 4 6 1 6 0 0Z"/></g>
+  <g class="petal p10" transform="translate(1010 30) rotate(28)"><path d="M0 0C-14-22-5-35 3-21 15-33 25-19 8 1 5 6 2 6 0 0Z"/></g>
+  <g class="petal p11" transform="translate(1100 240) rotate(-15)"><path d="M0 0C-11-18-4-29 3-17 13-28 21-16 6 1 4 5 1 5 0 0Z"/></g>
+  <g class="petal p12" transform="translate(565 390) rotate(42)"><path d="M0 0C-12-19-4-31 3-18 14-30 23-17 7 1 4 6 1 6 0 0Z"/></g>
+</svg>
