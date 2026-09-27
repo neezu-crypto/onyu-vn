@@ -522,6 +522,11 @@ async function ensureGameAccess() {
     openAccessModal();
     return false;
   }
+  if (!s.isAdmin && s.role === 'streamer' && !s.canStartGame) {
+    pendingGameStartAuthorization = false;
+    openAccessModal();
+    return false;
+  }
   try {
     // 관리자는 관리자 UID로, 인증 스트리머는 관리자 승인으로 발급된 이용권으로
     // 서버가 각각 판정한다. 클라이언트 역할값만으로 시작하지 않는다.
