@@ -9,8 +9,8 @@
 | 역할 | 판정 | 게임 시작 | 의상 선택 |
 |---|---|---|---|
 | 미로그인/익명 | Firebase Auth 사용자 없음 또는 `isAnonymous` | 불가. 로그인 안내 | 불가 |
-| 일반 시청자 | Google/Kakao 실계정, 스트리머 인증 아님 | 별풍선 50개 후원 및 관리자 승인 후 가능 | 편한 의상·꾸민 의상 모두 자유 선택 |
-| 스트리머 | `streamerVerified === true` | 무료 가능 | 편한 의상은 즉시, 꾸민 의상은 기존 후원 확인 절차 유지 |
+| 일반 로그인 유저 | Google/Kakao 실계정, 스트리머 인증 아님 | 관리자 방송국에 별풍선 50개 후원, 관리자 확인·승인 후 본인 이용권 지급 | 편한 의상·꾸민 의상 모두 자유 선택 |
+| 인증 스트리머 | `streamerVerified === true` | 본인 구매 또는 선물받은 이용권 필요 | 편한 의상은 즉시, 꾸민 의상은 기존 후원 확인 절차 유지 |
 
 스트리머 인증은 Firebase Auth 제공자가 아니라 익명 UID에 서버가 부여하는 신뢰 권한이다. 따라서 Google/Kakao를 연결하지 않은 익명 UID도 승인 후 스트리머 역할이 될 수 있다.
 
@@ -23,7 +23,7 @@ Firebase는 자매 프로젝트와 같은 `soop-stock-market` 프로젝트를 �
 3. 실제 로그인 계정은 Google 또는 Kakao로 익명 UID를 보호한다.
 4. `streamerVerified`를 우선 확인해 스트리머 역할을 계산한다.
 5. 스트리머가 아니고 Google/Kakao 실계정이면 일반 시청자로 계산한다.
-6. 일반 시청자의 경우 `onyuVn/viewerAccess/{uid}` 승인 상태를 확인한다.
+6. 일반 로그인 유저의 경우 서버가 `onyuVn/gameEntitlements/{uid}` 이용권 상태를 확인한다.
 
 클라이언트에는 다음과 같은 단일 상태를 노출한다.
 
@@ -32,58 +32,49 @@ window.onyuAuthState = {
   user: null,                 // Firebase User (익명 포함)
   realUser: null,             // Google/Kakao 실계정
   role: 'anonymous',          // anonymous | viewer | streamer
-  accessStatus: 'none',       // none | pending | approved | rejected
+  accessStatus: 'purchase-required', // purchase-required | gift-required | approved
   canStartGame: false,
 };
 ```
 
 `canStartGame`은 화면 표시용 캐시일 뿐이며, 게임 시작 callable에서도 같은 조건을 서버가 다시 검사한다.
 
-## 3. 일반 시청자 후원·승인 흐름
+## 3. 일반 로그인 유저 본인 구매·승인 흐름
 
-### 최초 접근
+### 일반 로그인 유저 본인 구매
 
 1. 사용자가 `새 게임`을 클릭한다.
 2. Google/Kakao 로그인 전이면 로그인 UI를 먼저 보여준다.
-3. 로그인 후 승인 상태가 없으면 안내 모달을 연다.
-4. 모달에 SOOP 후원자 닉네임을 입력한다.
-5. 확인 버튼을 누르면 SOOP 후원창을 새 탭으로 연다.
-6. 동시에 `onyuRequestViewerAccess` callable로 닉네임이 포함된 승인 요청을 생성하거나 기존 대기 요청을 조회한다.
-7. 사용자가 후원을 완료하면 통합 관리 센터와 디스코드 알림에서 닉네임을 확인한다.
-8. 관리자가 승인하면 서버가 `onyuVn/viewerAccess/{uid}`를 `approved`로 기록한다.
-9. 클라이언트는 해당 UID의 상태를 갱신하고 `새 게임`을 다시 활성화한다.
+3. 이용권 구매·선물 모달에서 `내 게임 이용권 직접 구매 (일반 로그인 계정)`을 선택한다.
+4. SOOP 후원자 닉네임을 입력하고 신청하면 관리자 방송국 후원창이 열린다.
+5. 사용자가 별풍선 50개를 후원하면 통합 관리 센터 신청 큐에서 계정 UID와 후원자 닉네임을 대조한다.
+6. 관리자가 승인하면 서버가 `onyuVn/gameEntitlements/{uid}`에 이용권을 부여한다.
+7. 게임 시작 callable도 같은 이용권을 서버에서 확인한 뒤 게임 시작을 허용한다.
 
 ### 승인 데이터
 
 ```json
 {
   "onyuVn": {
-    "viewerAccess": {
+    "gameEntitlements": {
       "<uid>": {
-        "status": "approved",
-        "approvedAt": 0,
-        "reviewedAt": 0,
-        "reviewedBy": "<adminUid>"
+        "status": "active",
+        "grantedAt": 0,
+        "grantedBy": "<adminUid>",
+        "purchaseType": "self-viewer"
       }
     },
-    "viewerAccessRequests": {
-      "<uid>": {
-        "uid": "<uid>",
-        "nickname": "<SOOP 후원자 닉네임>",
-        "provider": "google|kakao",
+    "streamerGameGiftRequests": {
+      "<requestId>": {
+        "requesterUid": "<uid>",
+        "targetUid": "<uid>",
+        "targetNickname": "<표시 이름>",
+        "donorNickname": "<SOOP 후원자 닉네임>",
+        "purchaseType": "self-viewer",
         "status": "pending|approved|rejected",
         "requestedAt": 0,
         "reviewedAt": 0,
         "reviewedBy": "<adminUid>"
-      }
-    },
-    "viewerAccessAlerts": {
-      "<alertId>": {
-        "uid": "<uid>",
-        "nickname": "<SOOP 후원자 닉네임>",
-        "provider": "google|kakao",
-        "status": "pending",
-        "requestedAt": 0
       }
     }
   }
@@ -100,7 +91,7 @@ window.onyuAuthState = {
 2. 방송 닉네임과 SOOP 아이디를 제출한다.
 3. 관리자가 방송 신원을 확인한다.
 4. 승인 시 공유 `streamerVerifications`와 `users/{uid}/streamerVerified`가 갱신된다.
-5. `onyu-vn`은 `role = 'streamer'`, `canStartGame = true`로 갱신한다.
+5. `onyu-vn`은 `role = 'streamer'`로 인식하지만, 별도의 활성 이용권이 있어야 `canStartGame = true`가 된다.
 
 이미 다른 UID에 인증된 스트리머의 계정 전환은 기존과 동일하게 관리자 재승인 후 custom token으로 처리한다. 클라이언트가 입력한 `streamerVerified` 값은 신뢰하지 않고 서버 조회 결과만 사용한다.
 
@@ -120,11 +111,12 @@ window.onyuAuthState = {
 
 `onyu-vn` 전용 함수명은 다른 자매 프로젝트와 충돌하지 않도록 접두사를 붙인다.
 
-- `onyuRequestViewerAccess`: 실계정의 후원 승인 신청 생성/대기 상태 조회
-- `onyuGetViewerAccess`: 현재 UID의 승인 상태 조회
-- `onyuStartSession`: 스트리머 인증 또는 viewer 승인 여부를 서버에서 최종 검사
-- `onyuApproveViewerAccess`: 관리자센터에서 승인
-- `onyuRejectViewerAccess`: 관리자센터에서 반려
+- `onyuSubmitStreamerGameGift`: 인증 스트리머 선물, 스트리머 본인 구매, 일반 로그인 계정 본인 구매 신청
+- `onyuListStreamerGiftTargets`: 구매·선물 가능한 대상과 본인 구매 자격 조회
+- `onyuReviewStreamerGameGift`: 관리자 후원 확인 후 이용권 지급 또는 신청 거절
+- `onyuGetViewerAccess`: 레거시 일반 시청자 승인 상태 조회
+- `onyuStartSession`: 관리자 선택 모드에 맞춰 최종 검사. 일반 로그인 유저는 `gameEntitlements`, 인증 스트리머는 `streamerGameEntitlements` 또는 일반 게임 이용권을 서버에서 확인
+- `onyuApproveViewerAccess` / `onyuRejectViewerAccess`: 레거시 일반 시청자 승인 기록 관리
 
 관리자 승인 함수는 클라이언트에 노출하지 않고 관리자 UID 검증을 서버에서 수행한다. 승인·반려 기록은 통합 감사 로그에도 남긴다.
 

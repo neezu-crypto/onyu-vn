@@ -309,12 +309,19 @@ async function refreshStreamerGiftTargets() {
     const result = await listStreamerGiftTargetsFn();
     const streamers = result.data && Array.isArray(result.data.streamers) ? result.data.streamers : [];
     const selfEligible = !!(result.data && result.data.selfEligible);
+    const selfViewerEligible = !!(result.data && result.data.selfViewerEligible);
     const balloons = result.data && result.data.balloons || 50;
     giftStreamerSelect.innerHTML = '';
     const first = document.createElement('option');
     first.value = '';
-    first.textContent = selfEligible || streamers.length ? '본인 구매 또는 선물 받을 스트리머 선택' : '구매·선물 가능한 이용권이 없습니다';
+    first.textContent = selfEligible || selfViewerEligible || streamers.length ? '본인 구매 또는 선물 받을 스트리머 선택' : '구매·선물 가능한 이용권이 없습니다';
     giftStreamerSelect.appendChild(first);
+    if (selfViewerEligible) {
+      const ownOption = document.createElement('option');
+      ownOption.value = '__self_viewer__';
+      ownOption.textContent = '내 게임 이용권 직접 구매 (일반 로그인 계정)';
+      giftStreamerSelect.appendChild(ownOption);
+    }
     if (selfEligible) {
       const ownOption = document.createElement('option');
       ownOption.value = '__self__';
@@ -328,7 +335,7 @@ async function refreshStreamerGiftTargets() {
       option.textContent = streamer.nickname + ' (@' + streamer.soopId + ')';
       giftStreamerSelect.appendChild(option);
     });
-    giftStreamerSelect.disabled = !streamers.length && !selfEligible;
+    giftStreamerSelect.disabled = !streamers.length && !selfEligible && !selfViewerEligible;
     giftSubmitBtn.textContent = '별풍선 ' + balloons + '개 후원하고 구매·선물 신청';
   } catch (error) {
     console.error('선물 받을 스트리머 목록 조회 실패:', error);
@@ -486,7 +493,7 @@ async function submitStreamerGameGift() {
   }
   // 클릭 이벤트 안에서 먼저 창을 열어 브라우저의 팝업 차단을 피한다. 실제 후원은
   // 관리자 방송국으로 진행하고, 이용권은 관리자가 후원 내역을 확인한 뒤 대상에게 준다.
-  const purchaseType = selectedTarget === '__self__' ? 'self' : 'gift';
+  const purchaseType = selectedTarget === '__self__' ? 'self' : selectedTarget === '__self_viewer__' ? 'self-viewer' : 'gift';
   const verificationId = purchaseType === 'gift' ? selectedTarget : '';
   const popup = window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
   giftSubmitBtn.disabled = true;
@@ -496,7 +503,9 @@ async function submitStreamerGameGift() {
     const balloons = result.data && result.data.balloons || 50;
     giftStatusEl.textContent = purchaseType === 'self'
       ? '본인 이용권 구매 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 본인 계정에 이용권이 부여됩니다.'
-      : '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
+      : purchaseType === 'self-viewer'
+        ? '게임 이용권 구매 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 현재 로그인한 계정에 이용권이 부여됩니다.'
+        : '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
     giftSubmitBtn.textContent = '신청 완료 · 관리자 확인 대기';
   } catch (e) {
     if (popup && !popup.closed) popup.close();
@@ -516,7 +525,7 @@ async function ensureGameAccess() {
     openLoginModal();
     return false;
   }
-  if (!s.isAdmin && s.role !== 'streamer') {
+  if (!s.isAdmin && s.role !== 'streamer' && !s.canStartGame) {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
     openAccessModal();
@@ -540,7 +549,7 @@ async function ensureGameAccess() {
   }
   try {
     // 선택한 모드를 전달하되, 실제 접근 권한은 서버가 다시 판정한다.
-    await startSessionFn({ accessMode: s.isAdmin ? s.accessMode : 'streamer' });
+    await startSessionFn({ accessMode: s.accessMode });
     pendingGameStartAuthorization = true;
     closeAll();
     return true;
