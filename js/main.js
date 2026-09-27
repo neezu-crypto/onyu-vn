@@ -584,6 +584,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  var giftGameBtn = document.getElementById('title-gift-game');
+  if (giftGameBtn) giftGameBtn.addEventListener('click', function () {
+    if (typeof window.onyuOpenStreamerGiftModal === 'function') window.onyuOpenStreamerGiftModal();
+    else if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
+  });
+
   var continueLoading = false;
   function setContinueLoading(loading) {
     continueLoading = loading;

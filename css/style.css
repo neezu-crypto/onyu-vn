@@ -181,6 +181,8 @@ button { font-family: inherit; }
   background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; outline: none;
 }
 .onyu-access-input:focus { border-color: var(--season-accent); }
+#onyu-gift-status:empty { display: none; }
+#onyu-gift-status:not(:empty) { padding: 10px 12px; border-radius: 12px; background: var(--season-soft); }
 .onyu-auth-actions { display: flex; flex-direction: column; gap: 9px; }
 .onyu-confirm-actions { flex-direction: row; justify-content: center; }
 .onyu-confirm-actions button { min-width: 108px; }

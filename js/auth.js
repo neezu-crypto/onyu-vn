@@ -34,7 +34,8 @@ const linkGoogleAccountFn = httpsCallable(functions, 'linkGoogleAccount');
 const linkKakaoAccountFn = httpsCallable(functions, 'linkKakaoAccount');
 const requestStreamerVerificationFn = httpsCallable(functions, 'requestStreamerVerification');
 const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
-const requestViewerAccessFn = httpsCallable(functions, 'onyuRequestViewerAccess');
+const listStreamerGiftTargetsFn = httpsCallable(functions, 'onyuListStreamerGiftTargets');
+const submitStreamerGameGiftFn = httpsCallable(functions, 'onyuSubmitStreamerGameGift');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
 const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
@@ -108,8 +109,10 @@ const streamerOverlay = document.getElementById('onyu-streamer-overlay');
 const confirmOverlay = document.getElementById('onyu-confirm-overlay');
 const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
-const accessMessageEl = document.getElementById('onyu-access-message');
 const viewerNicknameInput = document.getElementById('onyu-viewer-nickname');
+const giftStreamerSelect = document.getElementById('onyu-gift-streamer');
+const giftStatusEl = document.getElementById('onyu-gift-status');
+const giftSubmitBtn = document.getElementById('onyu-donation-open');
 const adminModeSectionTitle = document.getElementById('onyu-admin-section-title');
 const adminModeRow = document.getElementById('onyu-admin-mode-row');
 const adminModeToggle = document.getElementById('onyu-admin-mode-toggle');
@@ -298,17 +301,49 @@ function openStreamerModal() {
   show(streamerOverlay);
 }
 
-function updateAccessMessage() {
-  const status = window.onyuAuthState.accessStatus;
-  accessMessageEl.textContent = status === 'pending'
-    ? '후원 승인 요청이 접수됐어요. 관리자 확인 후 승인 상태 확인 버튼을 눌러주세요.'
-    : status === 'rejected'
-      ? '이전 요청이 무시됐어요. 후원 내역을 확인한 뒤 다시 후원하고 요청할 수 있습니다.'
-      : status === 'revoked'
-        ? '접근 권한이 회수된 상태입니다. 후원 내역 확인 후 다시 승인을 요청해 주세요.'
-        : '일반 유저는 별풍선 50개를 후원한 뒤 관리자의 확인·승인을 받아 게임을 시작할 수 있습니다.';
+async function refreshStreamerGiftTargets() {
+  giftStreamerSelect.disabled = true;
+  giftStreamerSelect.innerHTML = '<option value="">인증 스트리머를 불러오는 중...</option>';
+  giftStatusEl.textContent = '';
+  try {
+    const result = await listStreamerGiftTargetsFn();
+    const streamers = result.data && Array.isArray(result.data.streamers) ? result.data.streamers : [];
+    giftStreamerSelect.innerHTML = '';
+    const first = document.createElement('option');
+    first.value = '';
+    first.textContent = streamers.length ? '선물 받을 인증 스트리머 선택' : '선물 가능한 인증 스트리머가 없습니다';
+    giftStreamerSelect.appendChild(first);
+    streamers.forEach((streamer) => {
+      const option = document.createElement('option');
+      option.value = streamer.verificationId;
+      option.textContent = streamer.nickname + ' (@' + streamer.soopId + ')';
+      giftStreamerSelect.appendChild(option);
+    });
+    giftStreamerSelect.disabled = !streamers.length;
+  } catch (error) {
+    console.error('선물 받을 스트리머 목록 조회 실패:', error);
+    giftStreamerSelect.innerHTML = '<option value="">인증 스트리머 목록을 불러오지 못했습니다</option>';
+    giftStatusEl.textContent = '목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+  }
 }
-function openAccessModal() { closeAll(); updateAccessMessage(); show(accessOverlay); }
+function openAccessModal() {
+  closeAll();
+  giftSubmitBtn.disabled = false;
+  giftSubmitBtn.textContent = '별풍선 50개 후원하고 선물하기';
+  giftStatusEl.textContent = '';
+  show(accessOverlay);
+  refreshStreamerGiftTargets();
+}
+window.onyuOpenStreamerGiftModal = async function () {
+  await window.onyuAuthReady;
+  await refreshAccessState();
+  if (!window.onyuAuthState.authenticated) {
+    openLoginModal();
+    return false;
+  }
+  openAccessModal();
+  return true;
+};
 
 async function loginWithGoogle() {
   try {
@@ -426,51 +461,57 @@ async function checkStreamerVerification() {
   }
 }
 
-async function openDonationAndRequestAccess() {
-  const nickname = viewerNicknameInput.value.trim();
-  if (!nickname) {
+async function submitStreamerGameGift() {
+  const donorNickname = viewerNicknameInput.value.trim();
+  const verificationId = giftStreamerSelect.value;
+  if (!verificationId) {
+    alert('선물 받을 인증 스트리머를 선택해 주세요.');
+    giftStreamerSelect.focus();
+    return;
+  }
+  if (!donorNickname) {
     alert('SOOP 후원자 닉네임을 입력해 주세요.');
     viewerNicknameInput.focus();
     return;
   }
+  // 클릭 이벤트 안에서 먼저 창을 열어 브라우저의 팝업 차단을 피한다. 실제 후원은
+  // 관리자 방송국으로 진행하고, 이용권은 관리자가 후원 내역을 확인한 뒤 대상에게 준다.
   const popup = window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
+  giftSubmitBtn.disabled = true;
+  giftSubmitBtn.textContent = '신청 접수 중...';
   try {
-    await requestViewerAccessFn({ nickname });
-    window.onyuAuthState.accessStatus = 'pending';
-    updateAuthBar();
-    dispatchAuthChanged();
-    updateAccessMessage();
+    const result = await submitStreamerGameGiftFn({ verificationId, donorNickname });
+    const balloons = result.data && result.data.balloons || 50;
+    giftStatusEl.textContent = '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
+    giftSubmitBtn.textContent = '신청 완료 · 관리자 확인 대기';
   } catch (e) {
     if (popup && !popup.closed) popup.close();
-    console.error('온 이유 접근 승인 신청 실패:', e);
-    alert('후원 승인 요청에 실패했습니다. 로그인 상태를 확인해 주세요.');
+    giftSubmitBtn.disabled = false;
+    giftSubmitBtn.textContent = '별풍선 50개 후원하고 선물하기';
+    console.error('온 이유 스트리머 이용권 선물 신청 실패:', e);
+    alert('선물 신청에 실패했습니다: ' + (e.message || '로그인 상태를 확인해 주세요.'));
   }
-}
-
-async function checkViewerAccess() {
-  await refreshAccessState();
-  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack(window.onyuAuthState.canStartGame ? 'access_check_success' : 'access_check_denied');
-  if (window.onyuAuthState.canStartGame) {
-    closeAll();
-    return true;
-  }
-  updateAccessMessage();
-  return false;
 }
 
 async function ensureGameAccess() {
   await window.onyuAuthReady;
   await refreshAccessState();
   const s = window.onyuAuthState;
-  if (!s.isAdmin) {
+  if (!s.isAdmin && !s.authenticated) {
+    pendingGameStartAuthorization = false;
+    openLoginModal();
+    return false;
+  }
+  if (!s.isAdmin && s.role !== 'streamer') {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-    window.alert(PRE_RELEASE_NOTICE);
+    openAccessModal();
     return false;
   }
   try {
-    // 게임 시작 권한은 기존 후원·스트리머 상태와 무관하게 서버에서 관리자 UID로만 허용한다.
-    await startSessionFn({ accessMode: 'admin' });
+    // 관리자는 관리자 UID로, 인증 스트리머는 관리자 승인으로 발급된 이용권으로
+    // 서버가 각각 판정한다. 클라이언트 역할값만으로 시작하지 않는다.
+    await startSessionFn({ accessMode: s.isAdmin ? 'admin' : 'streamer' });
     pendingGameStartAuthorization = true;
     closeAll();
     return true;
@@ -478,9 +519,8 @@ async function ensureGameAccess() {
     pendingGameStartAuthorization = false;
     console.error('온 이유 관리자 게임 시작 권한 확인 실패:', e);
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-    window.alert(s.isAdmin
-      ? '관리자 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.'
-      : PRE_RELEASE_NOTICE);
+    if (s.isAdmin) window.alert('관리자 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    else window.alert(e && e.message ? e.message : '선물 이용권 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     return false;
   }
 }
@@ -495,7 +535,6 @@ window.onyuConsumeGameStartAuthorization = function () {
 window.onyuOpenLoginModal = openLoginModal;
 window.onyuOpenStreamerModal = openStreamerModal;
 window.onyuEnsureGameAccess = ensureGameAccess;
-window.onyuCheckViewerAccess = checkViewerAccess;
 window.onyuToggleAdminMode = toggleAdminMode;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -510,8 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-login-close').addEventListener('click', closeAll);
   document.getElementById('onyu-access-close').addEventListener('click', closeAll);
   document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
-  document.getElementById('onyu-donation-open').addEventListener('click', openDonationAndRequestAccess);
-  document.getElementById('onyu-access-check').addEventListener('click', checkViewerAccess);
+  giftSubmitBtn.addEventListener('click', submitStreamerGameGift);
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   streamerForm.addEventListener('submit', submitStreamerVerification);
   [loginOverlay, accessOverlay, streamerOverlay].forEach((overlay) => {
