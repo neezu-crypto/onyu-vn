@@ -308,18 +308,28 @@ async function refreshStreamerGiftTargets() {
   try {
     const result = await listStreamerGiftTargetsFn();
     const streamers = result.data && Array.isArray(result.data.streamers) ? result.data.streamers : [];
+    const selfEligible = !!(result.data && result.data.selfEligible);
+    const balloons = result.data && result.data.balloons || 50;
     giftStreamerSelect.innerHTML = '';
     const first = document.createElement('option');
     first.value = '';
-    first.textContent = streamers.length ? '선물 받을 인증 스트리머 선택' : '선물 가능한 인증 스트리머가 없습니다';
+    first.textContent = selfEligible || streamers.length ? '본인 구매 또는 선물 받을 스트리머 선택' : '구매·선물 가능한 이용권이 없습니다';
     giftStreamerSelect.appendChild(first);
+    if (selfEligible) {
+      const ownOption = document.createElement('option');
+      ownOption.value = '__self__';
+      const own = result.data.selfStreamer || {};
+      ownOption.textContent = '내 게임 이용권 직접 구매 (인증 스트리머' + (own.nickname ? ': ' + own.nickname : '') + ')';
+      giftStreamerSelect.appendChild(ownOption);
+    }
     streamers.forEach((streamer) => {
       const option = document.createElement('option');
       option.value = streamer.verificationId;
       option.textContent = streamer.nickname + ' (@' + streamer.soopId + ')';
       giftStreamerSelect.appendChild(option);
     });
-    giftStreamerSelect.disabled = !streamers.length;
+    giftStreamerSelect.disabled = !streamers.length && !selfEligible;
+    giftSubmitBtn.textContent = '별풍선 ' + balloons + '개 후원하고 구매·선물 신청';
   } catch (error) {
     console.error('선물 받을 스트리머 목록 조회 실패:', error);
     giftStreamerSelect.innerHTML = '<option value="">인증 스트리머 목록을 불러오지 못했습니다</option>';
@@ -329,7 +339,7 @@ async function refreshStreamerGiftTargets() {
 function openAccessModal() {
   closeAll();
   giftSubmitBtn.disabled = false;
-  giftSubmitBtn.textContent = '별풍선 50개 후원하고 선물하기';
+  giftSubmitBtn.textContent = '별풍선 50개 후원하고 구매·선물 신청';
   giftStatusEl.textContent = '';
   show(accessOverlay);
   refreshStreamerGiftTargets();
@@ -463,9 +473,9 @@ async function checkStreamerVerification() {
 
 async function submitStreamerGameGift() {
   const donorNickname = viewerNicknameInput.value.trim();
-  const verificationId = giftStreamerSelect.value;
-  if (!verificationId) {
-    alert('선물 받을 인증 스트리머를 선택해 주세요.');
+  const selectedTarget = giftStreamerSelect.value;
+  if (!selectedTarget) {
+    alert('본인 구매 또는 선물 받을 인증 스트리머를 선택해 주세요.');
     giftStreamerSelect.focus();
     return;
   }
@@ -476,20 +486,24 @@ async function submitStreamerGameGift() {
   }
   // 클릭 이벤트 안에서 먼저 창을 열어 브라우저의 팝업 차단을 피한다. 실제 후원은
   // 관리자 방송국으로 진행하고, 이용권은 관리자가 후원 내역을 확인한 뒤 대상에게 준다.
+  const purchaseType = selectedTarget === '__self__' ? 'self' : 'gift';
+  const verificationId = purchaseType === 'gift' ? selectedTarget : '';
   const popup = window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
   giftSubmitBtn.disabled = true;
   giftSubmitBtn.textContent = '신청 접수 중...';
   try {
-    const result = await submitStreamerGameGiftFn({ verificationId, donorNickname });
+    const result = await submitStreamerGameGiftFn({ purchaseType, verificationId, donorNickname });
     const balloons = result.data && result.data.balloons || 50;
-    giftStatusEl.textContent = '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
+    giftStatusEl.textContent = purchaseType === 'self'
+      ? '본인 이용권 구매 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 본인 계정에 이용권이 부여됩니다.'
+      : '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
     giftSubmitBtn.textContent = '신청 완료 · 관리자 확인 대기';
   } catch (e) {
     if (popup && !popup.closed) popup.close();
     giftSubmitBtn.disabled = false;
-    giftSubmitBtn.textContent = '별풍선 50개 후원하고 선물하기';
-    console.error('온 이유 스트리머 이용권 선물 신청 실패:', e);
-    alert('선물 신청에 실패했습니다: ' + (e.message || '로그인 상태를 확인해 주세요.'));
+    giftSubmitBtn.textContent = '별풍선 50개 후원하고 구매·선물 신청';
+    console.error('온 이유 스트리머 이용권 구매·선물 신청 실패:', e);
+    alert('이용권 신청에 실패했습니다: ' + (e.message || '로그인 상태를 확인해 주세요.'));
   }
 }
 
