@@ -527,10 +527,19 @@ async function ensureGameAccess() {
     openAccessModal();
     return false;
   }
+  if (s.isAdmin && s.accessMode === 'streamer' && !s.canStartGame) {
+    pendingGameStartAuthorization = false;
+    window.alert('스트리머 모드에서는 인증 스트리머 이용권이 있어야 게임을 시작할 수 있습니다.');
+    return false;
+  }
+  if (s.isAdmin && s.accessMode === 'viewer' && !s.canStartGame) {
+    pendingGameStartAuthorization = false;
+    window.alert('일반 로그인 유저 모드에서는 승인된 접근 권한이 필요합니다.');
+    return false;
+  }
   try {
-    // 관리자는 관리자 UID로, 인증 스트리머는 관리자 승인으로 발급된 이용권으로
-    // 서버가 각각 판정한다. 클라이언트 역할값만으로 시작하지 않는다.
-    await startSessionFn({ accessMode: s.isAdmin ? 'admin' : 'streamer' });
+    // 선택한 모드를 전달하되, 실제 접근 권한은 서버가 다시 판정한다.
+    await startSessionFn({ accessMode: s.isAdmin ? s.accessMode : 'streamer' });
     pendingGameStartAuthorization = true;
     closeAll();
     return true;
