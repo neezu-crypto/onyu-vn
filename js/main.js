@@ -183,9 +183,31 @@ function onyuPrepareChapterEntry(chapterId, options) {
     else alert('게임 장면을 준비하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
     return false;
   }
-  var access = options.skipAccess || !window.onyuEnsureGameAccess
-    ? Promise.resolve(true)
-    : window.onyuEnsureGameAccess();
+  var access;
+  if (options.skipAccess) {
+    var consumeAuthorization = window.onyuConsumeGameStartAuthorization;
+    var preauthorized = typeof consumeAuthorization === 'function' && consumeAuthorization();
+    if (!preauthorized) {
+      if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
+      else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+    }
+    access = Promise.resolve(preauthorized);
+  } else if (typeof window.onyuEnsureGameAccess === 'function') {
+    access = Promise.resolve(window.onyuEnsureGameAccess()).then(function (allowed) {
+      if (!allowed) return false;
+      var consumeAuthorization = window.onyuConsumeGameStartAuthorization;
+      if (typeof consumeAuthorization === 'function' && !consumeAuthorization()) {
+        if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
+        else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+        return false;
+      }
+      return true;
+    });
+  } else {
+    if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
+    else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+    access = Promise.resolve(false);
+  }
   return Promise.resolve(access).then(function (allowed) {
     if (!allowed) return false;
     if (typeof options.beforeLoad === 'function') options.beforeLoad();
@@ -548,7 +570,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 권한이 거절되어도 백그라운드 프리로드 실패가 unhandled rejection이 되지
     // 않도록 즉시 소비한다. 허용된 경우에는 아래에서 같은 Promise를 다시 기다린다.
     ready.catch(function () {});
-    var access = window.onyuEnsureGameAccess ? window.onyuEnsureGameAccess() : Promise.resolve(true);
+    var access = typeof window.onyuEnsureGameAccess === 'function'
+      ? window.onyuEnsureGameAccess()
+      : (window.onyuNotifyPreRelease ? window.onyuNotifyPreRelease() : alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.'), Promise.resolve(false));
     Promise.resolve(access).then(function (allowed) {
       newGameAccessChecking = false;
       if (allowed) startNewGameAfterAccess(ready);

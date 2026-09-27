@@ -69,6 +69,8 @@ const ADMIN_ACCESS_MODE_LABELS = {
   streamer: '스트리머 모드',
   viewer: '일반 로그인 유저',
 };
+const PRE_RELEASE_NOTICE = '온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.';
+let pendingGameStartAuthorization = false;
 
 window.onyuAuthState = {
   user: null,
@@ -460,25 +462,35 @@ async function ensureGameAccess() {
   await window.onyuAuthReady;
   await refreshAccessState();
   const s = window.onyuAuthState;
-  if (s.role === 'streamer' || s.canStartGame) {
-    try {
-      await startSessionFn({ accessMode: s.isAdmin ? s.accessMode : 'viewer' });
-      return true;
-    } catch (e) {
-      console.error('온 이유 게임 시작 권한 확인 실패:', e);
-      await refreshAccessState();
-      if (window.onyuAuthState.role === 'streamer') return true;
-      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-      if (window.onyuAuthState.authenticated) openAccessModal();
-      else openLoginModal();
-      return false;
-    }
+  if (!s.isAdmin) {
+    pendingGameStartAuthorization = false;
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
+    window.alert(PRE_RELEASE_NOTICE);
+    return false;
   }
-  if (!s.authenticated) { if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied'); openLoginModal(); return false; }
-  if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-  openAccessModal();
-  return false;
+  try {
+    // 게임 시작 권한은 기존 후원·스트리머 상태와 무관하게 서버에서 관리자 UID로만 허용한다.
+    await startSessionFn({ accessMode: 'admin' });
+    pendingGameStartAuthorization = true;
+    closeAll();
+    return true;
+  } catch (e) {
+    pendingGameStartAuthorization = false;
+    console.error('온 이유 관리자 게임 시작 권한 확인 실패:', e);
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
+    window.alert(s.isAdmin
+      ? '관리자 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+      : PRE_RELEASE_NOTICE);
+    return false;
+  }
 }
+
+window.onyuNotifyPreRelease = function () { window.alert(PRE_RELEASE_NOTICE); };
+window.onyuConsumeGameStartAuthorization = function () {
+  const authorized = pendingGameStartAuthorization;
+  pendingGameStartAuthorization = false;
+  return authorized;
+};
 
 window.onyuOpenLoginModal = openLoginModal;
 window.onyuOpenStreamerModal = openStreamerModal;
