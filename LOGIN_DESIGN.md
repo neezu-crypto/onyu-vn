@@ -45,7 +45,7 @@ window.onyuAuthState = {
 
 1. 사용자가 `새 게임`을 클릭한다.
 2. Google/Kakao 로그인 전이면 로그인 UI를 먼저 보여준다.
-3. 이용권 구매·선물 모달에서 `내 게임 이용권 직접 구매 (일반 로그인 계정)`을 선택한다.
+3. 이용권 구매·선물 모달에서 `내 게임 이용권 구매`를 선택한다.
 4. SOOP 후원자 닉네임을 입력하고 신청하면 관리자 방송국 후원창이 열린다.
 5. 사용자가 별풍선 50개를 후원하면 통합 관리 센터 신청 큐에서 계정 UID와 후원자 닉네임을 대조한다.
 6. 관리자가 승인하면 서버가 `onyuVn/gameEntitlements/{uid}`에 이용권을 부여한다.
@@ -93,6 +93,10 @@ window.onyuAuthState = {
 4. 승인 시 공유 `streamerVerifications`와 `users/{uid}/streamerVerified`가 갱신된다.
 5. `onyu-vn`은 `role = 'streamer'`로 인식하지만, 별도의 활성 이용권이 있어야 `canStartGame = true`가 된다.
 
+시청자는 인증 여부와 관계없이 SOOP 닉네임·아이디를 직접 입력해 스트리머 이용권 선물을 신청할 수 있다. 후원 확인 전에는 신청이 대기 상태이고, 관리자가 후원을 승인했지만 대상이 아직 미인증이면 신청은 `approved`/`awaiting-streamer-verification`으로 보관한다. 이후 공유 `streamerVerifications`에 같은 SOOP 아이디가 등록되면 서버 트리거가 `streamerGameEntitlements/{uid}`에 이용권을 자동 지급한다. 인증이 먼저 끝난 경우에는 선물 승인 callable이 바로 UID를 찾아 지급한다. SOOP 아이디를 매칭 키로 사용하며, 닉네임은 신청 내역 표시용이다.
+
+인증 스트리머의 이용권 상태는 게임 시작 시 callable로 다시 확인한다. 이용권이 없는 스트리머에게는 구매·선물 모달에서 시청자에게 SOOP 아이디로 선물받을 수 있다는 안내를 표시하고, 미보유 스트리머가 모달을 열어둔 동안 접근 상태를 주기적으로 갱신해 새로고침 없이 지급 상태를 반영한다.
+
 이미 다른 UID에 인증된 스트리머의 계정 전환은 기존과 동일하게 관리자 재승인 후 custom token으로 처리한다. 클라이언트가 입력한 `streamerVerified` 값은 신뢰하지 않고 서버 조회 결과만 사용한다.
 
 ## 5. 의상 선택 분기
@@ -111,9 +115,10 @@ window.onyuAuthState = {
 
 `onyu-vn` 전용 함수명은 다른 자매 프로젝트와 충돌하지 않도록 접두사를 붙인다.
 
-- `onyuSubmitStreamerGameGift`: 인증 스트리머 선물, 스트리머 본인 구매, 일반 로그인 계정 본인 구매 신청
-- `onyuListStreamerGiftTargets`: 구매·선물 가능한 대상과 본인 구매 자격 조회
+- `onyuSubmitStreamerGameGift`: SOOP 닉네임·아이디로 선물, 스트리머 본인 구매, 일반 로그인 계정 본인 구매 신청
+- `onyuListStreamerGiftTargets`: 본인 구매 자격 조회
 - `onyuReviewStreamerGameGift`: 관리자 후원 확인 후 이용권 지급 또는 신청 거절
+- `activateOnyuGiftsAfterStreamerVerification`: 공유 인증 원장에 등록된 SOOP 아이디와 승인된 대기 선물을 연결
 - `onyuGetViewerAccess`: 레거시 일반 시청자 승인 상태 조회
 - `onyuStartSession`: 관리자 선택 모드에 맞춰 최종 검사. 일반 로그인 유저는 `gameEntitlements`, 인증 스트리머는 `streamerGameEntitlements` 또는 일반 게임 이용권을 서버에서 확인
 - `onyuApproveViewerAccess` / `onyuRejectViewerAccess`: 레거시 일반 시청자 승인 기록 관리

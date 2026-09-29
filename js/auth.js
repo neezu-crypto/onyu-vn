@@ -111,6 +111,10 @@ const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
 const viewerNicknameInput = document.getElementById('onyu-viewer-nickname');
 const giftStreamerSelect = document.getElementById('onyu-gift-streamer');
+const giftRecipientFields = document.getElementById('onyu-gift-recipient-fields');
+const giftTargetNicknameInput = document.getElementById('onyu-gift-target-nickname');
+const giftTargetSoopIdInput = document.getElementById('onyu-gift-target-soopid');
+const accessMessageEl = document.getElementById('onyu-access-message');
 const giftStatusEl = document.getElementById('onyu-gift-status');
 const giftSubmitBtn = document.getElementById('onyu-donation-open');
 const adminModeSectionTitle = document.getElementById('onyu-admin-section-title');
@@ -303,44 +307,39 @@ function openStreamerModal() {
 
 async function refreshStreamerGiftTargets() {
   giftStreamerSelect.disabled = true;
-  giftStreamerSelect.innerHTML = '<option value="">인증 스트리머를 불러오는 중...</option>';
+  const previousValue = giftStreamerSelect.value || 'gift';
+  giftStreamerSelect.innerHTML = '<option value="gift">스트리머에게 선물하기</option>';
   giftStatusEl.textContent = '';
   try {
     const result = await listStreamerGiftTargetsFn();
-    const streamers = result.data && Array.isArray(result.data.streamers) ? result.data.streamers : [];
     const selfEligible = !!(result.data && result.data.selfEligible);
     const selfViewerEligible = !!(result.data && result.data.selfViewerEligible);
     const balloons = result.data && result.data.balloons || 50;
-    giftStreamerSelect.innerHTML = '';
-    const first = document.createElement('option');
-    first.value = '';
-    first.textContent = selfEligible || selfViewerEligible || streamers.length ? '본인 구매 또는 선물 받을 스트리머 선택' : '구매·선물 가능한 이용권이 없습니다';
-    giftStreamerSelect.appendChild(first);
+    const ownStreamer = result.data && result.data.selfStreamer || null;
+    if (window.onyuAuthState.role === 'streamer' && ownStreamer && ownStreamer.soopId) {
+      accessMessageEl.textContent = '스트리머 인증이 완료됐어요. 아직 이용권이 없다면 시청자에게 SOOP 아이디 @' + ownStreamer.soopId + '로 선물해 달라고 안내해 주세요. 후원 확인 후 이용할 수 있습니다.';
+    }
     if (selfViewerEligible) {
       const ownOption = document.createElement('option');
       ownOption.value = '__self_viewer__';
-      ownOption.textContent = '내 게임 이용권 직접 구매 (일반 로그인 계정)';
+      ownOption.textContent = '내 게임 이용권 구매';
       giftStreamerSelect.appendChild(ownOption);
     }
     if (selfEligible) {
       const ownOption = document.createElement('option');
       ownOption.value = '__self__';
       const own = result.data.selfStreamer || {};
-      ownOption.textContent = '내 게임 이용권 직접 구매 (인증 스트리머' + (own.nickname ? ': ' + own.nickname : '') + ')';
+      ownOption.textContent = '내 스트리머 이용권 구매' + (own.nickname ? ' (' + own.nickname + ')' : '');
       giftStreamerSelect.appendChild(ownOption);
     }
-    streamers.forEach((streamer) => {
-      const option = document.createElement('option');
-      option.value = streamer.verificationId;
-      option.textContent = streamer.nickname + ' (@' + streamer.soopId + ')';
-      giftStreamerSelect.appendChild(option);
-    });
-    giftStreamerSelect.disabled = !streamers.length && !selfEligible && !selfViewerEligible;
+    giftStreamerSelect.value = Array.from(giftStreamerSelect.options).some((option) => option.value === previousValue) ? previousValue : 'gift';
+    giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
+    giftStreamerSelect.disabled = false;
     giftSubmitBtn.textContent = '별풍선 ' + balloons + '개 후원하고 구매·선물 신청';
   } catch (error) {
     console.error('선물 받을 스트리머 목록 조회 실패:', error);
-    giftStreamerSelect.innerHTML = '<option value="">인증 스트리머 목록을 불러오지 못했습니다</option>';
-    giftStatusEl.textContent = '목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    giftStreamerSelect.disabled = false;
+    giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
   }
 }
 function openAccessModal() {
@@ -348,6 +347,10 @@ function openAccessModal() {
   giftSubmitBtn.disabled = false;
   giftSubmitBtn.textContent = '별풍선 50개 후원하고 구매·선물 신청';
   giftStatusEl.textContent = '';
+  accessMessageEl.textContent = window.onyuAuthState.role === 'streamer'
+    ? '스트리머 인증이 완료됐어요. 아직 이용권이 없다면 시청자에게 이 화면의 SOOP 아이디로 선물해 달라고 안내해 주세요. 후원 확인 후 이용할 수 있습니다.'
+    : '별풍선 50개를 관리자 방송국에 후원해 이용권을 구매하거나, 아직 인증하지 않은 스트리머에게도 선물할 수 있습니다. 후원 확인 후 이용권이 지급됩니다.';
+  giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
   show(accessOverlay);
   refreshStreamerGiftTargets();
 }
@@ -481,32 +484,38 @@ async function checkStreamerVerification() {
 async function submitStreamerGameGift() {
   const donorNickname = viewerNicknameInput.value.trim();
   const selectedTarget = giftStreamerSelect.value;
-  if (!selectedTarget) {
-    alert('본인 구매 또는 선물 받을 인증 스트리머를 선택해 주세요.');
-    giftStreamerSelect.focus();
-    return;
-  }
   if (!donorNickname) {
     alert('SOOP 후원자 닉네임을 입력해 주세요.');
     viewerNicknameInput.focus();
     return;
   }
+  const targetNickname = giftTargetNicknameInput.value.trim();
+  const targetSoopId = giftTargetSoopIdInput.value.trim().toLowerCase();
+  if (selectedTarget === 'gift' && !targetNickname) {
+    alert('선물 받을 SOOP 닉네임을 입력해 주세요.');
+    giftTargetNicknameInput.focus();
+    return;
+  }
+  if (selectedTarget === 'gift' && !/^[a-z0-9]{2,20}$/.test(targetSoopId)) {
+    alert('SOOP 아이디는 영문 소문자/숫자 2~20자로 입력해 주세요.');
+    giftTargetSoopIdInput.focus();
+    return;
+  }
   // 클릭 이벤트 안에서 먼저 창을 열어 브라우저의 팝업 차단을 피한다. 실제 후원은
   // 관리자 방송국으로 진행하고, 이용권은 관리자가 후원 내역을 확인한 뒤 대상에게 준다.
   const purchaseType = selectedTarget === '__self__' ? 'self' : selectedTarget === '__self_viewer__' ? 'self-viewer' : 'gift';
-  const verificationId = purchaseType === 'gift' ? selectedTarget : '';
   const popup = window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
   giftSubmitBtn.disabled = true;
   giftSubmitBtn.textContent = '신청 접수 중...';
   try {
-    const result = await submitStreamerGameGiftFn({ purchaseType, verificationId, donorNickname });
+    const result = await submitStreamerGameGiftFn({ purchaseType, donorNickname, targetNickname, targetSoopId });
     const balloons = result.data && result.data.balloons || 50;
     giftStatusEl.textContent = purchaseType === 'self'
       ? '본인 이용권 구매 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 본인 계정에 이용권이 부여됩니다.'
       : purchaseType === 'self-viewer'
         ? '게임 이용권 구매 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 현재 로그인한 계정에 이용권이 부여됩니다.'
-        : '선물 신청이 접수됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 선택한 스트리머에게 이용권이 부여됩니다.';
-    giftSubmitBtn.textContent = '신청 완료 · 관리자 확인 대기';
+        : '선물 신청이 완료됐어요. 관리자 방송국에 별풍선 ' + balloons + '개를 후원해 주세요. 후원 확인 후 이용권이 지급됩니다. 대상이 아직 미인증이면 스트리머 인증 승인 즉시 자동으로 이용할 수 있어요.';
+    giftSubmitBtn.textContent = '선물 신청 완료';
   } catch (e) {
     if (popup && !popup.closed) popup.close();
     giftSubmitBtn.disabled = false;
@@ -588,12 +597,31 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-access-close').addEventListener('click', closeAll);
   document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
   giftSubmitBtn.addEventListener('click', submitStreamerGameGift);
+  giftStreamerSelect.addEventListener('change', () => {
+    giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
+    giftStatusEl.textContent = '';
+  });
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   streamerForm.addEventListener('submit', submitStreamerVerification);
   [loginOverlay, accessOverlay, streamerOverlay].forEach((overlay) => {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAll(); });
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+  // RTDB는 클라이언트에서 직접 읽지 않고 callable을 통해서만 접근한다.
+  // 인증된 스트리머가 선물 승인/인증 승인을 기다리는 동안 접근 상태를 갱신해,
+  // 권한이 생기면 새로고침 없이 다음 플레이 시도부터 이용할 수 있게 한다.
+  setInterval(() => {
+    const state = window.onyuAuthState;
+    const awaitingStreamerAccess = state.role === 'streamer' || streamerRequestSubmitted;
+    if (document.visibilityState === 'visible' && !accessOverlay.hidden && auth.currentUser && awaitingStreamerAccess && !state.canStartGame) {
+      refreshAccessState().then(() => {
+        if (window.onyuAuthState.canStartGame && !accessOverlay.hidden) {
+          accessMessageEl.textContent = '이용권이 지급되어 지금 게임을 이용할 수 있어요. 이 창을 닫고 게임을 시작해 주세요.';
+          giftStatusEl.textContent = '이용권 지급이 확인됐습니다.';
+        }
+      });
+    }
+  }, 10000);
 });
 
 onAuthStateChanged(auth, async (user) => {
