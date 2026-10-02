@@ -30,6 +30,7 @@ function onyuChapterIndexById(id) {
 }
 
 function onyuResetNewGame() {
+  onyuPendingResumeProgress = null;
   window.ONYU_STATE.playerName = '';
   window.ONYU_STATE.affection = 0;
   window.ONYU_STATE.addressStage = 0;
@@ -37,6 +38,7 @@ function onyuResetNewGame() {
   window.ONYU_STATE.chapterCheckpoints = {};
   window.ONYU_STATE.completedChapters = {};
   window.ONYU_STATE.chosenOutfits = {};
+  window.ONYU_STATE.lastEndingId = null;
   // unlockedGallery는 의도적으로 초기화하지 않는다 — 새 게임을 시작해도 이미 언락한
   // CG·엔딩 기록은 영구 보존(기획서 SAVE & UI 원칙).
 }

@@ -608,8 +608,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     setContinueLoading(true);
-    Promise.resolve().then(function () { return onyuPrepareChapterEntry(snap.currentChapterId, {
-      beforeLoad: function () { onyuApplySnapshot(snap); },
+    Promise.resolve().then(function () { return onyuPrepareChapterEntry(onyuResumeChapterId(snap, true), {
+      beforeLoad: function () { onyuApplySnapshot(snap, true); },
       message: '이어하기 데이터를 불러오고 있어요',
       telemetry: { name: 'game_started', data: { resumed: true, chapterId: snap.currentChapterId || '' } },
       onFailure: function (error) {

@@ -23,20 +23,39 @@ function onyuSnapshotState() {
     chapterCheckpoints: s.chapterCheckpoints,
     completedChapters: s.completedChapters,
     chosenOutfits: s.chosenOutfits,
+    progress: typeof onyuCaptureProgress === 'function' ? onyuCaptureProgress() : null,
     thumbnail: { background: thumbnailBackground },
     savedAt: Date.now(),
   };
 }
 
-function onyuApplySnapshot(snap) {
+// 구버전 저장에는 대사 위치가 없다. 자동저장은 완료한 챕터의 끝에 찍혔으므로
+// 다음 챕터로 이동하고, 수동저장은 시작 체크포인트의 호감도로 재생한다.
+function onyuResumeChapterId(snap, isAutosave) {
+  if (!snap || !snap.currentChapterId) return null;
+  if (snap.progress && snap.progress.version === 2) return snap.currentChapterId;
+  var index = onyuChapterIndexById(snap.currentChapterId);
+  if (isAutosave && snap.completedChapters && snap.completedChapters[snap.currentChapterId]
+    && window.ONYU_CHAPTERS[index + 1]) return window.ONYU_CHAPTERS[index + 1].id;
+  return snap.currentChapterId;
+}
+
+function onyuApplySnapshot(snap, isAutosave) {
   var s = window.ONYU_STATE;
   s.playerName = snap.playerName || '';
   s.affection = snap.affection || 0;
   s.addressStage = snap.addressStage || 0;
-  s.currentChapterId = snap.currentChapterId;
+  s.currentChapterId = onyuResumeChapterId(snap, isAutosave);
   s.chapterCheckpoints = snap.chapterCheckpoints || {};
   s.completedChapters = snap.completedChapters || {};
   s.chosenOutfits = snap.chosenOutfits || {};
+  onyuPendingResumeProgress = snap.progress && snap.progress.version === 2 ? snap.progress : null;
+  if (!onyuPendingResumeProgress && s.currentChapterId === snap.currentChapterId) {
+    var checkpoint = s.chapterCheckpoints[s.currentChapterId];
+    if (Number.isFinite(checkpoint)) s.affection = checkpoint;
+    var chapter = window.ONYU_CHAPTERS[onyuChapterIndexById(s.currentChapterId)];
+    if (chapter) s.addressStage = chapter.order <= 13 ? 0 : 1;
+  }
 }
 
 function onyuIsValidSnapshot(snap) {
@@ -44,11 +63,14 @@ function onyuIsValidSnapshot(snap) {
     && typeof onyuChapterIndexById === 'function' && onyuChapterIndexById(snap.currentChapterId) >= 0);
 }
 
-function onyuSaveAutosave() {
+function onyuSaveAutosave(options) {
+  options = options || {};
   try {
     localStorage.setItem(ONYU_AUTOSAVE_KEY, JSON.stringify(onyuSnapshotState()));
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('autosave_created', { chapterId: window.ONYU_STATE.currentChapterId || '' });
-    if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
+    if (!options.silent) {
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('autosave_created', { chapterId: window.ONYU_STATE.currentChapterId || '' });
+      if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('save-success');
+    }
   } catch (e) {
     console.warn('자동저장 실패', e);
   }

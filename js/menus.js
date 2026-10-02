@@ -41,7 +41,7 @@ function onyuRenderChapterList() {
   // 저장 기록이 있으면 그걸 현재 상태에 반영해서 목록에 그대로 보여준다.
   var snap = onyuLoadAutosave();
   if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap)) snap = null;
-  if (snap) onyuApplySnapshot(snap);
+  if (snap) onyuApplySnapshot(snap, true);
 
   var reached = window.ONYU_STATE.chapterCheckpoints || {};
   var currentId = window.ONYU_STATE.currentChapterId;
@@ -62,8 +62,8 @@ function onyuRenderChapterList() {
     var grid = document.createElement('div');
     grid.className = 'chip-grid';
     chapters.forEach(function (ch) {
-      var unlocked = !!reached[ch.id] || ch.order === 1;
       var isCurrent = ch.id === currentId;
+      var unlocked = !!reached[ch.id] || ch.order === 1 || isCurrent;
       var btn = document.createElement('button');
       btn.className = 'ch-card' + (isCurrent ? ' is-current' : '') + (unlocked ? '' : ' is-locked');
       var colors = ONYU_SEASON_COLORS[ch.season];
@@ -96,6 +96,7 @@ function onyuJumpToChapter(chapterId) {
   var result = window.onyuPrepareChapterEntry(chapterId, {
     message: (chapter ? chapter.title + ' 챕터' : '챕터') + '를 불러오고 있어요',
     beforeLoad: function () {
+      onyuPendingResumeProgress = null;
       // 이전 챕터의 체크포인트 호감도에서 시작한다.
       window.ONYU_STATE.affection = (checkpoint !== undefined) ? checkpoint : 0;
     },
@@ -316,7 +317,7 @@ function onyuRenderSaveScreen() {
   var snap = onyuLoadAutosave();
   if (typeof onyuIsValidSnapshot === 'function' && !onyuIsValidSnapshot(snap)) snap = null;
   if (snap) {
-    var ch = window.ONYU_CHAPTERS[onyuChapterIndexById(snap.currentChapterId)];
+    var ch = window.ONYU_CHAPTERS[onyuChapterIndexById(onyuResumeChapterId(snap, true))];
     autosaveContainer.innerHTML =
       '<div class="autosave-card"><div class="autosave-thumb"' + onyuSaveThumbnailStyle(snap, ch) + '></div><div class="autosave-info">'
       + '<div class="autosave-name-row"><span class="autosave-badge">자동</span>'
@@ -335,8 +336,8 @@ function onyuRenderSaveScreen() {
         if (card.dataset.loading === 'true') return;
         card.dataset.loading = 'true';
         card.setAttribute('aria-busy', 'true');
-        window.onyuPrepareChapterEntry(snap.currentChapterId, {
-          beforeLoad: function () { onyuApplySnapshot(snap); },
+        window.onyuPrepareChapterEntry(onyuResumeChapterId(snap, true), {
+          beforeLoad: function () { onyuApplySnapshot(snap, true); },
           message: '자동 저장한 장면을 불러오고 있어요',
           afterStart: function () {
             if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'auto', chapterId: snap.currentChapterId || '' });
@@ -391,8 +392,8 @@ function onyuRenderSaveScreen() {
           }
           btn.disabled = true;
           btn.setAttribute('aria-busy', 'true');
-          window.onyuPrepareChapterEntry(loaded.currentChapterId, {
-            beforeLoad: function () { onyuApplySnapshot(loaded); },
+          window.onyuPrepareChapterEntry(onyuResumeChapterId(loaded, false), {
+            beforeLoad: function () { onyuApplySnapshot(loaded, false); },
             message: '저장 슬롯 ' + slotIndex + '을 불러오고 있어요',
             afterStart: function () {
               if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('save_loaded', { kind: 'manual', slot: slotIndex, chapterId: loaded.currentChapterId || '' });

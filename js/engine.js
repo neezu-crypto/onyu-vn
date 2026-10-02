@@ -13,6 +13,7 @@ var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타
 var onyuGamePaused = false; // 설정·UI 숨김 중 대사/자동 진행 일시정지
 var onyuUiHidden = false; // 플레이 장면 감상용 UI 숨김 상태(세이브하지 않음)
 var onyuPauseReasons = { settings: false, uiHidden: false };
+var onyuPendingResumeProgress = null; // save.js가 불러온 장면. 다음 onyuStartChapter에서 한 번만 소비한다.
 
 function onyuTrack(eventName, data) {
   if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack(eventName, data);
@@ -221,8 +222,11 @@ function onyuPrefetchNextChapterCg(currentIdx) {
 }
 
 function onyuStartChapter(chapterId) {
+  var resumeProgress = onyuPendingResumeProgress;
+  onyuPendingResumeProgress = null;
   // 새 챕터·이어하기·타임머신 진입은 항상 UI가 보이는 상태에서 시작한다.
   onyuShowUi();
+  onyuResumeGame('settings');
   // 타이틀에서 이미 CH01을 데웠고, 이후 챕터는 진입 시점에 필요한 에셋만
   // 지연 로드한다. 프리로드는 비동기로 진행되므로 기존 전환 연출을 막지 않는다.
   if (typeof onyuPreloadChapterAssets === 'function') onyuPreloadChapterAssets(chapterId);
@@ -249,10 +253,21 @@ function onyuStartChapter(chapterId) {
     clearTimeout(onyuAutoAdvanceTimer);
     window.ONYU_STATE.currentChapterId = chapterId;
     onyuTrack('chapter_started', { chapterId: chapterId });
-    window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
+    // 이어하기의 호감도는 이미 해당 장면까지의 선택을 반영한다. 시작 체크포인트를
+    // 덮으면 타임머신에서 같은 선택을 다시 적용해 호감도가 중복된다.
+    if (!resumeProgress || !Object.prototype.hasOwnProperty.call(window.ONYU_STATE.chapterCheckpoints, chapterId)) {
+      window.ONYU_STATE.chapterCheckpoints[chapterId] = window.ONYU_STATE.affection;
+    }
     onyuFrameStack = [{ list: chapter.script, i: 0 }];
     onyuCurrentExpr = 'calm'; // 챕터 시작은 항상 평온으로 리셋
     onyuCurrentBg = chapter.bg || null; // 챕터 기본 배경(없으면 계절 워시만)
+    window.ONYU_STATE.lastEndingId = null;
+    if (resumeProgress && !onyuRestoreProgress(chapter, resumeProgress)) {
+      // 대본 변경 등으로 장면 경로를 복원할 수 없으면 챕터 시작점으로 안전하게
+      // 되돌린다. 저장 당시의 누적 호감도를 들고 재시작하지 않는다.
+      window.ONYU_STATE.affection = window.ONYU_STATE.chapterCheckpoints[chapterId];
+      window.ONYU_STATE.addressStage = chapter.order <= 13 ? 0 : 1;
+    }
     if (typeof onyuAudioPlayForChapter === 'function') onyuAudioPlayForChapter(chapterId);
 
     onyuEl.chapterTag.textContent = 'CH.' + String(chapter.order).padStart(2, '0') + ' · ' + chapter.title;
@@ -282,6 +297,72 @@ function onyuCurrentNode() {
   if (!frame) return null;
   if (frame.i >= frame.list.length) return undefined; // 이 프레임 끝
   return frame.list[frame.i];
+}
+
+// 대본 배열 자체는 저장할 수 없으므로 루트부터 현재 줄까지의 인덱스와 분기
+// 번호를 기록한다. choice/scoreGate 안의 중첩 대사도 같은 방식으로 복원한다.
+function onyuCaptureProgress() {
+  var chapter = window.ONYU_CHAPTERS[onyuChapterIndexById(window.ONYU_STATE.currentChapterId)];
+  if (!chapter || !onyuFrameStack.length || onyuFrameStack[0].list !== chapter.script) return null;
+  var frames = [];
+  for (var depth = 0; depth < onyuFrameStack.length; depth++) {
+    var frame = onyuFrameStack[depth];
+    if (!Number.isInteger(frame.i) || frame.i < 0 || frame.i >= frame.list.length) return null;
+    var saved = { i: frame.i };
+    if (depth) {
+      var parent = onyuFrameStack[depth - 1];
+      var node = parent.list[parent.i];
+      var choices = node && node.type === 'choice' ? node.options
+        : (node && node.type === 'scoreGate' ? node.branches : null);
+      if (!Array.isArray(choices)) return null;
+      saved.branch = choices.findIndex(function (item) { return item.script === frame.list; });
+      if (saved.branch < 0) return null;
+    }
+    frames.push(saved);
+  }
+  var node = onyuCurrentNode();
+  return {
+    version: 2,
+    frames: frames,
+    nodeType: node.type,
+    nodeText: node.text || node.situation || '',
+    expr: onyuCurrentExpr,
+    bg: onyuCurrentBg,
+    endingId: window.ONYU_STATE.lastEndingId || null,
+  };
+}
+
+function onyuRestoreProgress(chapter, progress) {
+  if (!progress || progress.version !== 2 || !Array.isArray(progress.frames)
+    || progress.frames.length < 1 || progress.frames.length > 12) return false;
+  var restored = [];
+  var list = chapter.script;
+  for (var depth = 0; depth < progress.frames.length; depth++) {
+    var saved = progress.frames[depth];
+    if (!saved || !Number.isInteger(saved.i) || saved.i < 0 || saved.i >= list.length) return false;
+    restored.push({ list: list, i: saved.i });
+    if (depth + 1 < progress.frames.length) {
+      var node = list[saved.i];
+      var choices = node && node.type === 'choice' ? node.options
+        : (node && node.type === 'scoreGate' ? node.branches : null);
+      var child = progress.frames[depth + 1];
+      if (!Array.isArray(choices) || !child || !Number.isInteger(child.branch)
+        || child.branch < 0 || child.branch >= choices.length
+        || !Array.isArray(choices[child.branch].script)) return false;
+      list = choices[child.branch].script;
+    }
+  }
+  var current = list[restored[restored.length - 1].i];
+  if (!current || current.type !== progress.nodeType
+    || (current.text || current.situation || '') !== progress.nodeText) return false;
+  if (!Object.prototype.hasOwnProperty.call(ONYU_EXPR_INDEX, progress.expr)) return false;
+  if (progress.bg !== null && (typeof progress.bg !== 'string' || !/^[a-z0-9-]+$/i.test(progress.bg))) return false;
+  onyuFrameStack = restored;
+  onyuCurrentExpr = progress.expr;
+  onyuCurrentBg = progress.bg;
+  window.ONYU_STATE.lastEndingId = progress.endingId && window.ONYU_ENDING_TITLES[progress.endingId]
+    ? progress.endingId : null;
+  return true;
 }
 
 var onyuLastAdvancePoppedFrame = false; // onyuStepToNextNode가 프레임을 하나 이상 pop했는지(선택지 분기 등 하나의 "이야기"가 끝나고 바깥 이야기로 복귀하는 지점인지)
@@ -334,6 +415,12 @@ function onyuRenderCurrentNode() {
   if (node.bg) {
     onyuCurrentBg = node.bg;
     onyuApplyBackground();
+  }
+
+  // 장면을 실제로 표시할 때마다 갱신한다. 선택 확정 직후의 지연 연출 중에는
+  // 이전 장면 기록이 유지되어 중간 종료 후 선택 점수가 두 번 적용되지 않는다.
+  if (node.type === 'narration' || node.type === 'line' || node.type === 'choice' || node.type === 'nameInput') {
+    onyuSaveAutosave({ silent: true });
   }
 
   // 선택지가 떠 있는 동안은 대사창 내용을 비우고 안 보이게 한다 — 기획서 "선택지
@@ -842,7 +929,8 @@ function onyuFinishChapter() {
   // CG 갤러리 언락은 챕터 완주 시점이 아니라 cgReveal 노드가 실제로 뜬 순간으로
   // 옮겼다(onyuShowCgReveal) — "봤다 = 갤러리에 남는다"가 더 자연스럽고, 이미지
   // 파일이 아직 없어 팝업이 조용히 스킵된 경우 불필요하게 언락되지 않는다.
-  onyuSaveAutosave();
+  // 다음 챕터 첫 장면을 그릴 때 자동저장한다. 여기서 방금 끝낸 챕터를 저장하면
+  // 이어하기가 그 챕터를 완료 시점 호감도로 다시 시작해 선택 점수를 중복한다.
   var idx = onyuChapterIndexById(window.ONYU_STATE.currentChapterId);
   var next = window.ONYU_CHAPTERS[idx + 1];
   if (next) {
