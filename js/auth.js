@@ -62,7 +62,6 @@ window.onyuListPublicPlayerReviews = async function (payload) {
 // 개발자 방송국 페이지가 아니라 실제 후원 UI를 바로 연다.
 const DONATION_URL = 'https://st.sooplive.com/app/gift_starballoon.php?szBjId=skftodwocks2&szWork=BJ_STATION&sys_type=web&location=station';
 const KAKAO_JS_KEY = 'ed4f01d6903ca41d5dc0ab32b6ae143c';
-const ONYU_ADMIN_UID = '3Y2N5S5aCxT3bVDvcjx6GLyUaEs1';
 const ADMIN_MODE_STORAGE_KEY = 'onyuVn.adminMode';
 const ADMIN_ACCESS_MODES = ['viewer', 'streamer', 'admin'];
 const ADMIN_ACCESS_MODE_LABELS = {
@@ -275,7 +274,8 @@ async function refreshAccessState() {
       authenticated: !user.isAnonymous,
       canStartGame: false,
       loginMethod: user.isAnonymous ? null : 'google',
-      isAdmin: user.uid === ONYU_ADMIN_UID,
+      // 관리자 여부는 관리자센터 서버 응답으로만 결정한다. 조회 실패 시 관리자 권한을 추측하지 않는다.
+      isAdmin: false,
       adminMode: false,
       accessMode: 'viewer',
     });
