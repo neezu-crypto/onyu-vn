@@ -271,7 +271,7 @@ async function onyuLoadPublicReviews(reset) {
     console.warn('온 이유 공개 후기 조회 실패:', error);
     status.textContent = '후기를 불러오지 못했습니다. 네트워크를 확인하고 다시 시도해 주세요.';
     more.hidden = false;
-    more.textContent = '다시 불러오기';
+    more.textContent = '새로고침';
   } finally {
     more.disabled = false;
   }
@@ -293,7 +293,7 @@ function onyuInitGallerySubtabs() {
   var more = document.getElementById('gallery-review-more');
   if (more) more.addEventListener('click', function () {
     if (onyuPublicReviewsLoaded && !onyuPublicReviewsHasMore && onyuPublicReviewsCache.length) return;
-    if (more.textContent === '다시 불러오기') { more.textContent = '이전 후기 더 보기'; onyuLoadPublicReviews(true); return; }
+    if (more.textContent === '새로고침') { onyuLoadPublicReviews(true); return; }
     onyuLoadPublicReviews(false);
   });
 }
