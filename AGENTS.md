@@ -6,9 +6,11 @@
 ## Firebase 연동
 
 - Firebase 프로젝트는 `soop-stock-market`이며, 전용 데이터는 RTDB의 `onyuVn/` 아래에 둔다.
-- 현재 공유 `database.rules.json`은 `onyuVn`의 클라이언트 읽기·쓰기를 차단한다. 이 데이터는
-  클라이언트에서 RTDB로 직접 읽거나 쓰지 말고 `admin-center/functions/`의 callable을
-  통해 처리한다.
+- 현재 공유 `database.rules.json`은 `onyuVn/` 경로의 클라이언트 읽기·쓰기를 차단한다. 이
+  경로의 게임 권한·후기·분석 등은 클라이언트에서 직접 읽거나 쓰지 말고
+  `admin-center/functions/`의 callable을 통해 처리한다. 예외로 접속 상태는 별도 경로인
+  `presence/onyuVn/{uid}`에 클라이언트가 heartbeat를 기록하며, 공유 규칙은 로그인 UID와
+  경로 UID 일치 및 필드 검증을 강제한다. presence에는 공개 읽기 권한이 없다.
 - 온이유 callable은 현재 `admin-center` 저장소의 `admincenter` codebase가 소유한다.
   새 함수를 만들거나 배포할 때는 함수명 전역 충돌을 확인하고, 함수 이름을 명시해 배포한다.
 - 후기·접근 권한처럼 UID와 결부되는 작업은 클라이언트 입력의 UID를 신뢰하지 않고,
