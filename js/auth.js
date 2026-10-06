@@ -10,7 +10,7 @@ import {
   getAuth, GoogleAuthProvider, signInAnonymously, signInWithPopup,
   signInWithCustomToken, signOut, linkWithPopup, onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import { getDatabase, ref, set, onDisconnect } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import { getDatabase, ref, set, onValue, onDisconnect } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
 
 const firebaseConfig = {
@@ -131,6 +131,34 @@ const streamerNoteStatus = document.getElementById('onyu-streamer-note-status');
 let streamerRequestSubmitted = false;
 let presenceTimer = null;
 let presenceRef = null;
+let streamerVerifiedUnsubscribe = null;
+let switchApprovalUnsubscribe = null;
+let switchHandoffInProgress = false;
+
+async function handleOnyuStreamerSwitchApproval(uid, requestId) {
+  if (!requestId || switchHandoffInProgress || auth.currentUser?.uid !== uid) return;
+  const lockKey = 'soop.streamerVerificationSwitch.' + requestId;
+  try {
+    const lastAttemptAt = Number(localStorage.getItem(lockKey) || 0);
+    if (lastAttemptAt && Date.now() - lastAttemptAt < 20000) return;
+    localStorage.setItem(lockKey, String(Date.now()));
+  } catch (_) { /* Private browsing may disable localStorage. */ }
+  switchHandoffInProgress = true;
+  try {
+    const result = await requestStreamerVerificationFn({ checkOnly: true, switchRequestId: requestId, source: 'onyu-vn' });
+    if (result.data?.action !== 'switch' || auth.currentUser?.uid !== uid) {
+      try { localStorage.removeItem(lockKey); } catch (_) {}
+      switchHandoffInProgress = false;
+      return;
+    }
+    await signInWithCustomToken(auth, result.data.customToken);
+    window.location.reload();
+  } catch (error) {
+    try { localStorage.removeItem(lockKey); } catch (_) {}
+    switchHandoffInProgress = false;
+    console.error('승인된 스트리머 계정 자동 전환 실패:', error);
+  }
+}
 
 function stopPresence() {
   if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
@@ -656,6 +684,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 onAuthStateChanged(auth, async (user) => {
+  if (streamerVerifiedUnsubscribe) { streamerVerifiedUnsubscribe(); streamerVerifiedUnsubscribe = null; }
+  if (switchApprovalUnsubscribe) { switchApprovalUnsubscribe(); switchApprovalUnsubscribe = null; }
+  switchHandoffInProgress = false;
   window.onyuAuthState.user = user;
   if (typeof window.onyuTelemetrySetIdentity === 'function') {
     window.onyuTelemetrySetIdentity(user && user.uid ? user.uid : null);
@@ -670,7 +701,33 @@ onAuthStateChanged(auth, async (user) => {
       });
     return;
   }
+  const uid = user.uid;
+  let hasInitialVerifiedValue = false;
+  let previousVerifiedValue = false;
+  streamerVerifiedUnsubscribe = onValue(ref(db, 'users/' + uid + '/streamerVerified'), async (snapshot) => {
+    if (auth.currentUser?.uid !== uid) return;
+    const verified = snapshot.val() === true;
+    if (hasInitialVerifiedValue && previousVerifiedValue !== verified) {
+      await refreshAccessState();
+      if (auth.currentUser?.uid !== uid) return;
+      if (verified) {
+        streamerRequestSubmitted = true;
+        setStreamerSubmitState(true);
+        if (streamerSubmitBtn) streamerSubmitBtn.textContent = '인증 완료';
+        streamerNote.hidden = true;
+        streamerMessageEl.textContent = '✅ 관리자가 승인했어요. 스트리머 인증 권한이 새로고침 없이 적용됐습니다.';
+      }
+    }
+    previousVerifiedValue = verified;
+    hasInitialVerifiedValue = true;
+  }, (error) => console.error('스트리머 인증 상태 구독 실패:', error));
+  switchApprovalUnsubscribe = onValue(ref(db, 'users/' + uid + '/streamerVerificationSwitchApproval'), (snapshot) => {
+    if (auth.currentUser?.uid !== uid) return;
+    const requestId = snapshot.val() && snapshot.val().requestId;
+    if (requestId) handleOnyuStreamerSwitchApproval(uid, String(requestId));
+  }, (error) => console.error('계정 전환 승인 신호 구독 실패:', error));
   startPresence(user);
   await refreshAccessState();
+  if (auth.currentUser?.uid !== uid) return;
   if (!readyResolved) { readyResolved = true; readyResolve(); }
 });
