@@ -125,6 +125,9 @@ const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
 const streamerSoopIdInput = document.getElementById('onyu-streamer-soopid');
 const streamerSubmitBtn = document.getElementById('onyu-streamer-submit');
+const streamerNote = document.getElementById('onyu-streamer-note');
+const streamerNoteCodeBtn = document.getElementById('onyu-streamer-note-code');
+const streamerNoteStatus = document.getElementById('onyu-streamer-note-status');
 let streamerRequestSubmitted = false;
 let presenceTimer = null;
 let presenceRef = null;
@@ -153,6 +156,20 @@ function setStreamerSubmitState(submitted, pending) {
   if (!streamerSubmitBtn) return;
   streamerSubmitBtn.disabled = submitted || !!pending;
   streamerSubmitBtn.textContent = pending ? '신청 중...' : submitted ? '신청 완료' : '인증 신청';
+}
+
+function showStreamerNote(data, previousCode) {
+  streamerNote.hidden = !!data.isSwitch;
+  if (data.isSwitch) return;
+  const code = Number(data.verificationCodeExpiresAt) > Date.now()
+    ? data.verificationCode || previousCode || '' : '';
+  streamerNoteCodeBtn.textContent = code || '코드 없음';
+  streamerNoteCodeBtn.disabled = !code;
+  streamerNoteStatus.textContent = code ? '' : '코드가 없거나 만료됐어요. 새 코드를 발급해주세요.';
+  streamerNoteCodeBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(code); streamerNoteStatus.textContent = '복사했어요. 쪽지 본문에 붙여넣어 보내주세요.'; }
+    catch (_) { streamerNoteStatus.textContent = '코드를 선택해 직접 복사해주세요.'; }
+  };
 }
 
 function show(el) { if (el) el.hidden = false; }
@@ -301,6 +318,7 @@ function openStreamerModal() {
   closeAll();
   streamerForm.reset();
   setStreamerSubmitState(streamerRequestSubmitted);
+  streamerNote.hidden = !streamerRequestSubmitted;
   streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디를 입력하면 관리자 확인 후 무료로 게임을 시작할 수 있어요.';
   show(streamerOverlay);
 }
@@ -442,15 +460,16 @@ async function submitStreamerVerification(event) {
       closeAll();
       await signInWithCustomToken(auth, data.customToken);
       window.location.reload();
-    } else if (data.action === 'already-verified') {
+    } else if (data.action === 'already-verified' || data.action === 'auto-approved') {
       closeAll();
       await refreshAccessState();
       alert('이미 스트리머 인증이 완료된 계정입니다.');
     } else {
       setStreamerSubmitState(true);
+      showStreamerNote(data, '');
       streamerMessageEl.textContent = data.isSwitch
         ? '계정 전환 신청이 관리자에게 전달됐어요. 확인 후 승인 상태를 다시 확인해 주세요.'
-        : '스트리머 인증 신청이 관리자에게 전달됐어요. 관리자 확인 후 승인 상태를 다시 확인해 주세요.';
+        : '인증 신청이 접수됐어요. SOOP 쪽지의 발신자 아이디와 코드를 대조해 자동 승인합니다.';
     }
   } catch (e) {
     setStreamerSubmitState(false);
@@ -461,9 +480,11 @@ async function submitStreamerVerification(event) {
 
 async function checkStreamerVerification() {
   try {
-    const result = await requestStreamerVerificationFn({});
+    const previousText = streamerNoteCodeBtn.textContent.trim();
+    const previousCode = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(previousText) ? previousText : '';
+    const result = await requestStreamerVerificationFn({ source: 'onyu-vn', checkOnly: true });
     const data = result.data || {};
-    if (data.action === 'already-verified') {
+    if (data.action === 'already-verified' || data.action === 'auto-approved') {
       closeAll();
       await refreshAccessState();
       alert('스트리머 인증이 완료됐습니다.');
@@ -472,13 +493,22 @@ async function checkStreamerVerification() {
       await signInWithCustomToken(auth, data.customToken);
       window.location.reload();
     } else {
-      if (data.action === 'pending') setStreamerSubmitState(true);
+      if (data.action === 'pending') { setStreamerSubmitState(true); showStreamerNote(data, previousCode); }
       streamerMessageEl.textContent = '아직 관리자 확인 전이에요. 잠시 후 다시 확인해 주세요.';
     }
   } catch (e) {
     if (!streamerRequestSubmitted) setStreamerSubmitState(false);
     alert('인증 상태 확인에 실패했습니다: ' + (e.message || e));
   }
+}
+
+async function renewStreamerVerificationCode() {
+  try {
+    const result = await requestStreamerVerificationFn({ source: 'onyu-vn' });
+    const data = result.data || {};
+    if (data.action !== 'pending') return checkStreamerVerification();
+    showStreamerNote(data, '');
+  } catch (e) { streamerNoteStatus.textContent = '새 코드 발급에 실패했습니다: ' + (e.message || e); }
 }
 
 async function submitStreamerGameGift() {
@@ -602,6 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     giftStatusEl.textContent = '';
   });
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
+  document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
   streamerForm.addEventListener('submit', submitStreamerVerification);
   [loginOverlay, accessOverlay, streamerOverlay].forEach((overlay) => {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAll(); });
