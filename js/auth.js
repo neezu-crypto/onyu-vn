@@ -188,8 +188,9 @@ function setStreamerSubmitState(submitted, pending) {
 }
 
 function showStreamerNote(data, previousCode) {
-  streamerNote.hidden = !!data.isSwitch;
-  if (data.isSwitch) return;
+  const canSendNote = data.noteEligible === true || (!data.isSwitch && data.noteEligible !== false);
+  streamerNote.hidden = !canSendNote;
+  if (!canSendNote) return;
   const code = Number(data.verificationCodeExpiresAt) > Date.now()
     ? data.verificationCode || previousCode || '' : '';
   streamerNoteCodeBtn.textContent = code || '코드 없음';
@@ -497,7 +498,9 @@ async function submitStreamerVerification(event) {
       setStreamerSubmitState(true);
       showStreamerNote(data, '');
       streamerMessageEl.textContent = data.isSwitch
-        ? '계정 전환 신청이 관리자에게 전달됐어요. 확인 후 승인 상태를 다시 확인해 주세요.'
+        ? (data.noteEligible
+          ? '기존 인증 스트리머의 SOOP 아이디로 쪽지 코드를 보내면 확인 후 이 기기에서도 기존 계정으로 전환됩니다.'
+          : '계정 전환 신청이 관리자에게 전달됐어요. 기존 인증 정보가 자동 쪽지 확인 조건을 충족하지 않아 수동 검수합니다.')
         : '인증 신청이 접수됐어요. SOOP 쪽지의 발신자 아이디와 코드를 대조해 자동 승인합니다.';
     }
   } catch (e) {
