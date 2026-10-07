@@ -12,7 +12,7 @@ var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 var onyuGamePaused = false; // 설정·UI 숨김 중 대사/자동 진행 일시정지
 var onyuUiHidden = false; // 플레이 장면 감상용 UI 숨김 상태(세이브하지 않음)
-var onyuPauseReasons = { settings: false, uiHidden: false };
+var onyuPauseReasons = { settings: false, uiHidden: false, outfitPicker: false };
 var onyuPendingResumeProgress = null; // save.js가 불러온 장면. 다음 onyuStartChapter에서 한 번만 소비한다.
 
 function onyuTrack(eventName, data) {
@@ -813,6 +813,9 @@ function onyuHandleAdminHoldPointerDown(event) {
 }
 
 function onyuHandleDialogueClick() {
+  // 의상 선택이 열려 있거나 닫히는 중에는 화면의 빈 곳을 눌러도 대사가 진행되지
+  // 않게 한다. 선택 확정 후 페이드가 끝나고 오버레이가 숨겨질 때까지 유지한다.
+  if (onyuEl.outfitPickerOverlay && !onyuEl.outfitPickerOverlay.hidden) return;
   onyuMaybeRecoverFullscreen();
   if (onyuAdminHoldSuppressClick) {
     onyuAdminHoldSuppressClick = false;

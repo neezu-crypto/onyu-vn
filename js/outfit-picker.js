@@ -123,6 +123,7 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   var reduceMotion = window.ONYU_STATE.settings.reduceMotion;
 
   onyuEl.outfitPickerOverlay.hidden = false;
+  onyuPauseGame('outfitPicker');
   if (reduceMotion) {
     onyuEl.outfitPickerOverlay.classList.add('is-active');
   } else {
@@ -144,10 +145,12 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     onyuEl.outfitPickerOverlay.classList.remove('is-active');
     if (reduceMotion) {
       onyuEl.outfitPickerOverlay.hidden = true;
+      onyuResumeGame('outfitPicker');
       onDone();
     } else {
       setTimeout(function () {
         onyuEl.outfitPickerOverlay.hidden = true;
+        onyuResumeGame('outfitPicker');
         onDone();
       }, 260);
     }
