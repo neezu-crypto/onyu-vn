@@ -40,6 +40,7 @@ const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
 const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
+const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifiedStreamerVisit');
 
 window.onyuSubmitPlayerReview = async function (payload) {
   const result = await submitPlayerReviewFn(payload || {});
@@ -727,6 +728,11 @@ onAuthStateChanged(auth, async (user) => {
     if (requestId) handleOnyuStreamerSwitchApproval(uid, String(requestId));
   }, (error) => console.error('계정 전환 승인 신호 구독 실패:', error));
   startPresence(user);
+  if (!user.isAnonymous) {
+    logVerifiedOnyuStreamerVisitFn().catch((error) => {
+      console.warn('온이유 인증 스트리머 접속 알림 기록 실패:', error);
+    });
+  }
   await refreshAccessState();
   if (auth.currentUser?.uid !== uid) return;
   if (!readyResolved) { readyResolved = true; readyResolve(); }
