@@ -9,7 +9,7 @@
 | 역할 | 판정 | 게임 시작 | 의상 선택 |
 |---|---|---|---|
 | 미로그인/익명 | Firebase Auth 사용자 없음 또는 `isAnonymous` | 불가. 로그인 안내 | 불가 |
-| 일반 로그인 유저 | Google/Kakao 실계정, 스트리머 인증 아님 | 관리자 방송국에 별풍선 50개 후원, 관리자 확인·승인 후 본인 이용권 지급 | 편한 의상·꾸민 의상 모두 자유 선택 |
+| 일반 로그인 유저 | Google/Kakao 실계정, 스트리머 인증 아님 | 관리자 방송국에 별풍선 50개 후원, SOOP 알림 자동 대조 또는 관리자 수동 검수 후 본인 이용권 지급 | 편한 의상·꾸민 의상 모두 자유 선택 |
 | 인증 스트리머 | `streamerVerified === true` | 본인 구매 또는 선물받은 이용권 필요 | 편한 의상은 즉시, 꾸민 의상은 기존 후원 확인 절차 유지 |
 
 스트리머 인증은 Firebase Auth 제공자가 아니라 익명 UID에 서버가 부여하는 신뢰 권한이다. 따라서 Google/Kakao를 연결하지 않은 익명 UID도 승인 후 스트리머 역할이 될 수 있다.
@@ -47,8 +47,8 @@ window.onyuAuthState = {
 2. Google/Kakao 로그인 전이면 로그인 UI를 먼저 보여준다.
 3. 이용권 구매·선물 모달에서 `내 게임 이용권 구매`를 선택한다.
 4. SOOP 후원자 닉네임을 입력하고 신청하면 관리자 방송국 후원창이 열린다.
-5. 사용자가 별풍선 50개를 후원하면 통합 관리 센터 신청 큐에서 계정 UID와 후원자 닉네임을 대조한다.
-6. 관리자가 승인하면 서버가 `onyuVn/gameEntitlements/{uid}`에 이용권을 부여한다.
+5. 사용자가 별풍선 50개를 후원하고 온이유 화면에서 후원 완료를 알리면, SOOP 알림의 발신자 아이디·수량·시각이 단일 신청과 일치할 때 서버가 자동 승인한다.
+6. 일치가 모호하거나 자동 확인이 되지 않으면 관리자가 신청을 검수하고, 승인 시 서버가 `onyuVn/gameEntitlements/{uid}`에 이용권을 부여한다.
 7. 게임 시작 callable도 같은 이용권을 서버에서 확인한 뒤 게임 시작을 허용한다.
 
 ### 승인 데이터
@@ -119,9 +119,11 @@ window.onyuAuthState = {
 - `onyuListStreamerGiftTargets`: 본인 구매 자격 조회
 - `onyuReviewStreamerGameGift`: 관리자 후원 확인 후 이용권 지급 또는 신청 거절
 - `activateOnyuGiftsAfterStreamerVerification`: 공유 인증 원장에 등록된 SOOP 아이디와 승인된 대기 선물을 연결
-- `onyuGetViewerAccess`: 레거시 일반 시청자 승인 상태 조회
+- `onyuGetViewerAccess`: 서버가 계산한 로그인·스트리머 인증·이용권 상태 조회. 이전 `viewerAccess` 승인 기록은 현재 권한 판정에 사용하지 않음
 - `onyuStartSession`: 관리자 선택 모드에 맞춰 최종 검사. 일반 로그인 유저는 `gameEntitlements`, 인증 스트리머는 `streamerGameEntitlements` 또는 일반 게임 이용권을 서버에서 확인
-- `onyuApproveViewerAccess` / `onyuRejectViewerAccess`: 레거시 일반 시청자 승인 기록 관리
+- `onyuRecoverStuckStreamerGameGift`: 처리 시작 후 10분 이상 멈춘 신청만 대기 상태로 복구. 재승인 시 같은 요청 ID를 확인해 중복 지급을 방지
+- `onyuAdminLookupEntitlement` / `onyuAdminRevokeEntitlement`: 관리자 전용 이용권·관련 신청 조회 및 사유/관리자/시각을 기록하는 이용권 회수
+- `onyuRequestViewerAccess`와 이전 접근 승인 callable은 종료 안내를 반환하며 더는 접근 신청·권한 기록을 생성하거나 변경하지 않음. 과거 `viewerAccessRequests` 데이터는 기록 보존을 위해 자동 삭제하지 않음
 
 관리자 승인 함수는 클라이언트에 노출하지 않고 관리자 UID 검증을 서버에서 수행한다. 승인·반려 기록은 통합 감사 로그에도 남긴다.
 
