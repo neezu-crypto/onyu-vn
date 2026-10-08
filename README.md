@@ -9,8 +9,8 @@
 - 이벤트 CG 갤러리, 저장·불러오기, BGM·SFX, 시그니처 오프닝 지원
 - Google·Kakao 로그인 및 스트리머 인증 지원
 
-일반 로그인 유저는 별풍선 50개 후원 후 관리자 승인을 받아 게임을 시작할 수 있으며, 인증 스트리머는 무료로 이용할 수 있습니다.
+일반 시청자와 인증 스트리머 모두 유효한 이용권이 있어야 게임을 시작할 수 있습니다. 스트리머 인증만으로 이용권이 자동 지급되지는 않으며, 인증 스트리머는 별풍선 50개로 본인 이용권을 구매하거나 다른 스트리머에게 선물할 수 있습니다. 후원 완료를 온이유 화면에서 알리면 관리자 브라우저의 확장 프로그램이 SOOP 알림 정보를 대기 신청과 대조해 일치하는 신청을 자동 승인합니다. 확인이 모호하거나 자동화가 중단되면 관리자가 수동 검수합니다.
 
 ## 기술
 
-별도 빌드 도구 없이 HTML·CSS·JavaScript로 구성된 정적 웹 게임입니다. GitHub Pages로 배포하며, Firebase Authentication·Realtime Database·Cloud Functions를 로그인, 접근 권한, 통계에 사용합니다.
+별도 빌드 도구 없이 HTML·CSS·JavaScript로 구성된 정적 웹 게임입니다. GitHub Pages로 배포하며, Firebase Authentication·Realtime Database·Cloud Functions를 로그인, 접근 권한, 이용권 신청·검증, 통계에 사용합니다. 이용약관과 개인정보 처리방침은 [이용약관](terms.html), [개인정보 처리방침](privacy.html)에서 확인할 수 있습니다.

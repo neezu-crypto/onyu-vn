@@ -18,6 +18,15 @@
 - 스트리머 인증 상태는 온이유 전용 `onyuVn/` 노드가 아니라 공유 `users/{uid}/streamerVerified`에서 본인 UID만 `onValue`로 구독한다. 승인 결과와 `users/{uid}/streamerVerificationSwitchApproval` 계정 전환 신호는 로그인한 페이지가 연결된 동안 반영되며, 닫힌 페이지용 푸시는 없다.
 - 전환 신호 `{ requestId, approvedAt }`를 받으면 공유 `requestStreamerVerification` callable이 신청·승인 상태를 서버에서 재검증한 뒤 custom token을 반환한다. 토큰은 데이터베이스에 저장하지 않고, 전환 처리 후 신호를 삭제한다. 온이유 규칙이나 공유 규칙을 수정할 때는 해당 경로의 소유자 전용 읽기 권한을 대조하고 공유 6개 규칙 사본 동기화 절차를 지킨다.
 
+## 이용권 후원 자동 확인
+
+- 신청·후원 완료·승인 상태는 `onyuVn/streamerGameGiftRequests` 아래 서버 callable이 관리한다. 신청자가 후원 완료 버튼을 누르면 `donationCompletedAt`이 기록되지만, 이는 실제 후원 증명이 아니며 SOOP 알림 대조가 별도로 필요하다.
+- `admin-center/functions/index.js`의 `onyuGiftBackgroundFeed`는 `streamerGameGiftRequests`를 서버에서 `onValue`로 감시한다. 관리자 UID로 발급한 제한된 Firebase custom-token 세션을 확장 프로그램이 사용하며, 토큰은 RTDB에 저장하지 않는다. 이 피드는 자동 확인 필요 여부만 확장 프로그램에 전달한다.
+- `promo-extension/onyu-game-gift-notifications.js`는 로그인된 SOOP 탭에서 알림 목록을 최대 10초 간격으로 확인한다. 알림의 방송국 아이디, 별풍선 수량, 시각과 중복 판별용 해시만 확인 callable로 보낸다. 알림 원문·쿠키·SOOP 로그인 비밀번호는 보내지 않고, 개별 알림을 클릭하지 않는다.
+- 발신자 아이디·50개 수량·신청 및 후원 완료 시각이 대기 신청 하나와 일치할 때만 `onyuConfirmStreamerGameGiftFromNotification`이 기존 승인 처리를 호출한다. 일치하지 않거나 복수 후보인 경우 자동 승인하지 않고 관리자 수동 검수로 남긴다. 결과 표시는 신청자 페이지가 열려 있을 때 약 10초 간격으로 확인한다.
+- 관리자가 통합 관리 센터에서 로그인해 확장 프로그램 세션을 시작해야 한다. 화면에 연결 완료가 표시되면 센터 탭은 닫아도 되지만, 브라우저와 확장 프로그램 및 로그인된 SOOP 탭은 후원 알림 확인 중 계속 실행되어야 한다. 브라우저가 종료되거나 알림 탭에 접근할 수 없으면 자동 확인은 처리되지 않을 수 있다.
+- 공개 정책은 `terms.html`, `privacy.html`이며, 이 기능의 입력정보·자동 대조 방식·보유 기간 또는 외부 처리 방식이 변경되면 두 정책과 이 문서 및 `README.md`를 함께 대조한다. 분석 이벤트의 400/30/35일 자동 정리 정책은 이용권 신청·후원 알림 중복 방지 기록의 보유기간과 별개이므로 혼동하지 않는다.
+
 ## 확인
 
 - `js/*.js`를 수정하면 해당 스크립트의 문법을 검사하고, HTML에서 모듈/함수 호출 연결도
