@@ -355,7 +355,7 @@ function openStreamerModal() {
   streamerForm.reset();
   setStreamerSubmitState(streamerRequestSubmitted);
   streamerNote.hidden = !streamerRequestSubmitted;
-  streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디를 입력하면 관리자 확인 후 무료로 게임을 시작할 수 있어요.';
+  streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디로 스트리머 인증을 신청할 수 있어요. 인증 완료 후에도 게임 이용권이 필요해요. 별풍선 50개를 후원해 본인 이용권을 구매하거나 다른 이용자에게 선물받을 수 있어요.';
   show(streamerOverlay);
 }
 
@@ -371,7 +371,7 @@ async function refreshStreamerGiftTargets() {
     const balloons = result.data && result.data.balloons || 50;
     const ownStreamer = result.data && result.data.selfStreamer || null;
     if (window.onyuAuthState.role === 'streamer' && ownStreamer && ownStreamer.soopId) {
-      accessMessageEl.textContent = '스트리머 인증이 완료됐어요. 아직 이용권이 없다면 시청자에게 SOOP 아이디 @' + ownStreamer.soopId + '로 선물해 달라고 안내해 주세요. 후원 확인 후 이용할 수 있습니다.';
+      accessMessageEl.textContent = '스트리머 인증이 완료됐어요. 별풍선 50개를 후원해 본인 이용권을 구매하거나, 다른 이용자에게 선물받을 수 있어요. 선물 받을 SOOP 아이디는 @' + ownStreamer.soopId + '예요.';
     }
     if (selfViewerEligible) {
       const ownOption = document.createElement('option');
@@ -445,7 +445,7 @@ function openAccessModal() {
   giftDonationCompleteBtn.textContent = '후원 완료 · 자동 확인 시작';
   giftStatusEl.textContent = '';
   accessMessageEl.textContent = window.onyuAuthState.role === 'streamer'
-    ? '스트리머 인증이 완료됐어요. 아직 이용권이 없다면 시청자에게 이 화면의 SOOP 아이디로 선물해 달라고 안내해 주세요. 후원 확인 후 이용할 수 있습니다.'
+    ? '스트리머 인증이 완료됐어요. 별풍선 50개를 후원해 본인 이용권을 구매하거나, 다른 이용자에게 선물받을 수 있어요. 선물 받을 SOOP 아이디는 이 화면에서 확인할 수 있습니다.'
     : '별풍선 50개를 관리자 방송국에 후원해 이용권을 구매하거나, 아직 인증하지 않은 스트리머에게도 선물할 수 있습니다. 후원 확인 후 이용권이 지급됩니다.';
   giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
   show(accessOverlay);
