@@ -383,7 +383,7 @@ async function refreshStreamerGiftTargets() {
       if (selfViewerEligible) {
         const ownOption = document.createElement('option');
         ownOption.value = '__self_viewer__';
-        ownOption.textContent = '내 시청자 이용권 구매';
+        ownOption.textContent = '직접 이용권 구매';
         giftStreamerSelect.appendChild(ownOption);
       } else {
         accessPurchaseControls.hidden = true;
@@ -421,7 +421,7 @@ async function refreshStreamerGiftTargets() {
 function updateDonationSubmitLabel() {
   const prefix = '별풍선 ' + currentGiftBalloonCount + '개 후원하고 ';
   if (giftStreamerSelect.value === '__self__') giftSubmitBtn.textContent = prefix + '내 스트리머 이용권 구매';
-  else if (giftStreamerSelect.value === '__self_viewer__') giftSubmitBtn.textContent = prefix + '내 시청자 이용권 구매';
+  else if (giftStreamerSelect.value === '__self_viewer__') giftSubmitBtn.textContent = prefix + '직접 이용권 구매';
   else if (giftStreamerSelect.value === 'gift') giftSubmitBtn.textContent = prefix + '스트리머에게 선물하기';
   else giftSubmitBtn.textContent = prefix + '구매 신청';
 }
