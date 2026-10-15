@@ -117,7 +117,6 @@ const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
 const viewerNicknameInput = document.getElementById('onyu-viewer-nickname');
 const viewerSoopIdInput = document.getElementById('onyu-viewer-soopid');
-const giftStreamerSelect = document.getElementById('onyu-gift-streamer');
 const giftRecipientFields = document.getElementById('onyu-gift-recipient-fields');
 const giftTargetNicknameInput = document.getElementById('onyu-gift-target-nickname');
 const giftTargetSoopIdInput = document.getElementById('onyu-gift-target-soopid');
@@ -125,7 +124,8 @@ const accessMessageEl = document.getElementById('onyu-access-message');
 const giftStatusEl = document.getElementById('onyu-gift-status');
 const giftSubmitBtn = document.getElementById('onyu-donation-open');
 const giftDonationCompleteBtn = document.getElementById('onyu-donation-complete');
-let selectedLicenseCategory = '';
+let selectedLicenseIntent = '';
+let selectedPurchaseType = '';
 let currentGiftBalloonCount = 50;
 const adminModeSectionTitle = document.getElementById('onyu-admin-section-title');
 const adminModeRow = document.getElementById('onyu-admin-mode-row');
@@ -365,60 +365,36 @@ function openStreamerModal() {
   show(streamerOverlay);
 }
 
-async function refreshStreamerGiftTargets() {
-  giftStreamerSelect.disabled = true;
-  giftStreamerSelect.hidden = true;
-  giftStreamerSelect.innerHTML = '<option value="">구매 가능 여부 확인 중...</option>';
+async function refreshLicenseEligibility() {
+  const requestedIntent = selectedLicenseIntent;
   accessPurchaseControls.hidden = true;
   accessUnavailableEl.hidden = false;
   accessUnavailableEl.textContent = '이용권 구매 가능 여부를 확인하고 있어요.';
+  selectedPurchaseType = '';
   try {
     const result = await listStreamerGiftTargetsFn();
+    if (selectedLicenseIntent !== requestedIntent) return;
     const selfEligible = !!(result.data && result.data.selfEligible);
     const selfViewerEligible = !!(result.data && result.data.selfViewerEligible);
     currentGiftBalloonCount = result.data && result.data.balloons || 50;
-    const ownStreamer = result.data && result.data.selfStreamer || null;
-    const previousValue = giftStreamerSelect.value;
-    giftStreamerSelect.innerHTML = '';
-    if (selectedLicenseCategory === 'viewer') {
-      if (selfViewerEligible) {
-        const ownOption = document.createElement('option');
-        ownOption.value = '__self_viewer__';
-        ownOption.textContent = '직접 이용권 구매';
-        giftStreamerSelect.appendChild(ownOption);
-      } else {
-        accessPurchaseControls.hidden = true;
-        accessUnavailableEl.textContent = '현재 계정으로는 시청자 이용권을 새로 구매할 수 없어요. 이미 이용권을 보유했거나 스트리머 인증 계정일 수 있습니다.';
-        giftStreamerSelect.disabled = true;
-        return;
-      }
-    } else {
-      if (selfEligible) {
-        const ownOption = document.createElement('option');
-        ownOption.value = '__self__';
-        ownOption.textContent = '내 스트리머 이용권 구매' + (ownStreamer && ownStreamer.nickname ? ' (' + ownStreamer.nickname + ')' : '');
-        giftStreamerSelect.appendChild(ownOption);
-      }
-      const giftOption = document.createElement('option');
-      giftOption.value = 'gift';
-      giftOption.textContent = '다른 스트리머에게 선물하기';
-      giftStreamerSelect.appendChild(giftOption);
-      const optionValues = Array.from(giftStreamerSelect.options).map((option) => option.value);
-      giftStreamerSelect.value = optionValues.includes(previousValue) ? previousValue : selfEligible ? '__self__' : 'gift';
+    if (requestedIntent === 'gift') selectedPurchaseType = 'gift';
+    else if (selfEligible) selectedPurchaseType = 'self';
+    else if (selfViewerEligible) selectedPurchaseType = 'self-viewer';
+    else {
+      accessUnavailableEl.textContent = '현재 계정으로 본인 이용권을 구매할 수 없어요. Google 또는 Kakao 로그인 상태와 보유 이용권을 확인해 주세요.';
+      return;
     }
     accessPurchaseControls.hidden = false;
     accessUnavailableEl.hidden = true;
-    giftStreamerSelect.hidden = giftStreamerSelect.options.length <= 1;
-    giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
-    giftStreamerSelect.disabled = false;
-    accessMessageEl.textContent = selectedLicenseCategory === 'streamer'
-      ? selfEligible
-        ? '인증 스트리머 본인 이용권을 구매하거나 다른 스트리머에게 선물할 수 있어요.'
-        : '선물할 스트리머의 SOOP 닉네임과 아이디를 입력해 주세요.'
-      : '시청자 이용권은 현재 로그인한 계정에 연결됩니다.';
+    giftRecipientFields.hidden = selectedPurchaseType !== 'gift';
+    accessMessageEl.textContent = selectedPurchaseType === 'gift'
+      ? '선물 받을 스트리머의 정보와 후원자 정보를 입력해 주세요. 후원 확인 후 이용권이 지급됩니다.'
+      : selectedPurchaseType === 'self'
+        ? '인증 스트리머 계정에 이용권을 연결해요. 후원 확인 후 플레이할 수 있습니다.'
+        : '현재 로그인한 계정에 이용권을 연결해요. 후원 확인 후 플레이할 수 있습니다.';
     updateDonationSubmitLabel();
   } catch (error) {
-    console.error('선물 받을 스트리머 목록 조회 실패:', error);
+    console.error('온이유 이용권 구매 가능 여부 조회 실패:', error);
     accessPurchaseControls.hidden = true;
     accessUnavailableEl.hidden = false;
     accessUnavailableEl.textContent = '이용권 구매 유형을 확인하지 못했어요. 뒤로 가서 다시 선택해 주세요.';
@@ -427,32 +403,31 @@ async function refreshStreamerGiftTargets() {
 
 function updateDonationSubmitLabel() {
   const prefix = '별풍선 ' + currentGiftBalloonCount + '개 후원하고 ';
-  if (giftStreamerSelect.value === '__self__') giftSubmitBtn.textContent = prefix + '내 스트리머 이용권 구매';
-  else if (giftStreamerSelect.value === '__self_viewer__') giftSubmitBtn.textContent = prefix + '직접 이용권 구매';
-  else if (giftStreamerSelect.value === 'gift') giftSubmitBtn.textContent = prefix + '스트리머에게 선물하기';
+  if (selectedPurchaseType === 'self') giftSubmitBtn.textContent = prefix + '내 스트리머 이용권 구매';
+  else if (selectedPurchaseType === 'self-viewer') giftSubmitBtn.textContent = prefix + '직접 이용권 구매';
+  else if (selectedPurchaseType === 'gift') giftSubmitBtn.textContent = prefix + '스트리머에게 선물하기';
   else giftSubmitBtn.textContent = prefix + '구매 신청';
 }
 
-function selectLicenseCategory(category) {
-  selectedLicenseCategory = category;
+function selectLicenseIntent(intent) {
+  selectedLicenseIntent = intent;
+  selectedPurchaseType = '';
   accessChoiceScreen.hidden = true;
   accessPurchaseForm.hidden = false;
-  accessMessageEl.textContent = category === 'streamer'
-    ? '스트리머 이용권은 인증 스트리머 본인 구매 또는 다른 스트리머 선물 중에서 선택할 수 있어요.'
-    : '시청자 이용권은 현재 로그인한 계정에 연결됩니다.';
-  giftStreamerSelect.innerHTML = '';
-  giftStreamerSelect.value = '';
-  giftStreamerSelect.hidden = true;
-  giftRecipientFields.hidden = true;
+  accessMessageEl.textContent = intent === 'gift'
+    ? '선물 받을 스트리머의 정보를 입력해 주세요.'
+    : '현재 계정에서 사용할 이용권을 확인하고 있어요.';
+  giftRecipientFields.hidden = intent !== 'gift';
   giftSubmitBtn.disabled = false;
-  refreshStreamerGiftTargets();
+  refreshLicenseEligibility();
 }
 
 function returnToLicenseCategoryChoice() {
-  selectedLicenseCategory = '';
+  selectedLicenseIntent = '';
+  selectedPurchaseType = '';
   accessPurchaseForm.hidden = true;
   accessChoiceScreen.hidden = false;
-  accessMessageEl.textContent = '먼저 구매할 이용권 유형을 선택해 주세요.';
+  accessMessageEl.textContent = '원하는 이용 방법을 선택해 주세요.';
 }
 
 function giftRequestStorageKey(uid) {
@@ -496,7 +471,8 @@ async function refreshGiftRequestStatus() {
 
 function openAccessModal() {
   closeAll();
-  selectedLicenseCategory = '';
+  selectedLicenseIntent = '';
+  selectedPurchaseType = '';
   accessChoiceScreen.hidden = false;
   accessPurchaseForm.hidden = true;
   accessPurchaseControls.hidden = false;
@@ -508,10 +484,7 @@ function openAccessModal() {
   giftDonationCompleteBtn.disabled = false;
   giftDonationCompleteBtn.textContent = '후원 완료 · 자동 확인 시작';
   giftStatusEl.textContent = '';
-  accessMessageEl.textContent = '먼저 구매할 이용권 유형을 선택해 주세요.';
-  giftStreamerSelect.innerHTML = '';
-  giftStreamerSelect.disabled = true;
-  giftStreamerSelect.hidden = true;
+  accessMessageEl.textContent = '원하는 이용 방법을 선택해 주세요.';
   giftRecipientFields.hidden = true;
   show(accessOverlay);
   restoreActiveGiftRequestId();
@@ -661,7 +634,11 @@ async function renewStreamerVerificationCode() {
 async function submitStreamerGameGift() {
   const donorNickname = viewerNicknameInput.value.trim();
   const donorSoopId = viewerSoopIdInput.value.trim().toLowerCase();
-  const selectedTarget = giftStreamerSelect.value;
+  const purchaseType = selectedPurchaseType;
+  if (!['self', 'self-viewer', 'gift'].includes(purchaseType)) {
+    giftStatusEl.textContent = '이용 방법을 다시 선택해 주세요.';
+    return;
+  }
   if (!donorNickname) {
     alert('SOOP 후원자 닉네임을 입력해 주세요.');
     viewerNicknameInput.focus();
@@ -674,19 +651,18 @@ async function submitStreamerGameGift() {
   }
   const targetNickname = giftTargetNicknameInput.value.trim();
   const targetSoopId = giftTargetSoopIdInput.value.trim().toLowerCase();
-  if (selectedTarget === 'gift' && !targetNickname) {
+  if (purchaseType === 'gift' && !targetNickname) {
     alert('선물 받을 SOOP 닉네임을 입력해 주세요.');
     giftTargetNicknameInput.focus();
     return;
   }
-  if (selectedTarget === 'gift' && !/^[a-z0-9]{2,20}$/.test(targetSoopId)) {
+  if (purchaseType === 'gift' && !/^[a-z0-9]{2,20}$/.test(targetSoopId)) {
     alert('SOOP 아이디는 영문 소문자/숫자 2~20자로 입력해 주세요.');
     giftTargetSoopIdInput.focus();
     return;
   }
   // 클릭 이벤트 안에서 빈 창을 먼저 열어 팝업 차단을 피한다. 신청 저장이 완료된
   // 뒤에만 후원 페이지로 이동시켜 후원 시각이 신청 시각보다 앞서는 경합을 줄인다.
-  const purchaseType = selectedTarget === '__self__' ? 'self' : selectedTarget === '__self_viewer__' ? 'self-viewer' : 'gift';
   const popup = window.open('about:blank', '_blank');
   if (!popup) {
     alert('후원 창이 차단됐어요. 이 사이트의 팝업을 허용한 뒤 다시 신청해 주세요.');
@@ -814,16 +790,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-streamer-verify').addEventListener('click', openStreamerModal);
   document.getElementById('onyu-login-close').addEventListener('click', closeAll);
   document.getElementById('onyu-access-close').addEventListener('click', closeAll);
-  document.getElementById('onyu-access-streamer-choice').addEventListener('click', () => selectLicenseCategory('streamer'));
-  document.getElementById('onyu-access-viewer-choice').addEventListener('click', () => selectLicenseCategory('viewer'));
+  document.getElementById('onyu-access-gift-choice').addEventListener('click', () => selectLicenseIntent('gift'));
+  document.getElementById('onyu-access-self-choice').addEventListener('click', () => selectLicenseIntent('self'));
   document.getElementById('onyu-access-back').addEventListener('click', returnToLicenseCategoryChoice);
   document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
   giftSubmitBtn.addEventListener('click', submitStreamerGameGift);
-  giftStreamerSelect.addEventListener('change', () => {
-    giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
-    giftStatusEl.textContent = '';
-    updateDonationSubmitLabel();
-  });
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
   giftDonationCompleteBtn.addEventListener('click', markStreamerGameGiftDonationComplete);
