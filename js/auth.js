@@ -367,6 +367,7 @@ function openStreamerModal() {
 
 async function refreshStreamerGiftTargets() {
   giftStreamerSelect.disabled = true;
+  giftStreamerSelect.hidden = true;
   giftStreamerSelect.innerHTML = '<option value="">구매 가능 여부 확인 중...</option>';
   accessPurchaseControls.hidden = true;
   accessUnavailableEl.hidden = false;
@@ -407,8 +408,14 @@ async function refreshStreamerGiftTargets() {
     }
     accessPurchaseControls.hidden = false;
     accessUnavailableEl.hidden = true;
+    giftStreamerSelect.hidden = giftStreamerSelect.options.length <= 1;
     giftRecipientFields.hidden = giftStreamerSelect.value !== 'gift';
     giftStreamerSelect.disabled = false;
+    accessMessageEl.textContent = selectedLicenseCategory === 'streamer'
+      ? selfEligible
+        ? '인증 스트리머 본인 이용권을 구매하거나 다른 스트리머에게 선물할 수 있어요.'
+        : '선물할 스트리머의 SOOP 닉네임과 아이디를 입력해 주세요.'
+      : '시청자 이용권은 현재 로그인한 계정에 연결됩니다.';
     updateDonationSubmitLabel();
   } catch (error) {
     console.error('선물 받을 스트리머 목록 조회 실패:', error);
@@ -435,6 +442,7 @@ function selectLicenseCategory(category) {
     : '시청자 이용권은 현재 로그인한 계정에 연결됩니다.';
   giftStreamerSelect.innerHTML = '';
   giftStreamerSelect.value = '';
+  giftStreamerSelect.hidden = true;
   giftRecipientFields.hidden = true;
   giftSubmitBtn.disabled = false;
   refreshStreamerGiftTargets();
@@ -503,6 +511,7 @@ function openAccessModal() {
   accessMessageEl.textContent = '먼저 구매할 이용권 유형을 선택해 주세요.';
   giftStreamerSelect.innerHTML = '';
   giftStreamerSelect.disabled = true;
+  giftStreamerSelect.hidden = true;
   giftRecipientFields.hidden = true;
   show(accessOverlay);
   restoreActiveGiftRequestId();
