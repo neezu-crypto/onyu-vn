@@ -403,20 +403,19 @@
     <div class="onyu-auth-panel">
       <p class="onyu-auth-kicker">GAME LICENSE</p>
       <h2 id="onyu-access-title">온이유 게임 이용권 구매·선물</h2>
-      <p id="onyu-access-message">먼저 구매할 이용권 유형을 선택해 주세요.</p>
+      <p id="onyu-access-message">원하는 이용 방법을 선택해 주세요.</p>
       <div id="onyu-access-choice-screen" class="onyu-access-choice-screen">
-        <button type="button" id="onyu-access-streamer-choice" class="onyu-access-choice">
-          <span class="onyu-access-choice-title">스트리머</span>
-          <span class="onyu-access-choice-description">인증 스트리머 본인 이용권 구매 또는 다른 스트리머에게 선물</span>
+        <button type="button" id="onyu-access-gift-choice" class="onyu-access-choice">
+          <span class="onyu-access-choice-title">스트리머에게 선물하기</span>
+          <span class="onyu-access-choice-description">선물 받을 스트리머의 SOOP 닉네임과 아이디를 입력해 이용권을 선물해요.</span>
         </button>
-        <button type="button" id="onyu-access-viewer-choice" class="onyu-access-choice">
-          <span class="onyu-access-choice-title">시청자</span>
-          <span class="onyu-access-choice-description">현재 로그인한 계정의 시청자 이용권 구매</span>
+        <button type="button" id="onyu-access-self-choice" class="onyu-access-choice">
+          <span class="onyu-access-choice-title">내가 플레이하기</span>
+          <span class="onyu-access-choice-description">현재 계정에 이용권을 연결해요. 일반 계정은 Google 또는 Kakao 로그인이 필요해요.</span>
         </button>
       </div>
       <div id="onyu-access-purchase-form" hidden>
         <div id="onyu-access-purchase-controls">
-          <select id="onyu-gift-streamer" class="onyu-access-input" aria-label="이용권 구매 또는 선물 방식" disabled></select>
           <div id="onyu-gift-recipient-fields" hidden>
             <input id="onyu-gift-target-nickname" class="onyu-access-input" type="text" maxlength="20" placeholder="선물 받을 스트리머 SOOP 닉네임" autocomplete="off">
             <input id="onyu-gift-target-soopid" class="onyu-access-input" type="text" maxlength="20" placeholder="선물 받을 SOOP 아이디 (영문 소문자/숫자)" autocomplete="off" autocapitalize="none" spellcheck="false">
@@ -432,7 +431,7 @@
         </div>
         <p id="onyu-access-unavailable" class="onyu-access-unavailable" role="status" aria-live="polite" hidden></p>
         <p id="onyu-gift-status" class="onyu-access-status" role="status" aria-live="polite"></p>
-        <button type="button" id="onyu-access-back" class="onyu-auth-close">이용권 유형 다시 선택</button>
+        <button type="button" id="onyu-access-back" class="onyu-auth-close">이용 방법 다시 선택</button>
       </div>
       <button type="button" id="onyu-access-close" class="onyu-auth-close">닫기</button>
     </div>
