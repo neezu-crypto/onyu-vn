@@ -40,12 +40,18 @@ const markStreamerGameGiftDonationCompleteFn = httpsCallable(functions, 'onyuMar
 const getMyStreamerGameGiftRequestStatusFn = httpsCallable(functions, 'onyuGetMyStreamerGameGiftRequestStatus');
 const startSessionFn = httpsCallable(functions, 'onyuStartSession');
 const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
+const submitStreamerProductionInquiryFn = httpsCallable(functions, 'onyuSubmitStreamerProductionInquiry');
 const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
 const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifiedStreamerVisit');
 
 window.onyuSubmitPlayerReview = async function (payload) {
   const result = await submitPlayerReviewFn(payload || {});
+  return result.data || {};
+};
+
+window.onyuSubmitStreamerProductionInquiry = async function (payload) {
+  const result = await submitStreamerProductionInquiryFn(payload || {});
   return result.data || {};
 };
 

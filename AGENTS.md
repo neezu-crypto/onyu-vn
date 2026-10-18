@@ -15,6 +15,7 @@
   새 함수를 만들거나 배포할 때는 함수명 전역 충돌을 확인하고, 함수 이름을 명시해 배포한다.
 - 후기·접근 권한처럼 UID와 결부되는 작업은 클라이언트 입력의 UID를 신뢰하지 않고,
   callable의 인증 컨텍스트에서 UID를 가져와 서버에서 권한과 입력을 검증한다.
+- 인증 스트리머의 미연시 제작 문의는 `onyuVn/productionInquiries`에 서버 callable로만 저장한다. 신청 UID·방송국 프로필은 인증 UID와 `streamerVerifications`에서 서버가 확인하며, 관리자 조회는 `admin-center` callable, 신규 신청 알림은 같은 저장소의 Discord RTDB 트리거가 담당한다. 공개 규정에는 문의 항목·처리 목적·보유 기간과 펀딩금 전달 후 제작 안내를 반영한다.
 - 스트리머 인증 상태는 온이유 전용 `onyuVn/` 노드가 아니라 공유 `users/{uid}/streamerVerified`에서 본인 UID만 `onValue`로 구독한다. 승인 결과와 `users/{uid}/streamerVerificationSwitchApproval` 계정 전환 신호는 로그인한 페이지가 연결된 동안 반영되며, 닫힌 페이지용 푸시는 없다.
 - 전환 신호 `{ requestId, approvedAt }`를 받으면 공유 `requestStreamerVerification` callable이 신청·승인 상태를 서버에서 재검증한 뒤 custom token을 반환한다. 토큰은 데이터베이스에 저장하지 않고, 전환 처리 후 신호를 삭제한다. 온이유 규칙이나 공유 규칙을 수정할 때는 해당 경로의 소유자 전용 읽기 권한을 대조하고 공유 6개 규칙 사본 동기화 절차를 지킨다.
 

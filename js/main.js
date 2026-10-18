@@ -309,10 +309,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.getElementById('review-promote').checked = false;
     document.getElementById('review-promote-fields').hidden = true;
+    document.getElementById('streamer-production-inquiry-panel').hidden = true;
+    document.getElementById('streamer-production-inquiry-details').value = '';
+    document.getElementById('streamer-production-inquiry-details').disabled = false;
+    document.getElementById('streamer-production-inquiry-submit').disabled = false;
+    document.getElementById('streamer-production-inquiry-submit').textContent = '제작 문의 보내기';
+    document.getElementById('streamer-production-inquiry-status').textContent = '';
     document.getElementById('review-nickname').value = '';
     document.getElementById('review-soop-id').value = '';
-    document.getElementById('review-promote').closest('.review-promote-toggle').hidden = false;
-    document.getElementById('review-promote-help').hidden = false;
+    var isVerifiedStreamer = window.onyuAuthState && window.onyuAuthState.role === 'streamer';
+    document.getElementById('review-promote').closest('.review-promote-toggle').hidden = !!isVerifiedStreamer;
+    document.getElementById('review-promote-help').hidden = !!isVerifiedStreamer;
+    if (isVerifiedStreamer) document.getElementById('review-promote-help').textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
     onyuShowScreen('review');
   });
 
@@ -388,6 +396,10 @@ document.addEventListener('DOMContentLoaded', function () {
       var saved = await window.onyuSubmitPlayerReview({ endingId: 'lover', review: text, rating: rating, promoteBroadcast: promote, nickname: promote ? nickname : '', soopId: promote ? soopId : '' });
       saveBtn.classList.add('is-saved');
       status.textContent = '후기가 저장됐어요.';
+      if (saved && saved.verifiedStreamer) {
+        document.getElementById('streamer-production-inquiry-panel').hidden = false;
+        document.getElementById('streamer-production-inquiry-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
       if (saved && saved.promoteRequested && typeof window.onyuRequestStreamerVerification === 'function') {
         try {
           await window.onyuRequestStreamerVerification({ nickname: saved.nickname || nickname, soopId: saved.soopId || soopId });
@@ -406,6 +418,44 @@ document.addEventListener('DOMContentLoaded', function () {
         ? '후기를 저장하지 못했어요: ' + error.message
         : '후기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
       console.error('온이유 플레이 후기 저장 실패:', error);
+    }
+  });
+
+  document.getElementById('streamer-production-inquiry-submit').addEventListener('click', async function () {
+    var button = this;
+    var details = document.getElementById('streamer-production-inquiry-details');
+    var status = document.getElementById('streamer-production-inquiry-status');
+    var description = details.value.trim();
+    if (button.disabled) return;
+    if (!description) {
+      status.textContent = '원하는 이야기와 제작 방향을 적어 주세요.';
+      details.focus();
+      return;
+    }
+    if (description.length > 3000) {
+      status.textContent = '문의 내용은 3,000자 이내로 작성해 주세요.';
+      return;
+    }
+    if (typeof window.onyuSubmitStreamerProductionInquiry !== 'function') {
+      status.textContent = '제작 문의를 준비 중이에요. 잠시 후 다시 시도해 주세요.';
+      return;
+    }
+    button.disabled = true;
+    details.disabled = true;
+    button.textContent = '접수 중…';
+    status.textContent = '';
+    try {
+      await window.onyuSubmitStreamerProductionInquiry({ description: description });
+      button.textContent = '문의 접수 완료';
+      status.textContent = '제작 문의가 접수됐어요. 관리자 확인 후 연락을 기다려 주세요.';
+    } catch (error) {
+      button.disabled = false;
+      details.disabled = false;
+      button.textContent = '제작 문의 보내기';
+      status.textContent = error && error.message
+        ? '문의 접수에 실패했어요: ' + error.message
+        : '문의 접수에 실패했어요. 잠시 후 다시 시도해 주세요.';
+      console.error('미연시 제작 문의 접수 실패:', error);
     }
   });
 
