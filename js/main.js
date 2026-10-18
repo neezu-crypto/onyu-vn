@@ -291,6 +291,35 @@ document.addEventListener('DOMContentLoaded', function () {
     onyuMaybeShowBootSplash(function () { onyuSwapScreen('title'); });
   });
 
+  function resetStreamerProductionInquiryForm() {
+    document.getElementById('streamer-production-inquiry-details').value = '';
+    document.getElementById('streamer-production-inquiry-details').disabled = false;
+    document.getElementById('streamer-production-inquiry-submit').disabled = false;
+    document.getElementById('streamer-production-inquiry-submit').textContent = '제작 문의 보내기';
+    document.getElementById('streamer-production-inquiry-status').textContent = '';
+  }
+
+  document.getElementById('ending-production-inquiry-btn').addEventListener('click', function () {
+    if (!window.ONYU_STATE || window.ONYU_STATE.lastEndingId !== 'lover') return;
+    if (!window.onyuAuthState || window.onyuAuthState.role !== 'streamer') return;
+    resetStreamerProductionInquiryForm();
+    onyuEl.endingOverlay.classList.remove('is-active');
+    onyuEl.endingOverlay.hidden = true;
+    onyuShowScreen('production-inquiry');
+  });
+
+  document.getElementById('production-inquiry-back-btn').addEventListener('click', function () {
+    onyuRunTransition({}, function () {
+      onyuSwapScreen('play');
+      onyuEl.endingOverlay.hidden = false;
+      requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });
+    });
+  });
+
+  document.getElementById('production-inquiry-title-btn').addEventListener('click', function () {
+    document.getElementById('ending-title-btn').click();
+  });
+
   document.getElementById('ending-review-btn').addEventListener('click', function () {
     onyuEl.endingOverlay.classList.remove('is-active');
     onyuEl.endingOverlay.hidden = true;
@@ -309,12 +338,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.getElementById('review-promote').checked = false;
     document.getElementById('review-promote-fields').hidden = true;
-    document.getElementById('streamer-production-inquiry-panel').hidden = true;
-    document.getElementById('streamer-production-inquiry-details').value = '';
-    document.getElementById('streamer-production-inquiry-details').disabled = false;
-    document.getElementById('streamer-production-inquiry-submit').disabled = false;
-    document.getElementById('streamer-production-inquiry-submit').textContent = '제작 문의 보내기';
-    document.getElementById('streamer-production-inquiry-status').textContent = '';
     document.getElementById('review-nickname').value = '';
     document.getElementById('review-soop-id').value = '';
     var isVerifiedStreamer = window.onyuAuthState && window.onyuAuthState.role === 'streamer';
@@ -344,7 +367,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var verifiedStreamer = event.detail && event.detail.role === 'streamer';
     var toggle = document.querySelector('.review-promote-toggle');
     var help = document.getElementById('review-promote-help');
+    var inquiryButton = document.getElementById('ending-production-inquiry-btn');
+    var onLoverEnding = window.ONYU_STATE && window.ONYU_STATE.lastEndingId === 'lover' && onyuEl.endingOverlay && !onyuEl.endingOverlay.hidden;
     if (toggle) toggle.hidden = verifiedStreamer;
+    if (inquiryButton) inquiryButton.hidden = !(verifiedStreamer && onLoverEnding);
     if (help) {
       help.hidden = verifiedStreamer;
       if (verifiedStreamer) help.textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
@@ -396,10 +422,6 @@ document.addEventListener('DOMContentLoaded', function () {
       var saved = await window.onyuSubmitPlayerReview({ endingId: 'lover', review: text, rating: rating, promoteBroadcast: promote, nickname: promote ? nickname : '', soopId: promote ? soopId : '' });
       saveBtn.classList.add('is-saved');
       status.textContent = '후기가 저장됐어요.';
-      if (saved && saved.verifiedStreamer) {
-        document.getElementById('streamer-production-inquiry-panel').hidden = false;
-        document.getElementById('streamer-production-inquiry-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
       if (saved && saved.promoteRequested && typeof window.onyuRequestStreamerVerification === 'function') {
         try {
           await window.onyuRequestStreamerVerification({ nickname: saved.nickname || nickname, soopId: saved.soopId || soopId });

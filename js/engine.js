@@ -1044,6 +1044,7 @@ function onyuShowEndingScreen(endingId) {
   var isLoverEnding = endingId === 'lover';
   document.getElementById('ending-title-btn').hidden = isLoverEnding;
   document.getElementById('ending-review-btn').hidden = !isLoverEnding;
+  document.getElementById('ending-production-inquiry-btn').hidden = !isLoverEnding || !(window.onyuAuthState && window.onyuAuthState.role === 'streamer');
   onyuTrack('ending_reached', { endingId: endingId || '' });
   onyuTrack('ending_title_revealed', { endingId: endingId || '' });
   onyuEl.endingOverlay.hidden = false;
