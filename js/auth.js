@@ -2,8 +2,8 @@
  * onyu-vn 인증·접근 권한.
  *
  * 익명 Firebase 세션은 공개 데이터 조회와 스트리머 인증 신청에 사용하고,
- * Google/Kakao 계정은 일반 시청자 계정으로 취급한다. 게임 시작 권한과 후원 승인
- * 상태는 admin-center의 onyu 전용 callable에서 최종 판정한다.
+ * Google/Kakao 계정과 인증 스트리머는 무료로 플레이할 수 있다. 최종 접근 판정은
+ * admin-center의 onyu 전용 callable에서 처리하고, 익명 미인증 게스트는 로그인 UI로 안내한다.
  */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
@@ -72,7 +72,7 @@ const ADMIN_ACCESS_MODE_LABELS = {
   streamer: '스트리머 모드',
   viewer: '일반 로그인 유저',
 };
-const PRE_RELEASE_NOTICE = '온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.';
+const FREE_ACCESS_NOTICE = 'Google 또는 Kakao 로그인, 혹은 스트리머 인증을 완료하면 온이유 게임을 무료로 이용할 수 있습니다.';
 let pendingGameStartAuthorization = false;
 
 window.onyuAuthState = {
@@ -361,7 +361,7 @@ function openStreamerModal() {
   streamerForm.reset();
   setStreamerSubmitState(streamerRequestSubmitted);
   streamerNote.hidden = !streamerRequestSubmitted;
-  streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디로 스트리머 인증을 신청할 수 있어요. 인증 완료 후에도 게임 이용권이 필요해요. 별풍선 50개를 후원해 본인 이용권을 구매하거나 다른 이용자에게 선물받을 수 있어요.';
+  streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디로 스트리머 인증을 신청할 수 있어요. 인증이 완료되면 별도의 이용권 없이 무료로 플레이할 수 있어요.';
   show(streamerOverlay);
 }
 
@@ -490,17 +490,6 @@ function openAccessModal() {
   restoreActiveGiftRequestId();
   refreshGiftRequestStatus();
 }
-window.onyuOpenStreamerGiftModal = async function () {
-  await window.onyuAuthReady;
-  await refreshAccessState();
-  if (!window.onyuAuthState.authenticated) {
-    openLoginModal();
-    return false;
-  }
-  openAccessModal();
-  return true;
-};
-
 async function loginWithGoogle() {
   try {
     if (auth.currentUser && auth.currentUser.isAnonymous) {
@@ -729,26 +718,10 @@ async function ensureGameAccess() {
     openLoginModal();
     return false;
   }
-  if (!s.isAdmin && s.role !== 'streamer' && !s.canStartGame) {
+  if (!s.canStartGame) {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-    openAccessModal();
-    return false;
-  }
-  if (!s.isAdmin && s.role === 'streamer' && !s.canStartGame) {
-    pendingGameStartAuthorization = false;
-    openAccessModal();
-    return false;
-  }
-  if (s.isAdmin && s.accessMode === 'streamer' && !s.canStartGame) {
-    pendingGameStartAuthorization = false;
-    window.alert('스트리머 모드에서는 인증 스트리머 이용권이 있어야 게임을 시작할 수 있습니다.');
-    return false;
-  }
-  if (s.isAdmin && s.accessMode === 'viewer' && !s.canStartGame) {
-    pendingGameStartAuthorization = false;
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
-    openAccessModal();
+    window.alert('무료 이용 권한을 확인하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.');
     return false;
   }
   try {
@@ -762,12 +735,12 @@ async function ensureGameAccess() {
     console.error('온 이유 관리자 게임 시작 권한 확인 실패:', e);
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
     if (s.isAdmin) window.alert('관리자 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-    else window.alert(e && e.message ? e.message : '선물 이용권 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    else window.alert(e && e.message ? e.message : '무료 게임 이용 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     return false;
   }
 }
 
-window.onyuNotifyPreRelease = function () { window.alert(PRE_RELEASE_NOTICE); };
+window.onyuNotifyFreeAccess = function () { window.alert(FREE_ACCESS_NOTICE); };
 window.onyuConsumeGameStartAuthorization = function () {
   const authorized = pendingGameStartAuthorization;
   pendingGameStartAuthorization = false;
@@ -778,6 +751,9 @@ window.onyuOpenLoginModal = openLoginModal;
 window.onyuOpenStreamerModal = openStreamerModal;
 window.onyuEnsureGameAccess = ensureGameAccess;
 window.onyuToggleAdminMode = toggleAdminMode;
+window.onyuOpenStreamerGiftModal = function () {
+  window.alert('온이유 게임은 로그인 또는 인증된 스트리머 계정으로 무료 이용할 수 있습니다. 새로운 이용권 구매·선물 신청은 종료되었습니다.');
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);

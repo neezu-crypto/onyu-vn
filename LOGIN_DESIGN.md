@@ -1,154 +1,69 @@
-# `onyu-vn` 로그인·접근 권한 설계
+# `onyu-vn` 로그인·무료 이용 설계
 
-작성일: 2026-09-16
+시행일: 2026-10-18
 
-## 1. 목표
+## 1. 이용 조건
 
-`onyu-vn`은 로그인 방식과 스트리머 인증 여부에 따라 게임 시작 권한과 의상 선택 규칙을 나눈다.
+Google 또는 Kakao로 로그인한 사용자는 이용권이나 후원 여부와 관계없이 무료로 플레이할 수 있다. 스트리머 인증을 완료한 계정도 무료로 플레이할 수 있으며, 인증 계정은 Google/Kakao를 연결하지 않은 익명 Firebase UID일 수 있다. 로그인하지 않은 미인증 게스트는 게임을 시작할 수 없다.
 
 | 역할 | 판정 | 게임 시작 | 의상 선택 |
 |---|---|---|---|
-| 미로그인/익명 | Firebase Auth 사용자 없음 또는 `isAnonymous` | 불가. 로그인 안내 | 불가 |
-| 일반 로그인 유저 | Google/Kakao 실계정, 스트리머 인증 아님 | 관리자 방송국에 별풍선 50개 후원, SOOP 알림 자동 대조 또는 관리자 수동 검수 후 본인 이용권 지급 | 편한 의상·꾸민 의상 모두 자유 선택 |
-| 인증 스트리머 | `streamerVerified === true` | 본인 구매 또는 선물받은 이용권 필요 | 편한 의상은 즉시, 꾸민 의상은 기존 후원 확인 절차 유지 |
+| 미인증 게스트 | Firebase 익명 사용자, 스트리머 인증 없음 | 불가. 로그인 또는 스트리머 인증 안내 | 게임 진입 불가 |
+| 일반 로그인 유저 | 익명이 아닌 로그인 제공자 또는 Google/Kakao 연결 계정 | 무료 | 편한 의상·꾸민 의상 모두 무료 |
+| 인증 스트리머 | `users/{uid}/streamerVerified` 또는 서버의 인증 원장으로 확인 | 무료 | 편한 의상·꾸민 의상 모두 무료 |
 
-스트리머 인증은 Firebase Auth 제공자가 아니라 익명 UID에 서버가 부여하는 신뢰 권한이다. 따라서 Google/Kakao를 연결하지 않은 익명 UID도 승인 후 스트리머 역할이 될 수 있다.
+과거 구매·선물로 생성된 이용권과 신청 기록은 관리·이력 용도로 보존되며 게임 접근 권한을 결정하지 않는다. 2026-10-18부터 새 이용권 구매·선물 신청은 받지 않는다. 이미 접수된 요청은 관리자 검토 및 기록 정리를 위해 기존 처리 경로로 마무리할 수 있다.
 
 ## 2. 인증 상태와 역할 계산
 
-Firebase는 자매 프로젝트와 같은 `soop-stock-market` 프로젝트를 사용한다.
+Firebase 프로젝트는 자매 프로젝트와 같은 `soop-stock-market`이다. 페이지 로드 때 Auth 사용자가 없으면 익명 세션을 시작한다. Google/Kakao 로그인은 익명 UID를 계정에 연결하고, 스트리머 인증은 공유 `users/{uid}/streamerVerified` 상태 또는 서버 인증 원장으로 판정한다.
 
-1. 페이지 로드 시 Firebase Auth를 초기화한다.
-2. Auth 사용자가 없으면 `signInAnonymously()`를 호출한다.
-3. 실제 로그인 계정은 Google 또는 Kakao로 익명 UID를 보호한다.
-4. `streamerVerified`를 우선 확인해 스트리머 역할을 계산한다.
-5. 스트리머가 아니고 Google/Kakao 실계정이면 일반 시청자로 계산한다.
-6. 일반 로그인 유저의 경우 서버가 `onyuVn/gameEntitlements/{uid}` 이용권 상태를 확인한다.
-
-클라이언트에는 다음과 같은 단일 상태를 노출한다.
+클라이언트는 `onyuGetViewerAccess`에서 서버가 계산한 역할·접근 상태를 받는다.
 
 ```js
 window.onyuAuthState = {
   user: null,                 // Firebase User (익명 포함)
-  realUser: null,             // Google/Kakao 실계정
-  role: 'anonymous',          // anonymous | viewer | streamer
-  accessStatus: 'purchase-required', // purchase-required | gift-required | approved
+  realUser: null,             // Google/Kakao 로그인 계정
+  role: 'anonymous',          // anonymous | viewer | streamer | admin
+  accessStatus: 'login-required', // login-required | free
+  authenticated: false,
   canStartGame: false,
 };
 ```
 
-`canStartGame`은 화면 표시용 캐시일 뿐이며, 게임 시작 callable에서도 같은 조건을 서버가 다시 검사한다.
+`canStartGame`은 화면 표시용 상태다. 실제 플레이 시작 직전에 `onyuStartSession`이 인증 컨텍스트의 UID, 로그인 여부, 서버의 스트리머 인증 상태를 다시 판정한다. 이용권 노드는 이 판정에 사용하지 않는다. 관리자 테스트 모드의 viewer·streamer·admin도 모두 무료 접근을 사용한다.
 
-## 3. 일반 로그인 유저 본인 구매·승인 흐름
+서버 조회에 실패하면 클라이언트는 접근을 허용하지 않고 연결 확인·재시도를 안내한다. 로그인한 사용자를 구매 화면으로 보내지 않는다.
 
-### 일반 로그인 유저 본인 구매
+## 3. 로그인 및 스트리머 인증 흐름
 
-1. 사용자가 `새 게임`을 클릭한다.
-2. Google/Kakao 로그인 전이면 로그인 UI를 먼저 보여준다.
-3. 이용권 구매·선물 모달에서 `내 게임 이용권 구매`를 선택한다.
-4. SOOP 후원자 닉네임을 입력하고 신청하면 관리자 방송국 후원창이 열린다.
-5. 사용자가 별풍선 50개를 후원하고 온이유 화면에서 후원 완료를 알리면, SOOP 알림의 발신자 아이디·수량·시각이 단일 신청과 일치할 때 서버가 자동 승인한다.
-6. 일치가 모호하거나 자동 확인이 되지 않으면 관리자가 신청을 검수하고, 승인 시 서버가 `onyuVn/gameEntitlements/{uid}`에 이용권을 부여한다.
-7. 게임 시작 callable도 같은 이용권을 서버에서 확인한 뒤 게임 시작을 허용한다.
+1. `새 게임` 또는 게임을 이어 시작할 때 무료 이용 권한을 조회한다.
+2. Google/Kakao 계정이면 서버가 무료 접근을 허용한다.
+3. 익명 UID가 인증 스트리머이면 Google/Kakao 연결 없이도 서버가 무료 접근을 허용한다.
+4. 익명 미인증 UID이면 Google/Kakao 로그인 또는 스트리머 인증 신청을 안내한다.
+5. 인증 신청은 공유 `requestStreamerVerification` callable을 사용하며 승인 결과는 사용자의 열린 페이지에서 실시간 반영된다.
 
-### 승인 데이터
+## 4. 의상 선택
 
-```json
-{
-  "onyuVn": {
-    "gameEntitlements": {
-      "<uid>": {
-        "status": "active",
-        "grantedAt": 0,
-        "grantedBy": "<adminUid>",
-        "purchaseType": "self-viewer"
-      }
-    },
-    "streamerGameGiftRequests": {
-      "<requestId>": {
-        "requesterUid": "<uid>",
-        "targetUid": "<uid>",
-        "targetNickname": "<표시 이름>",
-        "donorNickname": "<SOOP 후원자 닉네임>",
-        "purchaseType": "self-viewer",
-        "status": "pending|approved|rejected",
-        "requestedAt": 0,
-        "reviewedAt": 0,
-        "reviewedBy": "<adminUid>"
-      }
-    }
-  }
-}
-```
+[`js/outfit-picker.js`](js/outfit-picker.js)의 편한 의상과 꾸민 의상은 접근 허가를 받은 모든 사용자에게 무료로 제공한다. 후원 확인 모달은 게임 이용 또는 의상 선택을 막지 않는다.
 
-승인 기준은 브라우저나 기기가 아니라 Firebase UID다. 따라서 같은 Google/Kakao 계정으로 로그인하면 다른 브라우저에서도 동일한 승인 상태를 사용한다.
+## 5. 서버 callable과 레거시 신청
 
-## 4. 스트리머 인증 흐름
+- `onyuGetViewerAccess`: 로그인·스트리머 인증을 기준으로 무료 이용 여부를 반환한다.
+- `onyuStartSession`: 게임 시작 전 같은 조건을 서버에서 최종 확인하고 이용 이벤트를 기록한다.
+- `onyuListStreamerGiftTargets`: 이전 클라이언트 호환용 callable이며 새 신청 목록을 제공하지 않고 종료 안내를 반환한다.
+- `onyuSubmitStreamerGameGift`: 새 구매·선물 신청을 만들지 않고 무료 이용 및 신청 종료 안내를 반환한다.
+- 기존 신청 조회·후원 확인·관리자 검수·승인·계정 인증 후 선물 연결 callable은 이미 접수된 요청을 마무리할 수 있도록 유지한다.
+- `onyuRequestViewerAccess`와 이전 접근 승인 흐름은 종료됐다. 과거 `viewerAccessRequests`와 이용권 데이터는 이력으로 보존하고 무료 접근 판정에는 사용하지 않는다.
+- 후기와 분석 데이터는 기존 서버 callable 및 UID 검증 경로를 유지한다.
 
-기존 자매 프로젝트의 `requestStreamerVerification` callable을 재사용한다.
+관리자 승인 함수는 클라이언트에 노출하지 않고 관리자 UID를 서버에서 확인한다. 신규 함수가 필요하면 전역 함수명 충돌을 확인한 뒤 `admincenter` codebase에서 변경한 함수만 배포한다.
 
-1. 익명 또는 로그인 사용자가 스트리머 인증 신청을 연다.
-2. 방송 닉네임과 SOOP 아이디를 제출한다.
-3. 관리자가 방송 신원을 확인한다.
-4. 승인 시 공유 `streamerVerifications`와 `users/{uid}/streamerVerified`가 갱신된다.
-5. `onyu-vn`은 `role = 'streamer'`로 인식하지만, 별도의 활성 이용권이 있어야 `canStartGame = true`가 된다.
+## 6. 저장 데이터와 보안
 
-시청자는 인증 여부와 관계없이 SOOP 닉네임·아이디를 직접 입력해 스트리머 이용권 선물을 신청할 수 있다. 후원 확인 전에는 신청이 대기 상태이고, 관리자가 후원을 승인했지만 대상이 아직 미인증이면 신청은 `approved`/`awaiting-streamer-verification`으로 보관한다. 이후 공유 `streamerVerifications`에 같은 SOOP 아이디가 등록되면 서버 트리거가 `streamerGameEntitlements/{uid}`에 이용권을 자동 지급한다. 인증이 먼저 끝난 경우에는 선물 승인 callable이 바로 UID를 찾아 지급한다. SOOP 아이디를 매칭 키로 사용하며, 닉네임은 신청 내역 표시용이다.
+게임 세이브·갤러리 기록은 [`js/save.js`](js/save.js)의 `localStorage`에 저장하며 서버 UID와 브라우저 간 자동 동기화하지 않는다. 온이유 전용 서버 데이터는 RTDB `onyuVn/` 아래에 저장하고 클라이언트에서 직접 읽거나 쓰지 않는다.
 
-인증 스트리머의 이용권 상태는 게임 시작 시 callable로 다시 확인한다. 이용권이 없는 스트리머에게는 구매·선물 모달에서 시청자에게 SOOP 아이디로 선물받을 수 있다는 안내를 표시하고, 미보유 스트리머가 모달을 열어둔 동안 접근 상태를 주기적으로 갱신해 새로고침 없이 지급 상태를 반영한다.
-
-이미 다른 UID에 인증된 스트리머의 계정 전환은 기존과 동일하게 관리자 재승인 후 custom token으로 처리한다. 클라이언트가 입력한 `streamerVerified` 값은 신뢰하지 않고 서버 조회 결과만 사용한다.
-
-## 5. 의상 선택 분기
-
-현재 [`js/outfit-picker.js`](js/outfit-picker.js)는 꾸민 의상을 후원 확인 대상으로 취급한다.
-
-- `role === 'viewer'`: 꾸민 의상의 후원 배지와 확인 모달을 숨기고 두 카드 모두 즉시 선택 가능
-- `role === 'streamer'`: 현재 동작 유지
-  - 편한 의상: 즉시 선택
-  - 꾸민 의상: “실제로 후원을 받으셨나요?” 확인 모달 후 선택
-- 미인증 익명 사용자: 의상 선택 화면에 도달하지 않도록 게임 시작 단계에서 차단
-
-이 분기는 모든 챕터의 공용 outfit picker에 적용해 챕터별 예외가 생기지 않게 한다.
-
-## 6. 서버 함수와 관리자센터 연동
-
-`onyu-vn` 전용 함수명은 다른 자매 프로젝트와 충돌하지 않도록 접두사를 붙인다.
-
-- `onyuSubmitStreamerGameGift`: SOOP 닉네임·아이디로 선물, 스트리머 본인 구매, 일반 로그인 계정 본인 구매 신청
-- `onyuListStreamerGiftTargets`: 본인 구매 자격 조회
-- `onyuReviewStreamerGameGift`: 관리자 후원 확인 후 이용권 지급 또는 신청 거절
-- `activateOnyuGiftsAfterStreamerVerification`: 공유 인증 원장에 등록된 SOOP 아이디와 승인된 대기 선물을 연결
-- `onyuGetViewerAccess`: 서버가 계산한 로그인·스트리머 인증·이용권 상태 조회. 이전 `viewerAccess` 승인 기록은 현재 권한 판정에 사용하지 않음
-- `onyuStartSession`: 관리자 선택 모드에 맞춰 최종 검사. 일반 로그인 유저는 `gameEntitlements`, 인증 스트리머는 `streamerGameEntitlements` 또는 일반 게임 이용권을 서버에서 확인
-- `onyuRecoverStuckStreamerGameGift`: 처리 시작 후 10분 이상 멈춘 신청만 대기 상태로 복구. 재승인 시 같은 요청 ID를 확인해 중복 지급을 방지
-- `onyuAdminLookupEntitlement` / `onyuAdminRevokeEntitlement`: 관리자 전용 이용권·관련 신청 조회 및 사유/관리자/시각을 기록하는 이용권 회수
-- `onyuRequestViewerAccess`와 이전 접근 승인 callable은 종료 안내를 반환하며 더는 접근 신청·권한 기록을 생성하거나 변경하지 않음. 과거 `viewerAccessRequests` 데이터는 기록 보존을 위해 자동 삭제하지 않음
-
-관리자 승인 함수는 클라이언트에 노출하지 않고 관리자 UID 검증을 서버에서 수행한다. 승인·반려 기록은 통합 감사 로그에도 남긴다.
-
-`requestStreamerVerification`은 기존 공용 함수를 호출하되 `source: 'onyu-vn'`을 전달한다. 신규 함수 배포 전에는 Firebase 프로젝트 전체 함수 목록을 확인해 이름 충돌을 방지한다.
-
-## 7. 저장 데이터와 브라우저 범위
-
-현재 게임 세이브·갤러리 기록은 [`js/save.js`](js/save.js)의 `localStorage` 기반이다. 이번 로그인 설계에서 서버 UID로 공유되는 것은 접근 승인 상태이며, 게임 진행도까지 자동으로 브라우저 간 동기화하지 않는다.
-
-진행도 동기화가 필요해질 경우 별도 `onyuVn/playthroughs/{uid}` 노드를 추가하고, 기존 localStorage 세이브와 병합 정책을 먼저 정한다.
-
-## 8. 보안·운영상 주의
-
-- 화면에서 버튼을 숨기는 것만으로는 승인 우회가 되므로, `onyuStartSession`에서 서버 검사를 수행한다.
-- GitHub Pages의 정적 게임 특성상 `game-data.js` 파일 자체를 완전히 숨길 수는 없다. 이번 권한은 정상적인 게임 진입·후원 승인 통제 목적이며, 콘텐츠 파일 비공개가 필요하면 별도 인증 서버가 필요하다.
-- RTDB 규칙에 `onyuVn` 경로를 추가할 때는 공유 RTDB를 사용하는 6개 자매 프로젝트의 `database.rules.json`을 모두 동기화하고 dry-run 검증한다.
-- 후원 승인 상태는 `localStorage`에 저장하지 않는다. 로컬 값은 로딩 최적화용으로만 사용하고 서버 상태를 항상 우선한다.
-
-## 9. 구현 순서
-
-1. Firebase/Auth 초기화 모듈 추가
-2. 익명·Google·Kakao·스트리머 인증 상태를 `onyuAuthState`로 통합
-3. 로그인/스트리머 인증 UI 추가
-4. 일반 시청자 후원 안내 모달과 SOOP 후원창 연결
-5. `onyuVn` 승인 요청·상태 조회·게임 시작 함수 구현
-6. 의상 picker 역할 분기 적용
-7. 관리자센터 승인 UI 및 감사 로그 연결
-8. 익명·일반 시청자·승인 시청자·스트리머·다른 브라우저 시나리오 검증
+- 인증된 플레이 시작도 서버 callable에서 재검증한다.
+- 공유 스트리머 인증 상태는 `users/{uid}/streamerVerified`와 서버 인증 원장을 확인한다.
+- RTDB 규칙을 바꿀 때는 공유 규칙 6개 사본 동기화 규칙을 따른다. 이 저장소에는 규칙 사본을 만들지 않는다.
+- 과거 이용권/후원 신청 기록은 관리와 기존 요청 마무리에만 사용한다. 무료 접근 여부를 좌우하지 않는다.
