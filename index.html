@@ -166,6 +166,16 @@
         <button type="button" class="review-title-btn" id="review-title-btn">타이틀 화면</button>
       </div>
       <p class="review-status" id="review-status" role="status" aria-live="polite"></p>
+      <section class="production-inquiry-panel" id="streamer-production-inquiry-panel" hidden aria-labelledby="streamer-production-inquiry-title">
+        <h2 id="streamer-production-inquiry-title">내 미연시 제작 문의</h2>
+        <p>인증 스트리머는 본인의 이야기를 담은 미연시 제작을 문의할 수 있어요. 펀딩금을 모금한 뒤 운영자에게 전달해 주시면 제작을 진행합니다. 문의를 보내면 제작 방향과 일정을 함께 안내해 드려요.</p>
+        <label class="review-label" for="streamer-production-inquiry-details">원하는 이야기와 제작 방향</label>
+        <textarea id="streamer-production-inquiry-details" class="review-textarea production-inquiry-textarea" maxlength="3000" placeholder="만들고 싶은 이야기, 등장인물, 원하는 분위기 등을 적어 주세요. (최대 3,000자)" rows="6"></textarea>
+        <div class="review-actions">
+          <button type="button" class="review-save-btn" id="streamer-production-inquiry-submit">제작 문의 보내기</button>
+        </div>
+        <p class="review-status" id="streamer-production-inquiry-status" role="status" aria-live="polite"></p>
+      </section>
     </div>
   </section>
 
