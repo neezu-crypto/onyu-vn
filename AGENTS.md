@@ -18,16 +18,13 @@
 - 스트리머 인증 상태는 온이유 전용 `onyuVn/` 노드가 아니라 공유 `users/{uid}/streamerVerified`에서 본인 UID만 `onValue`로 구독한다. 승인 결과와 `users/{uid}/streamerVerificationSwitchApproval` 계정 전환 신호는 로그인한 페이지가 연결된 동안 반영되며, 닫힌 페이지용 푸시는 없다.
 - 전환 신호 `{ requestId, approvedAt }`를 받으면 공유 `requestStreamerVerification` callable이 신청·승인 상태를 서버에서 재검증한 뒤 custom token을 반환한다. 토큰은 데이터베이스에 저장하지 않고, 전환 처리 후 신호를 삭제한다. 온이유 규칙이나 공유 규칙을 수정할 때는 해당 경로의 소유자 전용 읽기 권한을 대조하고 공유 6개 규칙 사본 동기화 절차를 지킨다.
 
-## 이용권 후원 자동 확인
+## 무료 게임 이용 및 과거 이용권 신청 기록
 
-- 신청·후원 완료·승인 상태는 `onyuVn/streamerGameGiftRequests` 아래 서버 callable이 관리한다. 신청자가 후원 완료 버튼을 누르면 `donationCompletedAt`이 기록되지만, 이는 실제 후원 증명이 아니며 SOOP 알림 대조가 별도로 필요하다.
-- `admin-center/functions/index.js`의 `onyuGiftBackgroundFeed`는 `streamerGameGiftRequests`를 서버에서 `onValue`로 감시한다. 관리자 UID로 발급한 제한된 Firebase custom-token 세션을 확장 프로그램이 사용하며, 토큰은 RTDB에 저장하지 않는다. 이 피드는 자동 확인 필요 여부만 확장 프로그램에 전달한다.
-- `promo-extension/onyu-game-gift-notifications.js`는 로그인된 SOOP 탭에서 알림 목록을 최대 10초 간격으로 확인한다. 알림의 방송국 아이디, 별풍선 수량, 시각과 중복 판별용 해시만 확인 callable로 보낸다. 알림 원문·쿠키·SOOP 로그인 비밀번호는 보내지 않고, 개별 알림을 클릭하지 않는다.
-- 발신자 아이디·50개 수량·신청 및 후원 완료 시각이 대기 신청 하나와 일치할 때만 `onyuConfirmStreamerGameGiftFromNotification`이 기존 승인 처리를 호출한다. 일치하지 않거나 복수 후보인 경우 자동 승인하지 않고 관리자 수동 검수로 남긴다. 결과 표시는 신청자 페이지가 열려 있을 때 약 10초 간격으로 확인한다.
-- 통합 관리 센터는 처리 후 10분 이상 `processing`에 머문 신청을 관리자 callable로 대기 상태에 복구할 수 있다. 승인 처리는 같은 요청 ID의 활성 이용권을 확인하므로 복구 후 재승인해도 중복 지급하지 않는다. 이용권 조회·회수도 관리자 callable에서 UID/유형을 검증하고, 회수 사유·관리자·시각을 이용권과 감사 로그에 남긴다.
-- 이전 `viewerAccessRequests` 승인 흐름은 종료됐다. 새 요청·Discord 알림·관리자 조작을 만들지 않으며, 기존 기록은 이력으로만 보존하고 게임 권한 판정에 사용하지 않는다.
-- 관리자가 통합 관리 센터에서 로그인해 확장 프로그램 세션을 시작해야 한다. 화면에 연결 완료가 표시되면 센터 탭은 닫아도 되지만, 브라우저와 확장 프로그램 및 로그인된 SOOP 탭은 후원 알림 확인 중 계속 실행되어야 한다. 브라우저가 종료되거나 알림 탭에 접근할 수 없으면 자동 확인은 처리되지 않을 수 있다.
-- 공개 정책은 `terms.html`, `privacy.html`이며, 이 기능의 입력정보·자동 대조 방식·보유 기간 또는 외부 처리 방식이 변경되면 두 정책과 이 문서 및 `README.md`를 함께 대조한다. 분석 이벤트의 400/30/35일 자동 정리 정책은 이용권 신청·후원 알림 중복 방지 기록의 보유기간과 별개이므로 혼동하지 않는다.
+- Google/Kakao 로그인 사용자와 인증 스트리머는 이용권 없이 무료로 플레이한다. 미인증 익명 게스트만 게임을 시작할 수 없으며, Google/Kakao 로그인 또는 스트리머 인증을 안내한다. `onyuGetViewerAccess`와 `onyuStartSession`은 이 조건을 서버에서 판정하고, 과거 이용권 노드를 접근 허가에 사용하지 않는다.
+- `onyuListStreamerGiftTargets`와 `onyuSubmitStreamerGameGift`는 과거 클라이언트 호환용 이름을 유지하되, 새 이용권 구매·선물 신청을 제공하지 않고 종료 안내를 반환한다.
+- 시행일 전에 이미 접수된 `onyuVn/streamerGameGiftRequests` 신청은 기존 관리자 검수·승인·후원 대조·계정 인증 후 연결 callable로 마무리할 수 있다. `onyuGiftBackgroundFeed`와 `promo-extension/onyu-game-gift-notifications.js`는 남아 있는 기존 대기 요청에 한해 계속 동작할 수 있다. 후원·신청 이력과 이용권 데이터는 과거 기록 및 문의 처리용이며 무료 접근 여부를 결정하지 않는다.
+- 과거 승인 처리는 같은 요청 ID의 중복 지급 방지 절차를 유지한다. 이용권 이력 조회·정정은 관리자 callable에서 UID/유형을 확인하고 사유·관리자·시각을 기록한다. 이전 `viewerAccessRequests`도 과거 이력으로만 보관한다.
+- 공개 정책은 `terms.html`, `privacy.html`이다. 무료 접근, 새 신청 종료, 기존 요청의 보존·처리 방식이 바뀌면 두 정책과 이 문서 및 `README.md`를 함께 갱신한다. 분석 이벤트의 400/30/35일 자동 정리 정책은 기존 이용권 신청·후원 중복 방지 기록의 보유기간과 별개다.
 
 ## 확인
 

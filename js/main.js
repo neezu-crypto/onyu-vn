@@ -188,8 +188,8 @@ function onyuPrepareChapterEntry(chapterId, options) {
     var consumeAuthorization = window.onyuConsumeGameStartAuthorization;
     var preauthorized = typeof consumeAuthorization === 'function' && consumeAuthorization();
     if (!preauthorized) {
-      if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
-      else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+      if (window.onyuNotifyFreeAccess) window.onyuNotifyFreeAccess();
+      else alert('로그인 또는 스트리머 인증 계정으로 무료로 이용할 수 있습니다.');
     }
     access = Promise.resolve(preauthorized);
   } else if (typeof window.onyuEnsureGameAccess === 'function') {
@@ -197,15 +197,15 @@ function onyuPrepareChapterEntry(chapterId, options) {
       if (!allowed) return false;
       var consumeAuthorization = window.onyuConsumeGameStartAuthorization;
       if (typeof consumeAuthorization === 'function' && !consumeAuthorization()) {
-        if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
-        else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+        if (window.onyuNotifyFreeAccess) window.onyuNotifyFreeAccess();
+        else alert('로그인 또는 스트리머 인증 계정으로 무료로 이용할 수 있습니다.');
         return false;
       }
       return true;
     });
   } else {
-    if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
-    else alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.');
+    if (window.onyuNotifyFreeAccess) window.onyuNotifyFreeAccess();
+    else alert('로그인 또는 스트리머 인증 계정으로 무료로 이용할 수 있습니다.');
     access = Promise.resolve(false);
   }
   return Promise.resolve(access).then(function (allowed) {
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ready.catch(function () {});
     var access = typeof window.onyuEnsureGameAccess === 'function'
       ? window.onyuEnsureGameAccess()
-      : (window.onyuNotifyPreRelease ? window.onyuNotifyPreRelease() : alert('온이유 게임은 아직 정식 출시 전입니다. 정식 출시 후 다시 이용해 주세요.'), Promise.resolve(false));
+      : (window.onyuNotifyFreeAccess ? window.onyuNotifyFreeAccess() : alert('로그인 또는 스트리머 인증 계정으로 무료로 이용할 수 있습니다.'), Promise.resolve(false));
     Promise.resolve(access).then(function (allowed) {
       newGameAccessChecking = false;
       if (allowed) startNewGameAfterAccess(ready);
@@ -582,12 +582,6 @@ document.addEventListener('DOMContentLoaded', function () {
       setNewGamePreparing(false);
       console.error('게임 접근 권한 확인 실패:', error);
     });
-  });
-
-  var giftGameBtn = document.getElementById('title-gift-game');
-  if (giftGameBtn) giftGameBtn.addEventListener('click', function () {
-    if (typeof window.onyuOpenStreamerGiftModal === 'function') window.onyuOpenStreamerGiftModal();
-    else if (window.onyuNotifyPreRelease) window.onyuNotifyPreRelease();
   });
 
   var continueLoading = false;

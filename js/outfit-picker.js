@@ -1,9 +1,6 @@
 /*
- * 사복 후보 2종 선택 UI. 일반 시청자는 게임 접근 승인을 이미 받은 상태이므로 두 의상을
- * 자유롭게 고르고, 스트리머 인증 유저는 방송 중 직접 후원을 확인한 뒤 꾸민 의상을 고른다.
- * 시청자가 실제로 별풍선을 쐈는지는 코드가 알 방법이 없다(자동 후원 감지 없음) —
- * 스트리머가 스스로 판단해서 고르고, 꾸민 의상은 실수 클릭 방지용 확인 모달을
- * 한 번 더 거친다. game-data.js의 chapter.spriteSet(체육복 등 고정 세트)이 있는
+ * 사복 후보 2종 선택 UI. 로그인·인증된 이용자는 모두 두 의상을 무료로 고른다.
+ * game-data.js의 chapter.spriteSet(체육복 등 고정 세트)이 있는
  * 챕터나 ONYU_SPRITE_CANDIDATES(단일 세트, 예: CH27 졸업 가운)에는 관여하지 않는다.
  */
 
@@ -101,13 +98,11 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.outfitPaidBadge.textContent = '시청자에게 ' + priceLabel + '를 선물받으면\n의상 선택 가능합니다.';
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
 
-  // 일반 시청자는 이미 게임 시작 전에 별풍선 후원 및 관리자 승인을 통과했다.
-  // 따라서 이 단계에서는 후원 문구·확인 모달 없이 두 의상을 자유롭게 선택한다.
-  // 스트리머 인증 유저는 기존 방송 후원 확인 UX를 그대로 유지한다.
-  var isViewer = !!(window.onyuAuthState && window.onyuAuthState.role === 'viewer' && window.onyuAuthState.authenticated);
-  onyuEl.outfitPaidCard.classList.toggle('is-paid', !isViewer);
-  onyuEl.outfitPaidBadge.hidden = isViewer;
-  onyuEl.outfitConfirmModal.hidden = isViewer;
+  // 접근 허가를 받은 모든 역할은 추가 의상도 비용이나 후원 확인 없이 선택한다.
+  var hasFreeGameAccess = !!(window.onyuAuthState && window.onyuAuthState.canStartGame);
+  onyuEl.outfitPaidCard.classList.toggle('is-paid', !hasFreeGameAccess);
+  onyuEl.outfitPaidBadge.hidden = hasFreeGameAccess;
+  onyuEl.outfitConfirmModal.hidden = hasFreeGameAccess;
 
   // 의상을 고르기 전까진 대사(이전 챕터의 마지막 줄이 아직 남아있는 상태)도,
   // 스탠딩 일러스트(고르기 전이라 아직 어떤 의상인지도 안 정해진 기본 스프라이트)도
@@ -140,7 +135,7 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('outfit_selected', {
       chapterId: chapterId,
       outfitId: prefix === choice.paid ? 'paid' : 'free',
-      accessMode: isViewer ? 'viewer' : 'streamer',
+      accessMode: window.onyuAuthState && window.onyuAuthState.accessMode || 'viewer',
     });
     onyuEl.outfitPickerOverlay.classList.remove('is-active');
     if (reduceMotion) {
@@ -186,7 +181,7 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
       event.stopPropagation();
     }
     if (selecting || promptOpen) return;
-    if (isViewer) { selecting = true; finish(choice.paid); return; }
+    if (hasFreeGameAccess) { selecting = true; finish(choice.paid); return; }
     promptOpen = true;
     onyuEl.outfitConfirmModal.hidden = false;
     if (reduceMotion) {
