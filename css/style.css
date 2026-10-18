@@ -637,10 +637,6 @@ button { font-family: inherit; }
 .review-title-btn { border: 1px solid var(--line); background: transparent; color: var(--ink); }
 .review-title-btn:hover { background: var(--season-soft); }
 .review-status { min-height: 1.5em; margin: 14px 0 0; color: var(--season-accent); text-align: center; font-size: 13px; font-weight: 700; }
-.production-inquiry-panel { margin-top: 28px; padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper-strong); }
-.production-inquiry-panel[hidden] { display: none !important; }
-.production-inquiry-panel h2 { margin: 0 0 8px; color: var(--ink); font-size: 18px; }
-.production-inquiry-panel > p:first-of-type { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .production-inquiry-textarea { min-height: 140px; }
 
 #screen-play { cursor: pointer; }
