@@ -23,7 +23,7 @@
 
 - Google/Kakao 로그인 사용자와 인증 스트리머는 이용권 없이 무료로 플레이한다. 미인증 익명 게스트만 게임을 시작할 수 없으며, Google/Kakao 로그인 또는 스트리머 인증을 안내한다. `onyuGetViewerAccess`와 `onyuStartSession`은 이 조건을 서버에서 판정하고, 과거 이용권 노드를 접근 허가에 사용하지 않는다.
 - `onyuListStreamerGiftTargets`와 `onyuSubmitStreamerGameGift`는 과거 클라이언트 호환용 이름을 유지하되, 새 이용권 구매·선물 신청을 제공하지 않고 종료 안내를 반환한다.
-- 시행일 전에 이미 접수된 `onyuVn/streamerGameGiftRequests` 신청은 기존 관리자 검수·승인·후원 대조·계정 인증 후 연결 callable로 마무리할 수 있다. `onyuGiftBackgroundFeed`와 `promo-extension/onyu-game-gift-notifications.js`는 남아 있는 기존 대기 요청에 한해 계속 동작할 수 있다. 후원·신청 이력과 이용권 데이터는 과거 기록 및 문의 처리용이며 무료 접근 여부를 결정하지 않는다.
+- 시행일 전에 이미 접수된 `onyuVn/streamerGameGiftRequests` 신청은 기존 관리자 검수·승인·후원 대조·계정 인증 후 연결 callable로 마무리할 수 있다. 신규 신청이 종료됐으므로 `onyuGiftBackgroundFeed`의 지속 백그라운드 감시는 온이유 이용권 경로를 구독하지 않는다. 온이유 과거 신청 기록은 관리센터에서 필요할 때 한 번 조회하며, 후원·신청 이력과 이용권 데이터는 무료 접근 여부를 결정하지 않는다.
 - 과거 승인 처리는 같은 요청 ID의 중복 지급 방지 절차를 유지한다. 이용권 이력 조회·정정은 관리자 callable에서 UID/유형을 확인하고 사유·관리자·시각을 기록한다. 이전 `viewerAccessRequests`도 과거 이력으로만 보관한다.
 - 공개 정책은 `terms.html`, `privacy.html`이다. 무료 접근, 새 신청 종료, 기존 요청의 보존·처리 방식이 바뀌면 두 정책과 이 문서 및 `README.md`를 함께 갱신한다. 분석 이벤트의 400/30/35일 자동 정리 정책은 기존 이용권 신청·후원 중복 방지 기록의 보유기간과 별개다.
 
