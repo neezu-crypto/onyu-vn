@@ -40,6 +40,10 @@ const submitStreamerProductionInquiryFn = httpsCallable(functions, 'onyuSubmitSt
 const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
 const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifiedStreamerVisit');
+const getDonationIntegrationStatusFn = httpsCallable(functions, 'onyuGetDonationIntegrationStatus');
+const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDonationIntegrationPreparation');
+const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
+const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
 
 window.onyuSubmitPlayerReview = async function (payload) {
   const result = await submitPlayerReviewFn(payload || {});
@@ -55,6 +59,8 @@ window.onyuRequestStreamerVerification = async function (payload) {
   const result = await requestStreamerVerificationFn(Object.assign({}, payload || {}, { source: 'onyu-vn' }));
   return result.data || {};
 };
+window.onyuRegisterOutfitDonationSession = async function (payload) { return (await registerOutfitDonationSessionFn(payload || {})).data || {}; };
+window.onyuCloseOutfitDonationSession = async function (sessionId) { return (await closeOutfitDonationSessionFn({ sessionId })).data || {}; };
 
 window.onyuListPublicPlayerReviews = async function (payload) {
   const user = auth.currentUser;
@@ -113,6 +119,10 @@ const adminModeSectionTitle = document.getElementById('onyu-admin-section-title'
 const adminModeRow = document.getElementById('onyu-admin-mode-row');
 const adminModeToggle = document.getElementById('onyu-admin-mode-toggle');
 const adminModeStateEl = document.getElementById('onyu-admin-mode-state');
+const donationIntegrationRowEl = document.getElementById('onyu-donation-integration-row');
+const donationIntegrationStateEl = document.getElementById('onyu-donation-integration-state');
+const donationIntegrationDescriptionEl = document.getElementById('onyu-donation-integration-description');
+const donationIntegrationToggleEl = document.getElementById('onyu-donation-integration-toggle');
 const streamerMessageEl = document.getElementById('onyu-streamer-message');
 const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
@@ -322,7 +332,29 @@ async function refreshAccessState() {
   }
   updateAuthBar();
   updateAdminModeControl();
+  await refreshDonationIntegrationControl();
   dispatchAuthChanged();
+}
+
+async function refreshDonationIntegrationControl() {
+  if (!donationIntegrationRowEl) return;
+  if (window.onyuAuthState.role !== 'streamer' || window.onyuAuthState.isAdmin) { donationIntegrationRowEl.hidden = true; return; }
+  donationIntegrationRowEl.hidden = false; donationIntegrationToggleEl.disabled = true;
+  try {
+    const data = (await getDonationIntegrationStatusFn()).data || {};
+    const prepared = data.status === 'preparing';
+    donationIntegrationStateEl.textContent = prepared ? '심사 준비 동의됨' : '준비 전';
+    donationIntegrationDescriptionEl.textContent = prepared ? 'SOOP Chat SDK 심사 전입니다. 아직 후원 감지·토큰 저장·자동 선택은 실행되지 않습니다.' : '동의하면 심사 승인 뒤 본인 방송의 후원 자동 의상 선택 연동을 시작할 수 있습니다.';
+    donationIntegrationToggleEl.textContent = prepared ? '준비 동의 철회' : '준비 동의'; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
+  } catch (_) { donationIntegrationDescriptionEl.textContent = '연동 준비 상태를 확인하지 못했습니다.'; }
+}
+
+async function toggleDonationIntegrationPreparation() {
+  const prepared = donationIntegrationToggleEl.dataset.prepared === 'true';
+  if (!window.confirm(prepared ? '방송 후원 자동 연동 준비 동의를 철회할까요?' : '심사 승인 뒤 본인 방송의 별풍선 50개 이상 후원으로 꾸민 의상을 자동 확정하는 기능을 준비할까요? 현재는 후원 감지나 토큰 저장이 실행되지 않습니다.')) return;
+  donationIntegrationToggleEl.disabled = true;
+  try { await setDonationIntegrationPreparationFn({ enabled: !prepared }); await refreshDonationIntegrationControl(); }
+  catch (error) { window.alert(error && error.message ? error.message : '연동 준비 상태를 변경하지 못했습니다.'); await refreshDonationIntegrationControl(); }
 }
 
 async function toggleAdminMode() {
@@ -534,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
+  if (donationIntegrationToggleEl) donationIntegrationToggleEl.addEventListener('click', toggleDonationIntegrationPreparation);
   streamerForm.addEventListener('submit', submitStreamerVerification);
   [loginOverlay, streamerOverlay].forEach((overlay) => {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAll(); });
