@@ -128,14 +128,20 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   // 심사 승인 전에는 서버가 enabled:false를 반환하므로 후원 감지·세션 저장이 없다.
   // 승인 뒤 같은 호출이 이 화면이 열린 짧은 시간의 서버 세션만 등록한다.
   var donationSessionId = '';
+  var outfitPickerFinished = false;
   if (window.onyuAuthState && window.onyuAuthState.role === 'streamer' && typeof window.onyuRegisterOutfitDonationSession === 'function') {
     window.onyuRegisterOutfitDonationSession({ chapterId: chapterId }).then(function (result) {
       donationSessionId = result && result.enabled ? String(result.sessionId || '') : '';
+      if (outfitPickerFinished && donationSessionId && typeof window.onyuCloseOutfitDonationSession === 'function') {
+        window.onyuCloseOutfitDonationSession(donationSessionId).catch(function () {});
+        donationSessionId = '';
+      }
     }).catch(function () { donationSessionId = ''; });
   }
 
   function finish(prefix) {
     onyuActiveOutfitPicker = null;
+    outfitPickerFinished = true;
     if (donationSessionId && typeof window.onyuCloseOutfitDonationSession === 'function') {
       window.onyuCloseOutfitDonationSession(donationSessionId).catch(function () {});
       donationSessionId = '';
