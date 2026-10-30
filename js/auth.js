@@ -344,14 +344,16 @@ async function refreshDonationIntegrationControl() {
     const data = (await getDonationIntegrationStatusFn()).data || {};
     const prepared = data.status === 'preparing';
     donationIntegrationStateEl.textContent = prepared ? '심사 준비 동의됨' : '준비 전';
-    donationIntegrationDescriptionEl.textContent = prepared ? 'SOOP Chat SDK 심사 전입니다. 아직 후원 감지·토큰 저장·자동 선택은 실행되지 않습니다.' : '동의하면 심사 승인 뒤 본인 방송의 후원 자동 의상 선택 연동을 시작할 수 있습니다.';
+    donationIntegrationDescriptionEl.textContent = prepared
+      ? `준비 동의 만료: ${data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내'}. 만료 후 서버에서 삭제됩니다. 심사 전에는 후원 감지·토큰 저장·자동 선택을 실행하지 않습니다.`
+      : '준비 동의는 24시간 유지된 뒤 만료·삭제됩니다. 심사 승인 후 본인 방송 연동 시 다시 동의할 수 있습니다.';
     donationIntegrationToggleEl.textContent = prepared ? '준비 동의 철회' : '준비 동의'; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
   } catch (_) { donationIntegrationDescriptionEl.textContent = '연동 준비 상태를 확인하지 못했습니다.'; }
 }
 
 async function toggleDonationIntegrationPreparation() {
   const prepared = donationIntegrationToggleEl.dataset.prepared === 'true';
-  if (!window.confirm(prepared ? '방송 후원 자동 연동 준비 동의를 철회할까요?' : '심사 승인 뒤 본인 방송의 별풍선 50개 이상 후원으로 꾸민 의상을 자동 확정하는 기능을 준비할까요? 현재는 후원 감지나 토큰 저장이 실행되지 않습니다.')) return;
+  if (!window.confirm(prepared ? '방송 후원 자동 연동 준비 동의를 철회하고 저장된 준비 정보를 삭제할까요?' : '준비 동의 정보를 서버에 저장합니다. 정보는 24시간 뒤 만료·삭제되며, 현재는 SOOP 후원 감지나 토큰 저장이 실행되지 않습니다. 동의할까요?')) return;
   donationIntegrationToggleEl.disabled = true;
   try { await setDonationIntegrationPreparationFn({ enabled: !prepared }); await refreshDonationIntegrationControl(); }
   catch (error) { window.alert(error && error.message ? error.message : '연동 준비 상태를 변경하지 못했습니다.'); await refreshDonationIntegrationControl(); }
