@@ -210,21 +210,25 @@ function onyuPrepareChapterEntry(chapterId, options) {
   }
   return Promise.resolve(access).then(function (allowed) {
     if (!allowed) return false;
-    if (typeof options.beforeLoad === 'function') options.beforeLoad();
-    if (loadingTitle) loadingTitle.textContent = options.message || '게임 장면을 준비하고 있어요';
-    if (loading) loading.hidden = false;
-    var assets = options.preloadedAssets || onyuPreloadChapterAssets(chapterId, { required: true });
-    return Promise.resolve(assets).then(function () {
-      onyuRequestFullscreen();
-      window.onyuGameSessionActive = true;
-      window.onyuGameCompleted = false;
-      if (options.telemetry && typeof window.onyuTelemetryTrack === 'function') {
-        window.onyuTelemetryTrack(options.telemetry.name || 'game_started', options.telemetry.data || {});
-      }
-      onyuStartChapter(chapterId);
-      if (typeof options.afterStart === 'function') options.afterStart();
-      closeLoading();
-      return true;
+    var requestConsent = window.onyuRequestDonationPreparationConsent;
+    return Promise.resolve(typeof requestConsent === 'function' ? requestConsent() : true).then(function (shouldStart) {
+      if (!shouldStart) return false;
+      if (typeof options.beforeLoad === 'function') options.beforeLoad();
+      if (loadingTitle) loadingTitle.textContent = options.message || '게임 장면을 준비하고 있어요';
+      if (loading) loading.hidden = false;
+      var assets = options.preloadedAssets || onyuPreloadChapterAssets(chapterId, { required: true });
+      return Promise.resolve(assets).then(function () {
+        onyuRequestFullscreen();
+        window.onyuGameSessionActive = true;
+        window.onyuGameCompleted = false;
+        if (options.telemetry && typeof window.onyuTelemetryTrack === 'function') {
+          window.onyuTelemetryTrack(options.telemetry.name || 'game_started', options.telemetry.data || {});
+        }
+        onyuStartChapter(chapterId);
+        if (typeof options.afterStart === 'function') options.afterStart();
+        closeLoading();
+        return true;
+      });
     });
   }).catch(fail).then(function (started) {
     onyuChapterEntryBusy = false;
@@ -611,6 +615,63 @@ document.addEventListener('DOMContentLoaded', function () {
     newGameBtn.setAttribute('aria-busy', newGamePreparing ? 'true' : 'false');
     newGameBtn.textContent = newGamePreparing ? '게임을 시작하는 중' : '새 게임';
   }
+  function requestDonationPreparationConsent() {
+    var authState = window.onyuAuthState || {};
+    if (authState.role !== 'streamer' || authState.isAdmin || typeof window.onyuGetDonationIntegrationStatus !== 'function') return Promise.resolve(true);
+    return window.onyuGetDonationIntegrationStatus().then(function (status) {
+      if (status.status === 'preparing') return true;
+      var overlay = document.getElementById('onyu-donation-consent-overlay');
+      var checkbox = document.getElementById('onyu-donation-consent-check');
+      var accept = document.getElementById('onyu-donation-consent-accept');
+      var skip = document.getElementById('onyu-donation-consent-skip');
+      if (!overlay || !checkbox || !accept || !skip) return true;
+      return new Promise(function (resolve) {
+        var settled = false;
+        function finish(shouldStart) {
+          if (settled) return;
+          settled = true;
+          overlay.hidden = true;
+          checkbox.checked = false;
+          accept.disabled = true;
+          accept.onclick = null;
+          skip.onclick = null;
+          checkbox.onchange = null;
+          document.removeEventListener('keydown', onKeyDown);
+          resolve(shouldStart);
+        }
+        function onKeyDown(event) {
+          if (event.key === 'Escape') finish(false);
+        }
+        checkbox.checked = false;
+        accept.disabled = true;
+        checkbox.onchange = function () { accept.disabled = !checkbox.checked; };
+        skip.onclick = function () { finish(true); };
+        accept.onclick = async function () {
+          if (!checkbox.checked || accept.disabled) return;
+          accept.disabled = true;
+          skip.disabled = true;
+          try {
+            await window.onyuSetDonationIntegrationPreparation(true);
+            if (typeof window.onyuRefreshDonationIntegrationControl === 'function') await window.onyuRefreshDonationIntegrationControl();
+          } catch (error) {
+            console.error('방송 후원 연동 준비 동의 저장 실패:', error);
+            window.alert('준비 동의 기록을 저장하지 못했습니다. 동의 정보는 저장되지 않았으며 게임은 계속 이용할 수 있습니다.');
+          } finally {
+            skip.disabled = false;
+            finish(true);
+          }
+        };
+        overlay.hidden = false;
+        document.addEventListener('keydown', onKeyDown);
+        checkbox.focus();
+      });
+    }).catch(function (error) {
+      console.error('방송 후원 연동 준비 상태 확인 실패:', error);
+      window.alert('방송 후원 연동 준비 상태를 확인하지 못했습니다. 준비 동의 없이 게임을 시작합니다.');
+      return true;
+    });
+  }
+  window.onyuRequestDonationPreparationConsent = requestDonationPreparationConsent;
   function startNewGameAfterAccess(preloadedAssets) {
     if (newGamePreparing && !preloadedAssets) return;
     setNewGamePreparing(true);

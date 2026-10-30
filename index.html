@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
-<link rel="stylesheet" href="css/style.css?v=20260926-4">
+<link rel="stylesheet" href="css/style.css?v=20261030-donation-start-consent">
 <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
@@ -334,8 +334,15 @@
 
       <p class="settings-section-title">서비스 안내</p>
       <div class="settings-row" id="onyu-donation-integration-row" hidden>
-        <div class="settings-row-text"><p class="settings-row-label">방송 후원 자동 연동 <span id="onyu-donation-integration-state">준비 전</span></p><p class="settings-row-sub" id="onyu-donation-integration-description">인증 스트리머만 준비할 수 있습니다.</p></div>
-        <div class="settings-row-control"><button class="settings-link" id="onyu-donation-integration-toggle" type="button">준비 동의</button></div>
+        <div class="settings-row-text"><p class="settings-row-label">방송 후원 자동 연동 <span id="onyu-donation-integration-state">준비 전</span></p><p class="settings-row-sub" id="onyu-donation-integration-description">새 게임 시작 시 준비 동의를 안내합니다.</p></div>
+        <div class="settings-row-control"><button class="settings-link" id="onyu-donation-integration-toggle" type="button" hidden>준비 동의 철회</button></div>
+      </div>
+      <div class="settings-row settings-row-link" id="onyu-donation-demo-row">
+        <div class="settings-row-text">
+          <p class="settings-row-label">방송 후원 연동 시연</p>
+          <p class="settings-row-sub">모의 후원 이벤트로 꾸민 의상 자동 선택 흐름을 확인합니다.</p>
+        </div>
+        <a class="settings-link" href="soop-donation-demo.html" target="_blank" rel="noopener noreferrer">시연 열기 ↗</a>
       </div>
       <div class="settings-row settings-row-link">
         <div class="settings-row-text">
@@ -369,6 +376,26 @@
       </div>
     </div>
   </section>
+
+  <div class="onyu-auth-overlay onyu-donation-consent-overlay" id="onyu-donation-consent-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onyu-donation-consent-title">
+    <div class="onyu-auth-panel onyu-donation-consent-panel">
+      <p class="onyu-auth-kicker">BROADCAST DONATION LINK</p>
+      <h2 id="onyu-donation-consent-title">방송 후원 연동 준비 동의</h2>
+      <p class="onyu-donation-consent-intro">이 동의는 심사 준비를 위한 정보 보관에만 적용됩니다. 게임 이용은 동의 여부와 관계없이 가능합니다.</p>
+      <ul class="onyu-donation-consent-list">
+        <li>인증 스트리머 UID, 인증된 SOOP 아이디·닉네임, 동의 및 만료 시각을 서버에 최대 24시간 보관합니다.</li>
+        <li>동의 철회 시 즉시 삭제하고, 24시간이 지나면 예약된 일회성 서버 작업이 삭제합니다.</li>
+        <li>현재 SOOP 로그인·토큰 저장·채팅·후원 감지는 연결되어 있지 않아 실행되지 않습니다.</li>
+        <li>SOOP 심사 승인 후 실제 방송을 연결할 때는 별도 안내와 동의를 다시 받습니다.</li>
+      </ul>
+      <a class="onyu-donation-demo-link" href="soop-donation-demo.html" target="_blank" rel="noopener noreferrer">모의 후원 시연 보기 ↗</a>
+      <label class="onyu-donation-consent-check"><input type="checkbox" id="onyu-donation-consent-check"><span>위 준비 정보의 24시간 보관에 동의합니다.</span></label>
+      <div class="onyu-auth-actions">
+        <button type="button" id="onyu-donation-consent-accept" disabled>동의하고 게임 시작</button>
+        <button type="button" id="onyu-donation-consent-skip" class="is-secondary">동의 없이 게임 시작</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ 회전 안내(모바일 세로 화면일 때만 CSS로 표시) ============ -->
   <div id="rotate-overlay">
@@ -490,12 +517,12 @@
   <script src="js/engine.js?v=20261008-outfit-dialogue-lock"></script>
   <script src="js/screens.js?v=20261003-1"></script>
   <script src="js/menus.js?v=20261003-1"></script>
-  <script src="js/main.js?v=20261003-1"></script>
+  <script src="js/main.js?v=20261030-donation-start-consent"></script>
   <script src="js/outfit-picker.js?v=20261008-outfit-dialogue-lock"></script>
   <script src="js/sig-opening.js?v=20260917-1"></script>
   <script src="js/telemetry.js"></script>
   <script src="js/devbar.js"></script>
   <script src="js/devbar-links.js"></script>
-  <script type="module" src="js/auth.js?v=20261010-streamer-license-copy"></script>
+  <script type="module" src="js/auth.js?v=20261030-donation-start-consent"></script>
 </body>
 </html>

@@ -173,6 +173,20 @@ button { font-family: inherit; }
   border-radius: 22px; padding: 28px; text-align: center; color: var(--ink);
   box-shadow: 0 22px 60px rgba(61,52,54,.28);
 }
+.onyu-donation-consent-overlay { z-index: 1900; }
+.onyu-donation-consent-panel { width: min(560px, 94vw); max-height: min(88vh, 760px); overflow-y: auto; text-align: left; }
+.onyu-donation-consent-panel .onyu-auth-kicker,
+.onyu-donation-consent-panel h2 { text-align: center; }
+.onyu-donation-consent-panel h2 { font-size: clamp(20px, 3vw, 24px); }
+.onyu-donation-consent-intro { margin: 12px 0 16px; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.onyu-donation-consent-list { display: grid; gap: 9px; margin: 0; padding: 16px 18px 16px 34px; border-radius: 14px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.65; }
+.onyu-donation-consent-list li::marker { color: var(--season-accent); }
+.onyu-donation-demo-link { display: inline-block; margin-top: 14px; color: var(--season-accent); font-size: 12px; font-weight: 800; text-decoration: none; }
+.onyu-donation-demo-link:hover { text-decoration: underline; }
+.onyu-donation-consent-check { display: flex; align-items: flex-start; gap: 9px; margin: 17px 0; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.onyu-donation-consent-check input { margin: 2px 0 0; accent-color: var(--season-accent); }
+.onyu-donation-consent-panel .onyu-auth-actions { text-align: center; }
+.onyu-donation-consent-panel .onyu-auth-actions button:disabled { opacity: .48; cursor: not-allowed; filter: none; }
 .onyu-auth-kicker { margin: 0 0 8px; color: var(--season-accent); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
 .onyu-auth-panel h2 { margin: 0; font-size: 23px; }
 .onyu-auth-panel p:not(.onyu-auth-kicker) { margin: 12px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.65; white-space: pre-line; }

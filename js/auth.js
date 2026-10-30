@@ -45,6 +45,16 @@ const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDon
 const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
 const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
 
+window.onyuGetDonationIntegrationStatus = async function () {
+  const data = (await getDonationIntegrationStatusFn()).data || {};
+  window.onyuAuthState.donationSdkApproved = data.sdkApproved === true;
+  return data;
+};
+window.onyuSetDonationIntegrationPreparation = async function (enabled) {
+  const data = (await setDonationIntegrationPreparationFn({ enabled: enabled === true })).data || {};
+  return data;
+};
+
 window.onyuSubmitPlayerReview = async function (payload) {
   const result = await submitPlayerReviewFn(payload || {});
   return result.data || {};
@@ -91,6 +101,7 @@ window.onyuAuthState = {
   isAdmin: false,
   adminMode: false,
   accessMode: 'viewer',
+  donationSdkApproved: false,
 };
 window.onyuAuth = auth;
 window.onyuDb = db;
@@ -293,6 +304,7 @@ async function refreshAccessState() {
     window.onyuAuthState.isAdmin = false;
     window.onyuAuthState.adminMode = false;
     window.onyuAuthState.accessMode = 'viewer';
+    window.onyuAuthState.donationSdkApproved = false;
     updateAuthBar();
     updateAdminModeControl();
     dispatchAuthChanged();
@@ -327,6 +339,7 @@ async function refreshAccessState() {
       isAdmin: false,
       adminMode: false,
       accessMode: 'viewer',
+      donationSdkApproved: false,
     });
     console.error('온 이유 접근 상태 조회 실패:', e);
   }
@@ -338,26 +351,33 @@ async function refreshAccessState() {
 
 async function refreshDonationIntegrationControl() {
   if (!donationIntegrationRowEl) return;
-  if (window.onyuAuthState.role !== 'streamer' || window.onyuAuthState.isAdmin) { donationIntegrationRowEl.hidden = true; return; }
+  if (window.onyuAuthState.role !== 'streamer' || window.onyuAuthState.isAdmin) { window.onyuAuthState.donationSdkApproved = false; donationIntegrationRowEl.hidden = true; return; }
   donationIntegrationRowEl.hidden = false; donationIntegrationToggleEl.disabled = true;
   try {
-    const data = (await getDonationIntegrationStatusFn()).data || {};
+    const data = await window.onyuGetDonationIntegrationStatus();
     const prepared = data.status === 'preparing';
     donationIntegrationStateEl.textContent = prepared ? '심사 준비 동의됨' : '준비 전';
     donationIntegrationDescriptionEl.textContent = prepared
       ? `준비 동의 만료: ${data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내'}. 만료 후 서버에서 삭제됩니다. 심사 전에는 후원 감지·토큰 저장·자동 선택을 실행하지 않습니다.`
-      : '준비 동의는 24시간 유지된 뒤 만료·삭제됩니다. 심사 승인 후 본인 방송 연동 시 다시 동의할 수 있습니다.';
-    donationIntegrationToggleEl.textContent = prepared ? '준비 동의 철회' : '준비 동의'; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
-  } catch (_) { donationIntegrationDescriptionEl.textContent = '연동 준비 상태를 확인하지 못했습니다.'; }
+      : '새 게임 시작 시 준비 동의를 안내합니다. 동의하지 않아도 게임을 이용할 수 있고, 심사 승인 뒤 실제 방송 연결 때 별도 동의를 받습니다.';
+    donationIntegrationToggleEl.textContent = '준비 동의 철회'; donationIntegrationToggleEl.hidden = !prepared; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
+  } catch (_) {
+    window.onyuAuthState.donationSdkApproved = false;
+    donationIntegrationDescriptionEl.textContent = '연동 준비 상태를 확인하지 못했습니다.';
+    donationIntegrationToggleEl.hidden = true;
+    donationIntegrationToggleEl.disabled = false;
+  }
 }
 
 async function toggleDonationIntegrationPreparation() {
   const prepared = donationIntegrationToggleEl.dataset.prepared === 'true';
-  if (!window.confirm(prepared ? '방송 후원 자동 연동 준비 동의를 철회하고 저장된 준비 정보를 삭제할까요?' : '준비 동의 정보를 서버에 저장합니다. 정보는 24시간 뒤 만료·삭제되며, 현재는 SOOP 후원 감지나 토큰 저장이 실행되지 않습니다. 동의할까요?')) return;
+  if (!prepared || !window.confirm('방송 후원 자동 연동 준비 동의를 철회하고 저장된 준비 정보를 즉시 삭제할까요?')) return;
   donationIntegrationToggleEl.disabled = true;
-  try { await setDonationIntegrationPreparationFn({ enabled: !prepared }); await refreshDonationIntegrationControl(); }
+  try { await window.onyuSetDonationIntegrationPreparation(false); await refreshDonationIntegrationControl(); }
   catch (error) { window.alert(error && error.message ? error.message : '연동 준비 상태를 변경하지 못했습니다.'); await refreshDonationIntegrationControl(); }
 }
+
+window.onyuRefreshDonationIntegrationControl = refreshDonationIntegrationControl;
 
 async function toggleAdminMode() {
   const s = window.onyuAuthState;

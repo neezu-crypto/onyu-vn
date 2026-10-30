@@ -1,4 +1,161 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>온이유 · 방송 후원 자동 선택 시연</title>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#171820;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}.card{width:min(850px,calc(100% - 32px));padding:28px;border-radius:22px;background:#282532;box-shadow:0 30px 70px #0008}.eyebrow{color:#ffc4d7;font-weight:800;letter-spacing:.12em;font-size:12px}h1{margin:7px 0 8px;font-size:28px}.note{color:#d4cbd7;line-height:1.65}.choices{display:flex;gap:16px;margin:24px 0}.choice{flex:1;padding:16px;border:2px solid #625b70;border-radius:16px;text-align:center;background:#201e29}.choice img{height:220px;max-width:100%;object-fit:contain}.choice b{display:block;font-size:18px}.choice.paid{border-color:#ff86af}.choice.selected{background:#5b2640;border-color:#ffb0ca;box-shadow:0 0 0 5px #ff8cb330}.event{padding:14px;border-radius:12px;background:#15141c;color:#c8c1ce;min-height:24px}.event.ok{color:#fff0f5;background:#783250}button{margin-top:16px;border:0;border-radius:10px;padding:12px 16px;background:#ff7fab;color:#26111a;font-weight:800;font-size:15px;cursor:pointer}small{display:block;margin-top:16px;color:#aaa0b1}</style></head>
-<body><main class="card"><div class="eyebrow">SOOP CHAT SDK · REVIEW DEMO</div><h1>별풍선 50개 후원 시 꾸민 의상 자동 확정</h1><p class="note">심사용 시연입니다. 실제 SOOP 로그인, 채팅, 후원, 토큰 저장은 사용하지 않습니다.</p><section class="choices"><div class="choice"><img src="assets/standing/C1-1.png" alt="편한 의상"><b>편한 의상</b></div><div class="choice paid" id="paid"><img src="assets/standing/P1-1.png" alt="꾸민 의상"><b>꾸민 의상</b><span>후원 50개 조건</span></div></section><div class="event" id="event">의상 선택 세션 대기 중 · 실제 서비스에서는 인증 스트리머 본인 방송만 대상</div><button id="trigger">시연: 별풍선 50개 후원 이벤트 수신</button><small>처리 조건: 의상 선택 화면이 열린 상태 · 후원 1회 50개 이상 · 인증된 방송국 ID 일치. 후원자 정보는 저장하지 않습니다.</small></main><script>document.getElementById('trigger').onclick=()=>{const e=document.getElementById('event');document.getElementById('paid').classList.add('selected');e.className='event ok';e.textContent='✓ 별풍선 50개 이벤트 확인 · 꾸민 의상이 자동으로 확정되었습니다.';};</script></body></html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1c1820">
+  <title>온이유 · 방송 후원 연동 모의 시연</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: #17151a; color: #fff8fa; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; padding: 28px 16px; display: grid; place-items: center; background: radial-gradient(ellipse at top, #4a2436 0, #221d25 48%, #17151a 100%); }
+    button, input { font: inherit; }
+    .card { width: min(900px, 100%); padding: clamp(20px, 4vw, 38px); border: 1px solid #ffffff20; border-radius: 26px; background: #26222add; box-shadow: 0 30px 90px #0007; }
+    .eyebrow { color: #ffb2c9; font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+    h1 { margin: 8px 0; font-size: clamp(23px, 4vw, 34px); line-height: 1.25; }
+    .intro { margin: 0; color: #d9cfd4; font-size: 14px; line-height: 1.7; }
+    .notice { display: flex; gap: 12px; align-items: flex-start; margin: 22px 0; padding: 14px 16px; border: 1px solid #ffb2c946; border-radius: 14px; color: #ffe5ed; background: #9c34521d; font-size: 12px; line-height: 1.65; }
+    .notice strong { flex: none; color: #ffb2c9; }
+    .state { min-height: 48px; display: flex; align-items: center; padding: 12px 15px; border-radius: 13px; background: #16141a; color: #d6ced8; font-size: 13px; line-height: 1.5; }
+    .state.ok { color: #ffe5ef; background: #692c48; }
+    .state.warn { color: #fff0c4; background: #58441c; }
+    .outfits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+    .outfit { position: relative; min-width: 0; overflow: hidden; padding: 13px; border: 1px solid #766d7d; border-radius: 18px; text-align: center; background: #1e1b22; transition: border-color .18s, background .18s, transform .18s; }
+    .outfit img { display: block; width: 100%; height: clamp(180px, 33vw, 290px); object-fit: contain; }
+    .outfit b { display: block; margin-top: 8px; font-size: 16px; }
+    .outfit span { display: block; margin-top: 5px; color: #bcb1c0; font-size: 12px; }
+    .outfit.paid { border-color: #d66f94; }
+    .outfit.selected { border-color: #ffb2c9; background: #633047; box-shadow: 0 0 0 3px #ffb2c933; transform: translateY(-2px); }
+    .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 14px; }
+    input { min-width: 0; padding: 11px 13px; border: 1px solid #665e6b; border-radius: 11px; color: #fff; background: #17151a; }
+    button { padding: 11px 17px; border: 0; border-radius: 999px; color: #301923; background: #ff9fbe; font-size: 13px; font-weight: 850; cursor: pointer; }
+    button:hover:not(:disabled) { filter: brightness(1.08); }
+    button:disabled { opacity: .42; cursor: not-allowed; }
+    .secondary { color: #f5e8ee; background: #45404a; }
+    .foot { margin: 17px 0 0; color: #a99faa; font-size: 11px; line-height: 1.65; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    .dialog-backdrop { position: fixed; inset: 0; z-index: 2; display: grid; place-items: center; padding: 18px; background: #000a; backdrop-filter: blur(8px); }
+    .dialog-backdrop[hidden] { display: none; }
+    .dialog { width: min(480px, 100%); padding: 25px; border: 1px solid #ffffff20; border-radius: 22px; background: #29242d; box-shadow: 0 24px 70px #0009; }
+    .dialog h2 { margin: 0; font-size: 22px; }
+    .dialog p, .dialog li { color: #d6ced8; font-size: 12px; line-height: 1.65; }
+    .dialog ul { display: grid; gap: 7px; padding-left: 20px; }
+    .dialog label { display: flex; align-items: flex-start; gap: 8px; margin: 15px 0; color: #fff; font-size: 12px; line-height: 1.5; }
+    .dialog input[type=checkbox] { margin-top: 2px; accent-color: #ff9fbe; }
+    @media (max-width: 580px) { body { padding: 12px; } .outfits { gap: 9px; } .outfit { padding: 9px; } .outfit b { font-size: 14px; } .controls { grid-template-columns: 1fr; } .controls button { width: 100%; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">SOOP CHAT SDK · MOCK EVENT DEMO</div>
+    <h1>별풍선 50개 후원 시 꾸민 의상 자동 선택</h1>
+    <p class="intro">온이유의 방송 후원 연동이 승인된 뒤 제공할 동작을 모의 이벤트로 확인하는 화면입니다.</p>
+    <div class="notice"><strong>모의 시연</strong><span>실제 SOOP 로그인·채팅 연결·후원 이벤트·토큰 저장은 사용하지 않습니다. 입력한 모의 수량은 이 브라우저 화면에서만 처리됩니다.</span></div>
+    <div class="state" id="event-state" role="status" aria-live="polite">게임을 시작하면 본인 방송 연동 안내가 표시됩니다.</div>
+    <section class="outfits" aria-label="의상 선택">
+      <div class="outfit" id="free-outfit"><img src="assets/standing/C1-1.png" alt="편한 의상"><b>편한 의상</b><span>기본 선택</span></div>
+      <div class="outfit paid" id="paid-outfit"><img src="assets/standing/P1-1.png" alt="꾸민 의상"><b>꾸민 의상</b><span>단일 후원 이벤트 50개 이상</span></div>
+    </section>
+    <div class="controls">
+      <input id="donation-count" type="number" min="1" max="1000000" step="1" value="50" aria-label="모의 후원 수량" disabled>
+      <button id="send-event" type="button" disabled>모의 후원 이벤트 보내기</button>
+    </div>
+    <div class="actions">
+      <button id="start-demo" type="button">게임 시작 · 동의 안내 보기</button>
+      <button class="secondary" id="reset-demo" type="button">시연 초기화</button>
+    </div>
+    <p class="foot">처리 기준: 동의 후 열린 의상 선택 세션에서 한 번의 이벤트가 50개 이상일 때만 꾸민 의상을 자동 확정합니다. 여러 이벤트를 합산하지 않으며, 후원자 정보는 입력하거나 저장하지 않습니다. 실제 연결은 SOOP 심사 승인 및 별도 동의 전까지 비활성 상태입니다.</p>
+  </main>
+
+  <div class="dialog-backdrop" id="consent-dialog" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+      <div class="eyebrow">게임 시작 전 안내</div>
+      <h2 id="consent-title">본인 방송 후원 연동</h2>
+      <ul>
+        <li>승인 후에는 인증 스트리머 본인 방송의 후원 이벤트만 의상 선택에 사용합니다.</li>
+        <li>의상 선택 화면이 열린 동안 단일 이벤트 50개 이상이면 꾸민 의상을 자동 확정합니다.</li>
+        <li>이 모의 시연의 확인 동의는 화면 전환만 시뮬레이션하며 서버에 저장되지 않습니다.</li>
+      </ul>
+      <label><input type="checkbox" id="demo-consent-check"><span>안내를 확인했습니다. 모의 게임을 시작합니다.</span></label>
+      <div class="actions">
+        <button id="demo-consent-accept" type="button" disabled>안내 확인 후 시작</button>
+        <button class="secondary" id="demo-consent-skip" type="button">동의 없이 시작</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var state = document.getElementById('event-state');
+      var dialog = document.getElementById('consent-dialog');
+      var checkbox = document.getElementById('demo-consent-check');
+      var accept = document.getElementById('demo-consent-accept');
+      var skip = document.getElementById('demo-consent-skip');
+      var start = document.getElementById('start-demo');
+      var reset = document.getElementById('reset-demo');
+      var count = document.getElementById('donation-count');
+      var send = document.getElementById('send-event');
+      var free = document.getElementById('free-outfit');
+      var paid = document.getElementById('paid-outfit');
+      var active = false;
+      var resolved = false;
+
+      function begin() {
+        dialog.hidden = true;
+        checkbox.checked = false;
+        accept.disabled = true;
+        active = true;
+        resolved = false;
+        count.disabled = false;
+        send.disabled = false;
+        start.disabled = true;
+        free.classList.remove('selected');
+        paid.classList.remove('selected');
+        state.className = 'state';
+        state.textContent = '의상 선택 세션 시작 · 모의 후원 이벤트를 기다리고 있습니다.';
+      }
+
+      start.addEventListener('click', function () { dialog.hidden = false; checkbox.focus(); });
+      checkbox.addEventListener('change', function () { accept.disabled = !checkbox.checked; });
+      accept.addEventListener('click', function () { if (checkbox.checked) begin(); });
+      skip.addEventListener('click', begin);
+      send.addEventListener('click', function () {
+        if (!active || resolved) return;
+        var amount = Number(count.value);
+        if (!Number.isInteger(amount) || amount < 1 || amount > 1000000) {
+          state.className = 'state warn';
+          state.textContent = '모의 후원 수량은 1개 이상 정수로 입력해 주세요.';
+          return;
+        }
+        if (amount < 50) {
+          state.className = 'state warn';
+          state.textContent = '모의 이벤트 ' + amount + '개 · 기준 미달입니다. 세션은 열린 상태로 유지되고 의상은 선택되지 않았습니다.';
+          return;
+        }
+        resolved = true;
+        active = false;
+        count.disabled = true;
+        send.disabled = true;
+        paid.classList.add('selected');
+        state.className = 'state ok';
+        state.textContent = '✓ 모의 이벤트 ' + amount + '개 확인 · 꾸민 의상이 자동으로 확정되었습니다.';
+      });
+      reset.addEventListener('click', function () {
+        dialog.hidden = true;
+        checkbox.checked = false;
+        accept.disabled = true;
+        count.value = '50';
+        count.disabled = true;
+        send.disabled = true;
+        start.disabled = false;
+        active = false;
+        resolved = false;
+        free.classList.remove('selected');
+        paid.classList.remove('selected');
+        state.className = 'state';
+        state.textContent = '게임을 시작하면 본인 방송 연동 안내가 표시됩니다.';
+      });
+    })();
+  </script>
+</body>
+</html>
