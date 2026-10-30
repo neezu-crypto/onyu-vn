@@ -179,6 +179,7 @@ button { font-family: inherit; }
 .onyu-donation-consent-panel h2 { text-align: center; }
 .onyu-donation-consent-panel h2 { font-size: clamp(20px, 3vw, 24px); }
 .onyu-donation-consent-intro { margin: 12px 0 16px; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.onyu-donation-consent-error { margin: -5px 0 12px; color: #a12b32; font-size: 12px; line-height: 1.55; text-align: left; }
 .onyu-donation-consent-list { display: grid; gap: 9px; margin: 0; padding: 16px 18px 16px 34px; border-radius: 14px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.65; }
 .onyu-donation-consent-list li::marker { color: var(--season-accent); }
 .onyu-donation-demo-link { display: inline-block; margin-top: 14px; color: var(--season-accent); font-size: 12px; font-weight: 800; text-decoration: none; }

@@ -211,6 +211,11 @@ function onyuPrepareChapterEntry(chapterId, options) {
   return Promise.resolve(access).then(function (allowed) {
     if (!allowed) return false;
     var requestConsent = window.onyuRequestDonationPreparationConsent;
+    var needsConsent = window.onyuAuthState && window.onyuAuthState.role === 'streamer' && !window.onyuAuthState.isAdmin;
+    if (needsConsent && typeof requestConsent !== 'function') {
+      window.alert('방송 후원 연동 필수 동의 화면을 열 수 없습니다. 새로고침한 뒤 다시 시도해 주세요.');
+      return false;
+    }
     return Promise.resolve(typeof requestConsent === 'function' ? requestConsent() : true).then(function (shouldStart) {
       if (!shouldStart) return false;
       if (typeof options.beforeLoad === 'function') options.beforeLoad();
@@ -617,14 +622,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function requestDonationPreparationConsent() {
     var authState = window.onyuAuthState || {};
-    if (authState.role !== 'streamer' || authState.isAdmin || typeof window.onyuGetDonationIntegrationStatus !== 'function') return Promise.resolve(true);
+    if (authState.role !== 'streamer' || authState.isAdmin) return Promise.resolve(true);
+    if (typeof window.onyuGetDonationIntegrationStatus !== 'function') {
+      window.alert('방송 후원 연동 동의 상태를 확인할 수 없습니다. 동의 후에 게임을 시작할 수 있습니다.');
+      return Promise.resolve(false);
+    }
     return window.onyuGetDonationIntegrationStatus().then(function (status) {
       if (status.status === 'preparing') return true;
       var overlay = document.getElementById('onyu-donation-consent-overlay');
       var checkbox = document.getElementById('onyu-donation-consent-check');
       var accept = document.getElementById('onyu-donation-consent-accept');
-      var skip = document.getElementById('onyu-donation-consent-skip');
-      if (!overlay || !checkbox || !accept || !skip) return true;
+      var decline = document.getElementById('onyu-donation-consent-decline');
+      var errorEl = document.getElementById('onyu-donation-consent-error');
+      if (!overlay || !checkbox || !accept || !decline || !errorEl) {
+        window.alert('필수 동의 화면을 불러오지 못했습니다. 새로고침한 뒤 다시 시도해 주세요.');
+        return false;
+      }
       return new Promise(function (resolve) {
         var settled = false;
         function finish(shouldStart) {
@@ -633,8 +646,11 @@ document.addEventListener('DOMContentLoaded', function () {
           overlay.hidden = true;
           checkbox.checked = false;
           accept.disabled = true;
+          decline.disabled = false;
+          errorEl.hidden = true;
+          errorEl.textContent = '';
           accept.onclick = null;
-          skip.onclick = null;
+          decline.onclick = null;
           checkbox.onchange = null;
           document.removeEventListener('keydown', onKeyDown);
           resolve(shouldStart);
@@ -644,21 +660,43 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         checkbox.checked = false;
         accept.disabled = true;
+        decline.disabled = false;
+        errorEl.hidden = true;
+        errorEl.textContent = '';
         checkbox.onchange = function () { accept.disabled = !checkbox.checked; };
-        skip.onclick = function () { finish(true); };
+        decline.onclick = function () {
+          finish(false);
+          window.alert('필수 동의에 동의하지 않아 게임을 시작하지 않았습니다.');
+        };
         accept.onclick = async function () {
           if (!checkbox.checked || accept.disabled) return;
           accept.disabled = true;
-          skip.disabled = true;
+          decline.disabled = true;
           try {
-            await window.onyuSetDonationIntegrationPreparation(true);
+            if (typeof window.onyuSetDonationIntegrationPreparation !== 'function') throw new Error('동의 저장 기능을 사용할 수 없습니다.');
+            var saved = await window.onyuSetDonationIntegrationPreparation(true);
+            if (!saved || saved.status !== 'preparing') {
+              var verified = await window.onyuGetDonationIntegrationStatus();
+              if (!verified || verified.status !== 'preparing') throw new Error('서버에서 동의 저장을 확인하지 못했습니다.');
+            }
             if (typeof window.onyuRefreshDonationIntegrationControl === 'function') await window.onyuRefreshDonationIntegrationControl();
+            finish(true);
           } catch (error) {
             console.error('방송 후원 연동 준비 동의 저장 실패:', error);
-            window.alert('준비 동의 기록을 저장하지 못했습니다. 동의 정보는 저장되지 않았으며 게임은 계속 이용할 수 있습니다.');
-          } finally {
-            skip.disabled = false;
-            finish(true);
+            var persisted = false;
+            try {
+              var latest = await window.onyuGetDonationIntegrationStatus();
+              persisted = !!latest && latest.status === 'preparing';
+            } catch (_) { /* 확인할 수 없으면 동의가 저장되지 않은 것으로 처리한다. */ }
+            if (persisted) {
+              if (typeof window.onyuRefreshDonationIntegrationControl === 'function') await window.onyuRefreshDonationIntegrationControl();
+              finish(true);
+              return;
+            }
+            errorEl.textContent = '동의 기록을 저장하지 못해 게임을 시작할 수 없습니다. 연결을 확인한 뒤 다시 시도하거나 동의하지 않고 나가 주세요.';
+            errorEl.hidden = false;
+            accept.disabled = !checkbox.checked;
+            decline.disabled = false;
           }
         };
         overlay.hidden = false;
@@ -667,8 +705,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }).catch(function (error) {
       console.error('방송 후원 연동 준비 상태 확인 실패:', error);
-      window.alert('방송 후원 연동 준비 상태를 확인하지 못했습니다. 준비 동의 없이 게임을 시작합니다.');
-      return true;
+      window.alert('방송 후원 동의 상태를 확인하지 못해 게임을 시작할 수 없습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
+      return false;
     });
   }
   window.onyuRequestDonationPreparationConsent = requestDonationPreparationConsent;
