@@ -211,7 +211,7 @@ function onyuPrepareChapterEntry(chapterId, options) {
   return Promise.resolve(access).then(function (allowed) {
     if (!allowed) return false;
     var requestConsent = window.onyuRequestDonationPreparationConsent;
-    var needsConsent = window.onyuAuthState && window.onyuAuthState.role === 'streamer' && !window.onyuAuthState.isAdmin;
+    var needsConsent = window.onyuAuthState && window.onyuAuthState.role === 'streamer';
     if (needsConsent && typeof requestConsent !== 'function') {
       window.alert('방송 후원 연동 필수 동의 화면을 열 수 없습니다. 새로고침한 뒤 다시 시도해 주세요.');
       return false;
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function requestDonationPreparationConsent() {
     var authState = window.onyuAuthState || {};
-    if (authState.role !== 'streamer' || authState.isAdmin) return Promise.resolve(true);
+    if (authState.role !== 'streamer') return Promise.resolve(true);
     if (typeof window.onyuGetDonationIntegrationStatus !== 'function') {
       window.alert('방송 후원 연동 동의 상태를 확인할 수 없습니다. 동의 후에 게임을 시작할 수 있습니다.');
       return Promise.resolve(false);
