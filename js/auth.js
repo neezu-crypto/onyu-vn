@@ -351,7 +351,7 @@ async function refreshAccessState() {
 
 async function refreshDonationIntegrationControl() {
   if (!donationIntegrationRowEl) return;
-  if (window.onyuAuthState.role !== 'streamer' || window.onyuAuthState.isAdmin) { window.onyuAuthState.donationSdkApproved = false; donationIntegrationRowEl.hidden = true; return; }
+  if (window.onyuAuthState.role !== 'streamer') { window.onyuAuthState.donationSdkApproved = false; donationIntegrationRowEl.hidden = true; return; }
   donationIntegrationRowEl.hidden = false; donationIntegrationToggleEl.disabled = true;
   try {
     const data = await window.onyuGetDonationIntegrationStatus();
@@ -359,7 +359,7 @@ async function refreshDonationIntegrationControl() {
     donationIntegrationStateEl.textContent = prepared ? '심사 준비 동의됨' : '준비 전';
     donationIntegrationDescriptionEl.textContent = prepared
       ? `준비 동의 만료: ${data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내'}. 만료 후 서버에서 삭제됩니다. 심사 전에는 후원 감지·토큰 저장·자동 선택을 실행하지 않습니다.`
-      : '새 게임 시작 시 준비 동의를 안내합니다. 동의하지 않아도 게임을 이용할 수 있고, 심사 승인 뒤 실제 방송 연결 때 별도 동의를 받습니다.';
+      : '새 게임·이어하기·챕터 불러오기 전에 필수 준비 동의를 받습니다. 동의하지 않거나 기록 저장에 실패하면 게임에 진입할 수 없습니다. 심사 승인 뒤 실제 방송 연결 때 별도 동의를 받습니다.';
     donationIntegrationToggleEl.textContent = '준비 동의 철회'; donationIntegrationToggleEl.hidden = !prepared; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
   } catch (_) {
     window.onyuAuthState.donationSdkApproved = false;
