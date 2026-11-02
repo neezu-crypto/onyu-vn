@@ -27,6 +27,8 @@
     .outfit.paid { border-color: #d66f94; }
     .outfit.selected { border-color: #ffb2c9; background: #633047; box-shadow: 0 0 0 3px #ffb2c933; transform: translateY(-2px); }
     .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 14px; }
+    .vod-option { display: flex; align-items: center; gap: 8px; color: #d6ced8; font-size: 12px; line-height: 1.4; }
+    .vod-option input { width: 16px; height: 16px; margin: 0; accent-color: #ff9fbe; }
     input { min-width: 0; padding: 11px 13px; border: 1px solid #665e6b; border-radius: 11px; color: #fff; background: #17151a; }
     button { padding: 11px 17px; border: 0; border-radius: 999px; color: #301923; background: #ff9fbe; font-size: 13px; font-weight: 850; cursor: pointer; }
     button:hover:not(:disabled) { filter: brightness(1.08); }
@@ -59,6 +61,8 @@
     <div class="controls">
       <input id="donation-count" type="number" min="1" max="1000000" step="1" value="50" aria-label="모의 후원 수량" disabled>
       <button id="send-event" type="button" disabled>모의 후원 이벤트 보내기</button>
+      <label class="vod-option"><input id="from-vod" type="checkbox" disabled> VOD·다시보기 후원 이벤트</label>
+      <button class="secondary" id="repeat-event" type="button" disabled>같은 이벤트 다시 전달</button>
     </div>
     <div class="actions">
       <button id="start-demo" type="button">게임 시작 · 동의 안내 보기</button>
@@ -73,19 +77,21 @@
       <h2 id="consent-title">본인 방송 후원 연동</h2>
       <ul>
         <li>승인 후에는 인증 스트리머 본인 방송의 후원 이벤트만 의상 선택에 사용합니다.</li>
-        <li>의상 선택 화면이 열린 동안 단일 이벤트 50개 이상이면 꾸민 의상을 자동 확정합니다.</li>
-        <li>실제 연동 시 갱신 토큰은 서버의 Secret Manager에 최대 24시간 보관하고, 접근 토큰은 게임이 열린 브라우저 메모리에만 둡니다. 연동 해제 시 서버 토큰을 삭제하고 연결을 끊습니다.</li>
-        <li>후원자 아이디·닉네임·프로필과 채팅은 저장하지 않습니다. 의상 선택 세션은 확정 즉시, 미확정이면 최대 10분 뒤 삭제합니다.</li>
+        <li>의상 선택 화면이 열린 동안 LIVE 단일 이벤트의 <code>count</code>가 50 이상이고 <code>fromVod</code>가 false일 때만 꾸민 의상을 자동 확정합니다. VOD·다시보기 후원은 제외합니다.</li>
+        <li>후원 이벤트가 중복 전달되어도 열린 의상 선택 세션에서는 한 번만 확정합니다.</li>
+        <li>실제 연동 시 갱신 토큰은 서버의 Secret Manager에 서비스 기준 최대 24시간 보관하고, 접근 토큰은 게임이 열린 브라우저 메모리에만 둡니다. SOOP가 권한 철회를 알리는 갱신 오류를 반환하면 연결을 끊고 자동 재연결을 중지한 뒤 서버 토큰을 삭제합니다.</li>
+        <li>후원자 아이디·닉네임·프로필과 채팅은 저장하지 않습니다. 의상 선택 세션은 확정 후 삭제 요청을 보내고, 미확정이면 10분 만료 시점에 정리 작업이 실행됩니다.</li>
         <li>이 모의 시연의 확인 동의는 화면 전환만 시뮬레이션하며 서버에 저장되지 않습니다.</li>
       </ul>
       <label><input type="checkbox" id="demo-consent-check"><span>안내를 확인했습니다. 모의 게임을 시작합니다.</span></label>
       <div class="actions">
         <button id="demo-consent-accept" type="button" disabled>안내 확인 후 시작</button>
-        <button class="secondary" id="demo-consent-skip" type="button">동의 없이 시작</button>
+        <button class="secondary" id="demo-consent-skip" type="button">동의 없이 나가기</button>
       </div>
     </section>
   </div>
 
+  <script src="js/soop-donation-events.js?v=20261102-soop-donation-server-once"></script>
   <script>
     (function () {
       var state = document.getElementById('event-state');
@@ -96,11 +102,15 @@
       var start = document.getElementById('start-demo');
       var reset = document.getElementById('reset-demo');
       var count = document.getElementById('donation-count');
+      var fromVod = document.getElementById('from-vod');
       var send = document.getElementById('send-event');
+      var repeatEvent = document.getElementById('repeat-event');
       var free = document.getElementById('free-outfit');
       var paid = document.getElementById('paid-outfit');
       var active = false;
       var resolved = false;
+      var eventGate = null;
+      var lastEvent = null;
 
       function begin() {
         dialog.hidden = true;
@@ -108,8 +118,22 @@
         accept.disabled = true;
         active = true;
         resolved = false;
+        lastEvent = null;
+        eventGate = window.createOnyuDonationEventGate(function (summary) {
+          resolved = true;
+          active = false;
+          count.disabled = true;
+          fromVod.disabled = true;
+          send.disabled = true;
+          repeatEvent.disabled = false;
+          paid.classList.add('selected');
+          state.className = 'state ok';
+          state.textContent = '✓ LIVE 모의 이벤트 ' + summary.count + '개 확인 · 꾸민 의상이 한 번 확정되었습니다.';
+        });
         count.disabled = false;
+        fromVod.disabled = false;
         send.disabled = false;
+        repeatEvent.disabled = true;
         start.disabled = true;
         free.classList.remove('selected');
         paid.classList.remove('selected');
@@ -120,7 +144,13 @@
       start.addEventListener('click', function () { dialog.hidden = false; checkbox.focus(); });
       checkbox.addEventListener('change', function () { accept.disabled = !checkbox.checked; });
       accept.addEventListener('click', function () { if (checkbox.checked) begin(); });
-      skip.addEventListener('click', begin);
+      skip.addEventListener('click', function () {
+        dialog.hidden = true;
+        checkbox.checked = false;
+        accept.disabled = true;
+        state.className = 'state warn';
+        state.textContent = '동의하지 않아 시연을 시작하지 않았습니다.';
+      });
       send.addEventListener('click', function () {
         if (!active || resolved) return;
         var amount = Number(count.value);
@@ -129,26 +159,44 @@
           state.textContent = '모의 후원 수량은 1개 이상 정수로 입력해 주세요.';
           return;
         }
-        if (amount < 50) {
+        lastEvent = { count: amount, fromVod: fromVod.checked };
+        var result = eventGate.handle(lastEvent);
+        if (result.reason === 'not-live') {
           state.className = 'state warn';
-          state.textContent = '모의 이벤트 ' + amount + '개 · 기준 미달입니다. 세션은 열린 상태로 유지되고 의상은 선택되지 않았습니다.';
+          state.textContent = 'VOD·다시보기 후원은 제외했습니다. LIVE 후원만 처리합니다.';
           return;
         }
-        resolved = true;
-        active = false;
-        count.disabled = true;
-        send.disabled = true;
-        paid.classList.add('selected');
-        state.className = 'state ok';
-        state.textContent = '✓ 모의 이벤트 ' + amount + '개 확인 · 꾸민 의상이 자동으로 확정되었습니다.';
+        if (result.reason === 'below-threshold') {
+          state.className = 'state warn';
+          state.textContent = 'LIVE 모의 이벤트 ' + amount + '개 · 50개 미만이라 기준에 도달하지 않았습니다.';
+          return;
+        }
+        if (!result.accepted) {
+          state.className = 'state warn';
+          state.textContent = '이 모의 이벤트는 처리할 수 없습니다. 시연을 초기화해 다시 시작해 주세요.';
+        }
+      });
+      repeatEvent.addEventListener('click', function () {
+        if (!eventGate || !lastEvent || !resolved) return;
+        var result = eventGate.handle(lastEvent);
+        if (!result.accepted && result.reason === 'session-consumed') {
+          state.className = 'state warn';
+          state.textContent = '중복 이벤트 전달을 무시했습니다. 꾸민 의상 확정은 이 세션에서 한 번만 처리됩니다.';
+        }
       });
       reset.addEventListener('click', function () {
+        if (eventGate) eventGate.close();
+        eventGate = null;
+        lastEvent = null;
         dialog.hidden = true;
         checkbox.checked = false;
         accept.disabled = true;
         count.value = '50';
+        fromVod.checked = false;
         count.disabled = true;
+        fromVod.disabled = true;
         send.disabled = true;
+        repeatEvent.disabled = true;
         start.disabled = false;
         active = false;
         resolved = false;
