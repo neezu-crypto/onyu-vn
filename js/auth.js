@@ -41,15 +41,50 @@ const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicRevi
 const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
 const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifiedStreamerVisit');
 const getDonationIntegrationStatusFn = httpsCallable(functions, 'onyuGetDonationIntegrationStatus');
+const refreshSoopChatTokenFn = httpsCallable(functions, 'onyuRefreshSoopChatToken');
 const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDonationIntegrationPreparation');
 const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
 const consumeOutfitDonationSessionFn = httpsCallable(functions, 'onyuConsumeOutfitDonationSession');
 const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
+let soopTokenRefreshController = null;
 
 window.onyuGetDonationIntegrationStatus = async function () {
   const data = (await getDonationIntegrationStatusFn()).data || {};
+  window.onyuAuthState.donationIntegrationStatus = String(data.status || 'not-prepared');
   window.onyuAuthState.donationSdkApproved = data.sdkApproved === true;
   return data;
+};
+window.startOnyuSoopTokenRefresh = function (chatSdk, expiresInSeconds, applyAccessToken, onState) {
+  if (typeof window.createOnyuSoopTokenRefreshController !== 'function') {
+    throw new Error('SOOP 토큰 갱신 제어기를 불러오지 못했습니다.');
+  }
+  if (window.onyuAuthState.donationIntegrationStatus !== 'active' || window.onyuAuthState.donationSdkApproved !== true) {
+    throw new Error('SOOP 심사 승인과 활성 연동이 확인되지 않았습니다.');
+  }
+  if (soopTokenRefreshController) soopTokenRefreshController.stop();
+  soopTokenRefreshController = window.createOnyuSoopTokenRefreshController({
+    chatSdk,
+    applyAccessToken,
+    onState,
+    refresh: async function () {
+      try {
+        return (await refreshSoopChatTokenFn()).data || {};
+      } catch (error) {
+        const code = String(error && error.code || '');
+        if (/functions\/(unavailable|deadline-exceeded|resource-exhausted)$/.test(code) || !code) throw error;
+        return { ok: false, retryable: false, reason: code || 'unclassified-auth-error' };
+      }
+    },
+  });
+  if (!soopTokenRefreshController.start(expiresInSeconds)) {
+    soopTokenRefreshController = null;
+    throw new Error('SOOP 토큰 만료 시간이 올바르지 않습니다.');
+  }
+  return soopTokenRefreshController;
+};
+window.stopOnyuSoopTokenRefresh = function () {
+  if (soopTokenRefreshController) soopTokenRefreshController.stop();
+  soopTokenRefreshController = null;
 };
 window.onyuSetDonationIntegrationPreparation = async function (enabled) {
   const data = (await setDonationIntegrationPreparationFn({ enabled: enabled === true })).data || {};
@@ -96,6 +131,8 @@ window.onyuAuthState = {
   user: null,
   realUser: null,
   role: 'anonymous',
+  donationIntegrationStatus: 'not-prepared',
+  donationSdkApproved: false,
   accessStatus: 'none',
   authenticated: false,
   canStartGame: false,
@@ -599,6 +636,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 onAuthStateChanged(auth, async (user) => {
+  window.stopOnyuSoopTokenRefresh();
+  window.onyuAuthState.donationIntegrationStatus = 'not-prepared';
+  window.onyuAuthState.donationSdkApproved = false;
   if (streamerVerifiedUnsubscribe) { streamerVerifiedUnsubscribe(); streamerVerifiedUnsubscribe = null; }
   if (switchApprovalUnsubscribe) { switchApprovalUnsubscribe(); switchApprovalUnsubscribe = null; }
   switchHandoffInProgress = false;
