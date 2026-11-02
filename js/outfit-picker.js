@@ -129,6 +129,8 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   // 호출하지 않는다. 승인 뒤에만 이 화면이 열린 짧은 시간의 서버 세션을 등록한다.
   var donationSessionId = '';
   var outfitPickerFinished = false;
+  var donationEventGate = null;
+  var donationEventHandler = null;
   if (window.onyuAuthState && window.onyuAuthState.role === 'streamer' && window.onyuAuthState.donationSdkApproved === true && typeof window.onyuRegisterOutfitDonationSession === 'function') {
     window.onyuRegisterOutfitDonationSession({ chapterId: chapterId }).then(function (result) {
       donationSessionId = result && result.enabled ? String(result.sessionId || '') : '';
@@ -136,12 +138,39 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
         window.onyuCloseOutfitDonationSession(donationSessionId).catch(function () {});
         donationSessionId = '';
       }
+      if (!outfitPickerFinished && donationSessionId && typeof window.createOnyuDonationEventGate === 'function') {
+        donationEventGate = window.createOnyuDonationEventGate(function (summary) {
+          if (typeof window.onyuConsumeOutfitDonationSession !== 'function') return false;
+          return window.onyuConsumeOutfitDonationSession({
+            sessionId: donationSessionId,
+            count: summary.count,
+            fromVod: false,
+          }).then(function (result) {
+            if (!result || result.accepted !== true) return false;
+            // 서버의 세션 1회 확정이 성공했을 때만 꾸민 의상을 자동 선택한다.
+            if (!outfitPickerFinished && !selecting) choose(choice.paid, null);
+            return true;
+          });
+        });
+        donationEventHandler = donationEventGate.handle;
+        window.onyuHandleSoopDonationEvent = donationEventHandler;
+      }
     }).catch(function () { donationSessionId = ''; });
+  }
+
+  function closeDonationEventBridge() {
+    if (donationEventGate) donationEventGate.close();
+    if (donationEventHandler && window.onyuHandleSoopDonationEvent === donationEventHandler) {
+      delete window.onyuHandleSoopDonationEvent;
+    }
+    donationEventGate = null;
+    donationEventHandler = null;
   }
 
   function finish(prefix) {
     onyuActiveOutfitPicker = null;
     outfitPickerFinished = true;
+    closeDonationEventBridge();
     if (donationSessionId && typeof window.onyuCloseOutfitDonationSession === 'function') {
       window.onyuCloseOutfitDonationSession(donationSessionId).catch(function () {});
       donationSessionId = '';

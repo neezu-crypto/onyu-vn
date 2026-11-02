@@ -43,6 +43,7 @@ const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifi
 const getDonationIntegrationStatusFn = httpsCallable(functions, 'onyuGetDonationIntegrationStatus');
 const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDonationIntegrationPreparation');
 const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
+const consumeOutfitDonationSessionFn = httpsCallable(functions, 'onyuConsumeOutfitDonationSession');
 const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
 
 window.onyuGetDonationIntegrationStatus = async function () {
@@ -70,6 +71,7 @@ window.onyuRequestStreamerVerification = async function (payload) {
   return result.data || {};
 };
 window.onyuRegisterOutfitDonationSession = async function (payload) { return (await registerOutfitDonationSessionFn(payload || {})).data || {}; };
+window.onyuConsumeOutfitDonationSession = async function (payload) { return (await consumeOutfitDonationSessionFn(payload || {})).data || {}; };
 window.onyuCloseOutfitDonationSession = async function (sessionId) { return (await closeOutfitDonationSessionFn({ sessionId })).data || {}; };
 
 window.onyuListPublicPlayerReviews = async function (payload) {
