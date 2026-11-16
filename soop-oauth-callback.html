@@ -1,1 +1,53 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>온이유 방송 연동</title><body style="font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;padding:32px;line-height:1.7"><h1>방송 후원 연동</h1><p>SOOP Consent 심사 재신청을 준비 중입니다. 승인이 완료되고 스트리머가 별도 동의하기 전에는 인증 결과를 토큰으로 교환하거나 저장하지 않고 후원 감지도 시작하지 않습니다.</p><p><a href="index.html">온이유로 돌아가기</a></p></body></html>
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>온이유 방송 연동</title>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;padding:32px;line-height:1.7">
+<h1>방송 후원 연동</h1>
+<p id="msg" role="status">SOOP 연결을 확인하는 중입니다…</p>
+<p><a href="index.html">온이유로 돌아가기</a></p>
+<script type="module">
+// SOOP가 넘긴 1회용 인증 code를 서버에 전달해 토큰으로 교환한다.
+// code는 주소창에서 바로 지우고, 토큰은 이 페이지에서 받거나 저장하지 않는다.
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
+
+const msg = document.getElementById('msg');
+const params = new URLSearchParams(location.search);
+const code = params.get('code') || '';
+history.replaceState(null, '', location.pathname);
+const nonce = sessionStorage.getItem('onyuSoopOauthNonce') || '';
+sessionStorage.removeItem('onyuSoopOauthNonce');
+
+if (!code || !nonce) {
+  msg.textContent = '연결 요청 정보가 없습니다. 게임 설정에서 "SOOP 방송 연결"을 다시 눌러 주세요.';
+} else {
+  const app = initializeApp({
+    apiKey: 'AIzaSyAZcjQPHphENs-Bb7IfdL2qTtOMhJrRP54',
+    authDomain: 'soop-stock-market.firebaseapp.com',
+    projectId: 'soop-stock-market',
+    appId: '1:997788925900:web:cb613d438efec019a3a769',
+  });
+  const auth = getAuth(app);
+  const complete = httpsCallable(getFunctions(app, 'us-central1'), 'onyuCompleteSoopChatConsent');
+  const stop = onAuthStateChanged(auth, async (user) => {
+    stop();
+    if (!user || user.isAnonymous) {
+      msg.textContent = '로그인 정보가 없습니다. 게임에서 인증 스트리머로 로그인한 뒤 다시 연결해 주세요.';
+      return;
+    }
+    try {
+      await complete({ code, nonce });
+      msg.textContent = 'SOOP 방송 연결이 완료되었습니다. 게임으로 돌아갑니다.';
+      location.replace('index.html');
+    } catch (error) {
+      msg.textContent = (error && error.message) || 'SOOP 연결을 완료하지 못했습니다. 게임에서 다시 연결해 주세요.';
+    }
+  });
+}
+</script>
+</body>
+</html>

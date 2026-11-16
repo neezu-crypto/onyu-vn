@@ -46,12 +46,17 @@ const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDon
 const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
 const consumeOutfitDonationSessionFn = httpsCallable(functions, 'onyuConsumeOutfitDonationSession');
 const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
+const startSoopChatConsentFn = httpsCallable(functions, 'onyuStartSoopChatConsent');
+const ONYU_SOOP_NONCE_KEY = 'onyuSoopOauthNonce';
+let soopChatConnection = null;
 let soopTokenRefreshController = null;
 
 window.onyuGetDonationIntegrationStatus = async function () {
   const data = (await getDonationIntegrationStatusFn()).data || {};
   window.onyuAuthState.donationIntegrationStatus = String(data.status || 'not-prepared');
   window.onyuAuthState.donationSdkApproved = data.sdkApproved === true;
+  window.onyuAuthState.donationSdkAvailable = data.sdkAvailable === true;
+  window.onyuAuthState.donationClientId = data.clientId ? String(data.clientId) : '';
   return data;
 };
 window.startOnyuSoopTokenRefresh = function (chatSdk, expiresInSeconds, applyAccessToken, onState) {
@@ -68,7 +73,7 @@ window.startOnyuSoopTokenRefresh = function (chatSdk, expiresInSeconds, applyAcc
     onState,
     refresh: async function () {
       try {
-        return (await refreshSoopChatTokenFn()).data || {};
+        return (await refreshSoopChatTokenFn({})).data || {};
       } catch (error) {
         const code = String(error && error.code || '');
         if (/functions\/(unavailable|deadline-exceeded|resource-exhausted)$/.test(code) || !code) throw error;
@@ -86,6 +91,53 @@ window.stopOnyuSoopTokenRefresh = function () {
   if (soopTokenRefreshController) soopTokenRefreshController.stop();
   soopTokenRefreshController = null;
 };
+// SOOP 동의 화면으로 보낸다. 1회용 nonce는 이 탭의 sessionStorage에만 두고 콜백에서 지운다.
+window.onyuStartSoopChatConsent = async function () {
+  const data = (await startSoopChatConsentFn()).data || {};
+  if (!data.authorizeUrl || !data.nonce) throw new Error('SOOP 연결을 시작하지 못했습니다.');
+  sessionStorage.setItem(ONYU_SOOP_NONCE_KEY, String(data.nonce));
+  window.location.assign(String(data.authorizeUrl));
+};
+
+function disconnectOnyuSoopChat() {
+  window.stopOnyuSoopTokenRefresh();
+  if (soopChatConnection) soopChatConnection.disconnect();
+  soopChatConnection = null;
+}
+
+// 실제 연동(active)인 인증 스트리머 탭에서만 Chat SDK에 붙는다. Access Token은 메모리에만 둔다.
+async function connectOnyuSoopChat() {
+  const s = window.onyuAuthState;
+  if (soopChatConnection || s.role !== 'streamer' || s.donationIntegrationStatus !== 'active' || s.donationSdkApproved !== true || !s.donationClientId) return false;
+  if (typeof window.createOnyuSoopChatConnection !== 'function') return false;
+  const tokens = (await refreshSoopChatTokenFn({ reconnect: true })).data || {};
+  if (!tokens.ok || !tokens.accessToken) {
+    await refreshDonationIntegrationControl();
+    return false;
+  }
+  const ChatSDK = await window.loadOnyuSoopChatSdk();
+  const connection = window.createOnyuSoopChatConnection({
+    ChatSDK,
+    clientId: s.donationClientId,
+    // 열린 의상 선택 화면이 있을 때만 outfit-picker가 이 처리기를 등록한다.
+    onDonation: (summary) => { if (typeof window.onyuHandleSoopDonationEvent === 'function') window.onyuHandleSoopDonationEvent(summary); },
+    onState: (state) => { s.donationChatState = state.state; },
+  });
+  soopChatConnection = connection;
+  try {
+    await connection.connect(tokens.accessToken);
+    window.startOnyuSoopTokenRefresh(connection.sdkForRefresh, Number(tokens.expiresInSeconds), connection.applyAccessToken, (state) => {
+      if (state.reconnectAllowed === false) { soopChatConnection = null; refreshDonationIntegrationControl(); }
+    });
+  } catch (error) {
+    disconnectOnyuSoopChat();
+    throw error;
+  }
+  return true;
+}
+window.onyuConnectSoopChat = connectOnyuSoopChat;
+window.addEventListener('pagehide', disconnectOnyuSoopChat);
+
 window.onyuSetDonationIntegrationPreparation = async function (enabled) {
   const data = (await setDonationIntegrationPreparationFn({ enabled: enabled === true })).data || {};
   return data;
@@ -173,6 +225,7 @@ const donationIntegrationRowEl = document.getElementById('onyu-donation-integrat
 const donationIntegrationStateEl = document.getElementById('onyu-donation-integration-state');
 const donationIntegrationDescriptionEl = document.getElementById('onyu-donation-integration-description');
 const donationIntegrationToggleEl = document.getElementById('onyu-donation-integration-toggle');
+const donationIntegrationConnectEl = document.getElementById('onyu-donation-integration-connect');
 const streamerMessageEl = document.getElementById('onyu-streamer-message');
 const streamerForm = document.getElementById('onyu-streamer-form');
 const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
@@ -395,11 +448,28 @@ async function refreshDonationIntegrationControl() {
   try {
     const data = await window.onyuGetDonationIntegrationStatus();
     const prepared = data.status === 'preparing';
-    donationIntegrationStateEl.textContent = prepared ? '심사 준비 동의됨' : '준비 전';
-    donationIntegrationDescriptionEl.textContent = prepared
-      ? `준비 동의 만료: ${data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내'}. 만료 후 서버에서 삭제됩니다. 심사 전에는 후원 감지·토큰 저장·자동 선택을 실행하지 않습니다.`
-      : '새 게임·이어하기·챕터 불러오기 전에 필수 준비 동의를 받습니다. 동의하지 않거나 기록 저장에 실패하면 게임에 진입할 수 없습니다. 심사 승인 뒤 실제 방송 연결 때 별도 동의를 받습니다.';
-    donationIntegrationToggleEl.textContent = '준비 동의 철회'; donationIntegrationToggleEl.hidden = !prepared; donationIntegrationToggleEl.dataset.prepared = prepared ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
+    const active = data.status === 'active' && window.onyuAuthState.donationSdkApproved === true;
+    const expiryText = data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내';
+    if (active) {
+      donationIntegrationStateEl.textContent = 'SOOP 방송 연결됨';
+      donationIntegrationDescriptionEl.textContent = `연동 만료: ${expiryText}. 만료·해제 때 서버의 SOOP 토큰을 삭제합니다. 의상 선택 화면이 열려 있을 때 한 번에 별풍선 50개 이상(LIVE)이 오면 꾸민 의상을 확정합니다.`;
+    } else if (prepared) {
+      donationIntegrationStateEl.textContent = window.onyuAuthState.donationSdkAvailable ? 'SOOP 연결 전' : '준비 동의됨';
+      donationIntegrationDescriptionEl.textContent = window.onyuAuthState.donationSdkAvailable
+        ? `준비 동의 만료: ${expiryText}. 'SOOP 방송 연결'을 누르면 SOOP 동의 화면으로 이동합니다. 연결해야 후원 감지가 시작됩니다.`
+        : `준비 동의 만료: ${expiryText}. 만료 후 서버에서 삭제됩니다. SOOP 방송 연결이 열리기 전에는 후원 감지·토큰 저장·자동 선택을 실행하지 않습니다.`;
+    } else {
+      donationIntegrationStateEl.textContent = data.status === 'reauthorization-required' ? '다시 연결 필요' : '준비 전';
+      donationIntegrationDescriptionEl.textContent = '새 게임·이어하기·챕터 불러오기 전에 필수 준비 동의를 받습니다. 동의하지 않거나 기록 저장에 실패하면 게임에 진입할 수 없습니다. 실제 방송 연결은 SOOP 동의 화면에서 별도로 동의합니다.';
+    }
+    if (donationIntegrationConnectEl) {
+      donationIntegrationConnectEl.hidden = !(prepared && window.onyuAuthState.donationSdkAvailable);
+      donationIntegrationConnectEl.disabled = false;
+    }
+    const revocable = prepared || active || data.status === 'reauthorization-required';
+    donationIntegrationToggleEl.textContent = active ? '방송 연결 해제' : '준비 동의 철회'; donationIntegrationToggleEl.hidden = !revocable; donationIntegrationToggleEl.dataset.prepared = revocable ? 'true' : 'false'; donationIntegrationToggleEl.disabled = false;
+    if (active) connectOnyuSoopChat().catch(() => { donationIntegrationStateEl.textContent = 'SOOP 연결 실패(다시 열면 재시도)'; });
+    else disconnectOnyuSoopChat();
   } catch (_) {
     window.onyuAuthState.donationSdkApproved = false;
     donationIntegrationDescriptionEl.textContent = '연동 준비 상태를 확인하지 못했습니다.';
@@ -410,8 +480,9 @@ async function refreshDonationIntegrationControl() {
 
 async function toggleDonationIntegrationPreparation() {
   const prepared = donationIntegrationToggleEl.dataset.prepared === 'true';
-  if (!prepared || !window.confirm('방송 후원 자동 연동 준비 동의를 철회하고 저장된 준비 정보를 즉시 삭제할까요?')) return;
+  if (!prepared || !window.confirm('방송 후원 연동을 해제하고 저장된 연동 정보와 SOOP 토큰을 즉시 삭제할까요?')) return;
   donationIntegrationToggleEl.disabled = true;
+  disconnectOnyuSoopChat();
   try { await window.onyuSetDonationIntegrationPreparation(false); await refreshDonationIntegrationControl(); }
   catch (error) { window.alert(error && error.message ? error.message : '연동 준비 상태를 변경하지 못했습니다.'); await refreshDonationIntegrationControl(); }
 }
@@ -628,6 +699,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
   if (donationIntegrationToggleEl) donationIntegrationToggleEl.addEventListener('click', toggleDonationIntegrationPreparation);
+  if (donationIntegrationConnectEl) donationIntegrationConnectEl.addEventListener('click', async () => {
+    donationIntegrationConnectEl.disabled = true;
+    try { await window.onyuStartSoopChatConsent(); }
+    catch (error) { window.alert(error && error.message ? error.message : 'SOOP 연결을 시작하지 못했습니다.'); donationIntegrationConnectEl.disabled = false; }
+  });
   streamerForm.addEventListener('submit', submitStreamerVerification);
   [loginOverlay, streamerOverlay].forEach((overlay) => {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAll(); });

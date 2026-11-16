@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return Promise.resolve(false);
     }
     return window.onyuGetDonationIntegrationStatus().then(function (status) {
-      if (status.status === 'preparing') return true;
+      if (status.status === 'preparing' || status.status === 'active') return true;
       var overlay = document.getElementById('onyu-donation-consent-overlay');
       var checkbox = document.getElementById('onyu-donation-consent-check');
       var accept = document.getElementById('onyu-donation-consent-accept');
@@ -675,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function () {
           try {
             if (typeof window.onyuSetDonationIntegrationPreparation !== 'function') throw new Error('동의 저장 기능을 사용할 수 없습니다.');
             var saved = await window.onyuSetDonationIntegrationPreparation(true);
-            if (!saved || saved.status !== 'preparing') {
+            if (!saved || (saved.status !== 'preparing' && saved.status !== 'active')) {
               var verified = await window.onyuGetDonationIntegrationStatus();
               if (!verified || verified.status !== 'preparing') throw new Error('서버에서 동의 저장을 확인하지 못했습니다.');
             }

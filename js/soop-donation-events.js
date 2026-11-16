@@ -1,7 +1,6 @@
 /*
  * SOOP 후원 이벤트 판정 게이트.
- * Chat SDK가 실제 연결된 뒤 이벤트 리스너는 이 게이트로만 이벤트를 전달한다.
- * 방송 연결과 토큰 발급은 SOOP Consent 승인 전까지 비활성 상태다.
+ * Chat SDK 연결 어댑터(soop-chat-connection.js)는 이 게이트로만 이벤트를 전달한다.
  */
 (function (global) {
   'use strict';
@@ -14,6 +13,11 @@
     // LIVE 방송만 처리한다. 필드가 없거나 true인 이벤트는 안전하게 제외한다.
     if (event.fromVod !== false) {
       return { accepted: false, reason: 'not-live' };
+    }
+
+    // 중계방으로 들어온 후원은 본인 방송 후원이 아니므로 제외한다.
+    if (event.relaysBroad === true) {
+      return { accepted: false, reason: 'relay-broadcast' };
     }
 
     var count = Number(event.count);

@@ -43,3 +43,15 @@ test('only a single LIVE event with at least 50 items reaches the confirmation c
   assert.equal(JSON.stringify(gate.handle({ count: 50, fromVod: false, userNickname: 'must-not-be-forwarded' })), JSON.stringify({ accepted: true, count: 50 }));
   assert.equal(calls, 1);
 });
+
+test('중계방·VOD·49개 후원은 확정하지 않고 LIVE 50개만 확정한다', () => {
+  const createGate = loadGate();
+  let calls = 0;
+  const gate = createGate(() => { calls += 1; return true; });
+  assert.equal(gate.handle({ count: 50, fromVod: false, relaysBroad: true }).reason, 'relay-broadcast');
+  assert.equal(gate.handle({ count: 50, fromVod: true }).reason, 'not-live');
+  assert.equal(gate.handle({ count: 49, fromVod: false }).reason, 'below-threshold');
+  assert.equal(calls, 0);
+  assert.equal(gate.handle({ count: 50, fromVod: false, relaysBroad: false }).accepted, true);
+  assert.equal(calls, 1);
+});
