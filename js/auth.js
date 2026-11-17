@@ -767,3 +767,38 @@ onAuthStateChanged(auth, async (user) => {
   if (auth.currentUser?.uid !== uid) return;
   if (!readyResolved) { readyResolved = true; readyResolve(); }
 });
+
+// 스트리머 인증 신청: SOOP 검색을 기본 방식으로(2026-11-18). 기존 입력칸은 "직접 입력하기"로 남긴다.
+// 검색은 팬페이지 서버의 streamerFanPageVerifySearch(로그인 필요, 사용자별 횟수 제한)를 함께 쓴다.
+{
+  const soopVerifySearchFn = httpsCallable(functions, 'streamerFanPageVerifySearch');
+  const attachSoopVerifySearchTo = (nicknameId, soopIdId, steps) => {
+    if (!document.getElementById(nicknameId) || !document.getElementById(soopIdId)) return;
+    window.attachSoopVerifySearch({
+      nicknameInput: nicknameId,
+      soopIdInput: soopIdId,
+      steps,
+      search: async (query) => {
+        await auth.authStateReady();
+        if (!auth.currentUser) await signInAnonymously(auth);
+        const result = await soopVerifySearchFn({ query });
+        return (result.data && result.data.streamers) || [];
+      },
+    });
+  };
+  const attachAll = () => {
+  attachSoopVerifySearchTo('onyu-streamer-nickname', 'onyu-streamer-soopid', {
+      root: 'onyu-streamer-overlay',
+      isPending: () => !document.getElementById('onyu-streamer-note').hidden,
+      afterSelect: ['onyu-streamer-submit'],
+      pendingOnly: ['onyu-streamer-check'],
+    });
+  };
+  if (window.attachSoopVerifySearch) attachAll();
+  else {
+    const script = document.createElement('script');
+    script.src = new URL('./soop-verify-search.js?v=20261118-svs1', import.meta.url).href;
+    script.onload = attachAll;
+    document.head.appendChild(script);
+  }
+}
