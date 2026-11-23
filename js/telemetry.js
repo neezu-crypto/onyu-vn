@@ -96,8 +96,16 @@
     });
   }
 
+  // 비용 절감(2026-11-24): 소리·화면 전환·설정 조작처럼 자주 나오고 운영 판단에 쓰지 않는 이벤트는 보내지 않는다.
+  var SKIPPED_EVENTS = {
+    presence_heartbeat: true, sfx_played: true, bgm_play_started: true, bgm_changed: true,
+    transition_started: true, transition_completed: true, settings_changed: true,
+    input_blocked_during_transition: true, autosave_created: true,
+  };
+
   window.onyuTelemetryTrack = function (eventName, data) {
     if (typeof eventName !== 'string' || !/^[a-z][a-z0-9_]{1,39}$/.test(eventName)) return;
+    if (SKIPPED_EVENTS[eventName]) return;
     var event = cleanData(data);
     event.event = eventName;
     event.eventId = randomId('e');

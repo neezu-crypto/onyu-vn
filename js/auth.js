@@ -10,7 +10,7 @@ import {
   getAuth, GoogleAuthProvider, signInAnonymously, signInWithPopup,
   signInWithCustomToken, signOut, linkWithPopup, onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import { getDatabase, ref, set, onValue, onDisconnect } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
 
 const firebaseConfig = {
@@ -235,8 +235,6 @@ const streamerNote = document.getElementById('onyu-streamer-note');
 const streamerNoteCodeBtn = document.getElementById('onyu-streamer-note-code');
 const streamerNoteStatus = document.getElementById('onyu-streamer-note-status');
 let streamerRequestSubmitted = false;
-let presenceTimer = null;
-let presenceRef = null;
 let streamerVerifiedUnsubscribe = null;
 let switchApprovalUnsubscribe = null;
 let switchHandoffInProgress = false;
@@ -264,25 +262,6 @@ async function handleOnyuStreamerSwitchApproval(uid, requestId) {
     switchHandoffInProgress = false;
     console.error('승인된 스트리머 계정 자동 전환 실패:', error);
   }
-}
-
-function stopPresence() {
-  if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
-  presenceRef = null;
-}
-
-function startPresence(user) {
-  stopPresence();
-  if (!user || !user.uid) return;
-  presenceRef = ref(db, 'presence/onyuVn/' + user.uid);
-  const heartbeat = function () {
-    if (!presenceRef) return;
-    set(presenceRef, { lastSeen: Date.now(), connectedAt: user.metadata && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() }).catch(function () {});
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('presence_heartbeat');
-  };
-  heartbeat();
-  onDisconnect(presenceRef).remove().catch(function () {});
-  presenceTimer = setInterval(heartbeat, 60000);
 }
 
 function setStreamerSubmitState(submitted, pending) {
@@ -724,7 +703,6 @@ onAuthStateChanged(auth, async (user) => {
   }
   window.onyuAuthState.realUser = user && !user.isAnonymous ? user : null;
   if (!user) {
-    stopPresence();
     signInAnonymously(auth)
       .catch((e) => console.error('익명 로그인 실패:', e))
       .finally(() => {
@@ -757,7 +735,6 @@ onAuthStateChanged(auth, async (user) => {
     const requestId = snapshot.val() && snapshot.val().requestId;
     if (requestId) handleOnyuStreamerSwitchApproval(uid, String(requestId));
   }, (error) => console.error('계정 전환 승인 신호 구독 실패:', error));
-  startPresence(user);
   if (!user.isAnonymous) {
     logVerifiedOnyuStreamerVisitFn().catch((error) => {
       console.warn('온이유 인증 스트리머 접속 알림 기록 실패:', error);
