@@ -18,11 +18,13 @@ import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/
 const msg = document.getElementById('msg');
 const params = new URLSearchParams(location.search);
 const code = params.get('code') || '';
+// SOOP가 돌려준 state는 이 탭에서 시작할 때 보낸 1회용 값과 같아야 한다. 서버가 한 번 더 대조하고 폐기한다.
+const state = params.get('state') || '';
 history.replaceState(null, '', location.pathname);
 const nonce = sessionStorage.getItem('onyuSoopOauthNonce') || '';
 sessionStorage.removeItem('onyuSoopOauthNonce');
 
-if (!code || !nonce) {
+if (!code || !nonce || (state && state !== nonce)) {
   msg.textContent = '연결 요청 정보가 없습니다. 게임 설정에서 "SOOP 방송 연결"을 다시 눌러 주세요.';
 } else {
   const app = initializeApp({
