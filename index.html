@@ -386,8 +386,8 @@
       <ul class="onyu-donation-consent-list">
         <li>인증 스트리머 UID, 인증된 SOOP 아이디·닉네임, 동의 및 만료 시각을 서버에 최대 24시간 보관합니다.</li>
         <li>동의 철회 시 즉시 삭제하고, 24시간이 지나면 예약된 일회성 서버 작업이 삭제합니다.</li>
-        <li>현재 SOOP 로그인·토큰 저장·채팅·후원 감지는 연결되어 있지 않아 실행되지 않습니다.</li>
-        <li>SOOP 심사 승인 후 실제 방송을 연결할 때는 별도 안내와 동의를 다시 받습니다.</li>
+        <li>이 준비 동의만으로는 SOOP에 연결되지 않으며, 토큰 저장·채팅·후원 감지를 실행하지 않습니다.</li>
+        <li>실제 방송 연결은 게임 설정의 "SOOP 방송 연결"에서 SOOP 동의 화면을 거쳐 따로 동의합니다. 후원 감지는 방송 중에만 동작합니다.</li>
       </ul>
       <a class="onyu-donation-demo-link" href="soop-donation-demo.html" target="_blank" rel="noopener noreferrer">모의 후원 시연 보기 ↗</a>
       <label class="onyu-donation-consent-check"><input type="checkbox" id="onyu-donation-consent-check"><span>위 준비 정보의 24시간 보관에 동의합니다.</span></label>
@@ -528,6 +528,6 @@
   <script src="js/telemetry.js?v=20261124-cost1"></script>
   <script src="js/devbar.js"></script>
   <script src="js/devbar-links.js"></script>
-  <script type="module" src="js/auth.js?v=20261124-sdk-gate"></script>
+  <script type="module" src="js/auth.js?v=20261124-offline-notice"></script>
 </body>
 </html>
