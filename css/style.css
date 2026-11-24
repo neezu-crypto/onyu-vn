@@ -583,6 +583,15 @@ button { font-family: inherit; }
 .slider-pct { font-size: 11.5px; color: var(--muted); width: 34px; text-align: right; flex-shrink: 0; }
 .settings-link { color: var(--season-accent); font-size: 12px; font-weight: 800; text-decoration: none; white-space: nowrap; }
 .settings-link:hover { text-decoration: underline; }
+/* 설정 행 안의 동작 버튼(방송 후원 연동 연결·철회). 기본 버튼 테두리 대신 알약 모양으로 통일 */
+.settings-pill-btn { font-family: inherit; font-size: 12px; font-weight: 800; line-height: 1; white-space: nowrap; color: var(--season-accent); background: none; border: 1.5px solid var(--season-wash); border-radius: 999px; padding: 8px 14px; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.settings-pill-btn:hover { border-color: var(--season-accent); }
+.settings-pill-btn.is-primary { color: #fff; background: var(--season-accent); border-color: var(--season-accent); }
+.settings-pill-btn.is-primary:hover { filter: brightness(1.06); }
+.settings-pill-btn:disabled { opacity: .5; cursor: default; }
+.settings-pill-btn[hidden] { display: none; }
+.settings-pill-btn:focus-visible { outline: 2px solid var(--season-accent); outline-offset: 2px; }
+.settings-state-badge { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--paper-strong); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-size: 11px; font-weight: 700; vertical-align: 1px; }
 
 .segmented { display: inline-flex; background: var(--paper-strong); border-radius: 999px; padding: 3px; box-shadow: inset 0 0 0 1px var(--line); }
 .segmented button { font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 15px; border-radius: 999px; border: none; background: none; color: var(--muted); cursor: pointer; }
@@ -895,3 +904,9 @@ button { font-family: inherit; }
 .ending-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ending-thumb.is-unlocked { cursor: pointer; }
 .ending-thumb.is-unlocked .ending-name { position: relative; z-index: 1; background: rgba(0, 0, 0, 0.4); color: #fff; padding: 4px 10px; border-radius: 999px; }
+
+/* 좁은 화면: 방송 후원 연동 행은 버튼 두 개가 글을 밀어내지 않도록 아래 줄로 내린다 */
+@media (max-width: 560px) {
+  #onyu-donation-integration-row { flex-wrap: wrap; }
+  #onyu-donation-integration-row .settings-row-text { max-width: 100%; }
+}
