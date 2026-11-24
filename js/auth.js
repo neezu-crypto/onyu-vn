@@ -656,8 +656,9 @@ async function ensureGameAccess() {
   }
   // 스트리머 플레이는 꾸민 의상을 별풍선 후원으로만 해금하므로, SOOP 후원 연동이
   // 승인되기 전에는 새 게임·이어하기·챕터 불러오기 모두 진입을 막고 안내한다.
-  // donationSdkApproved는 위 refreshAccessState에서 서버 상태로 방금 갱신된 값이다.
-  if (s.role === 'streamer' && s.donationSdkApproved !== true) {
+  // 2026-11-24: 막는 기준은 서버 스위치(sdkAvailable)다. 스트리머별 SOOP 연결(sdkApproved)은
+  // 게임 진입 때 받는 준비 동의 뒤 설정에서 하므로, 그것을 기준으로 막으면 누구도 들어갈 수 없다.
+  if (s.role === 'streamer' && s.donationSdkAvailable !== true) {
     pendingGameStartAuthorization = false;
     window.alert(STREAMER_DONATION_PENDING_NOTICE);
     return false;
