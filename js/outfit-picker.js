@@ -98,11 +98,15 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
   onyuEl.outfitPaidBadge.textContent = '시청자에게 ' + priceLabel + '를 선물받으면\n의상 선택 가능합니다.';
   onyuEl.outfitConfirmPrice.textContent = priceLabel;
 
-  // 접근 허가를 받은 모든 역할은 추가 의상도 비용이나 후원 확인 없이 선택한다.
-  var hasFreeGameAccess = !!(window.onyuAuthState && window.onyuAuthState.canStartGame);
+  // 스트리머로 플레이할 때(관리자의 스트리머 모드 포함)는 꾸민 의상을 카드로 직접
+  // 고를 수 없고, 의상 선택 화면이 열린 동안 받은 LIVE 별풍선 후원(서버 세션 1회
+  // 확정)으로만 해금된다. 그 밖의 접근 허가 역할은 기존처럼 바로 선택한다.
+  var donationOnly = !!(window.onyuAuthState && window.onyuAuthState.role === 'streamer');
+  var hasFreeGameAccess = !donationOnly && !!(window.onyuAuthState && window.onyuAuthState.canStartGame);
   onyuEl.outfitPaidCard.classList.toggle('is-paid', !hasFreeGameAccess);
+  onyuEl.outfitPaidCard.classList.remove('is-nudge');
   onyuEl.outfitPaidBadge.hidden = hasFreeGameAccess;
-  onyuEl.outfitConfirmModal.hidden = hasFreeGameAccess;
+  onyuEl.outfitConfirmModal.hidden = hasFreeGameAccess || donationOnly;
 
   // 의상을 고르기 전까진 대사(이전 챕터의 마지막 줄이 아직 남아있는 상태)도,
   // 스탠딩 일러스트(고르기 전이라 아직 어떤 의상인지도 안 정해진 기본 스프라이트)도
@@ -230,6 +234,14 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     }
     if (selecting || promptOpen) return;
     if (hasFreeGameAccess) { selecting = true; finish(choice.paid); return; }
+    if (donationOnly) {
+      // 후원 전용: 눌러도 선택되지 않고 안내 배지만 한 번 흔들어 조건을 알린다.
+      var card = onyuEl.outfitPaidCard;
+      card.classList.remove('is-nudge');
+      void card.offsetWidth;
+      card.classList.add('is-nudge');
+      return;
+    }
     promptOpen = true;
     onyuEl.outfitConfirmModal.hidden = false;
     if (reduceMotion) {

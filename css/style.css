@@ -705,6 +705,13 @@ button { font-family: inherit; }
   border-radius: 14px; background: var(--season-soft);
 }
 .outfit-card.is-paid img { filter: blur(8px); }
+.outfit-card.is-nudge .outfit-paid-badge { animation: onyu-badge-nudge .45s ease; }
+@keyframes onyu-badge-nudge {
+  0%, 100% { transform: translateX(-50%); }
+  25% { transform: translateX(calc(-50% - 6px)); }
+  75% { transform: translateX(calc(-50% + 6px)); }
+}
+@media (prefers-reduced-motion: reduce) { .outfit-card.is-nudge .outfit-paid-badge { animation: none; outline: 2px solid #fff; } }
 .outfit-card-label { font-size: 15px; font-weight: 700; color: var(--ink); }
 .outfit-paid-badge {
   position: absolute; top: 30px; left: 50%; transform: translateX(-50%);

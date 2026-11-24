@@ -618,6 +618,8 @@ async function renewStreamerVerificationCode() {
   } catch (e) { streamerNoteStatus.textContent = '새 코드 발급에 실패했습니다: ' + (e.message || e); }
 }
 
+const STREAMER_DONATION_PENDING_NOTICE = 'SOOP 후원 연동을 준비 중입니다.\n스트리머 계정 플레이는 후원 연동이 열린 뒤 이용할 수 있어요. 조금만 기다려 주세요.';
+
 async function ensureGameAccess() {
   await window.onyuAuthReady;
   await refreshAccessState();
@@ -631,6 +633,14 @@ async function ensureGameAccess() {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
     window.alert('무료 이용 권한을 확인하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.');
+    return false;
+  }
+  // 스트리머 플레이는 꾸민 의상을 별풍선 후원으로만 해금하므로, SOOP 후원 연동이
+  // 승인되기 전에는 새 게임·이어하기·챕터 불러오기 모두 진입을 막고 안내한다.
+  // donationSdkApproved는 위 refreshAccessState에서 서버 상태로 방금 갱신된 값이다.
+  if (s.role === 'streamer' && s.donationSdkApproved !== true) {
+    pendingGameStartAuthorization = false;
+    window.alert(STREAMER_DONATION_PENDING_NOTICE);
     return false;
   }
   try {
