@@ -451,7 +451,7 @@ async function refreshDonationIntegrationControl() {
       // SOOP Chat SDK는 방송 중에만 접속된다(꺼져 있으면 invalid-chat-info / 104 "진행중인 방송이 없습니다").
       const offline = error && (error.code === 'invalid-chat-info' || /\(104\)|진행중인 방송이 없/.test(String(error.message || '')));
       donationIntegrationStateEl.textContent = offline ? '방송 대기 중' : 'SOOP 연결 실패(다시 열면 재시도)';
-      if (offline) donationIntegrationDescriptionEl.textContent = expiryText ? `연동 만료: ${expiryText}. 지금은 방송 중이 아니에요.` : '지금은 방송 중이 아니에요. 방송을 켠 뒤 게임을 다시 열면 채팅에 연결되고 후원 감지가 시작돼요.';
+      if (offline) donationIntegrationDescriptionEl.textContent = `${expiryText ? `연동 만료: ${expiryText}. ` : ''}지금은 방송 중이 아니에요. 방송을 켠 뒤 게임을 다시 열면 채팅에 연결되고 후원 감지가 시작돼요.`;
     });
     else disconnectOnyuSoopChat();
   } catch (_) {
