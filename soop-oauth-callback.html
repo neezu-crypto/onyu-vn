@@ -37,7 +37,8 @@ if (!code || !nonce || (state && state !== nonce)) {
   const complete = httpsCallable(getFunctions(app, 'us-central1'), 'onyuCompleteSoopChatConsent');
   const stop = onAuthStateChanged(auth, async (user) => {
     stop();
-    if (!user || user.isAnonymous) {
+    // 스트리머 인증만 받은 계정은 익명 로그인일 수 있다. 인증 스트리머 여부는 서버가 다시 확인한다.
+    if (!user) {
       msg.textContent = '로그인 정보가 없습니다. 게임에서 인증 스트리머로 로그인한 뒤 다시 연결해 주세요.';
       return;
     }
