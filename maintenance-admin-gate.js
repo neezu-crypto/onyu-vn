@@ -18,7 +18,6 @@ const firebaseConfig = {
 const SERVICE_ID = 'onyuVn';
 const PAUSE_FLAG_URL = 'https://soop-stock-market-default-rtdb.firebaseio.com/servicePause/onyuVn.json';
 const DEFAULT_PAUSED = true;
-const PAUSE_POLL_MS = 20 * 1000;
 const PAUSE_FETCH_TIMEOUT_MS = 5000;
 const PAGE_APP_WAIT_MS = 4000;
 
@@ -170,7 +169,6 @@ function connectToPageFirebase(startedAt = Date.now()) {
 createGate();
 if (DEFAULT_PAUSED) lockPage();
 render('페이지를 준비하고 있습니다.', false);
+//  온이유만 예외(2026-11-24): 비용 절감을 위해 접속할 때 1회만 읽는다. 일시정지를 켜고 끈 결과는 새로고침해야 반영된다.
 void readPauseFlag();
-setInterval(() => { void readPauseFlag(); }, PAUSE_POLL_MS);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void readPauseFlag(); });
 connectToPageFirebase();
