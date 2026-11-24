@@ -620,15 +620,34 @@ async function renewStreamerVerificationCode() {
 
 const STREAMER_DONATION_PENDING_NOTICE = 'SOOP 후원 연동을 준비 중입니다.\n스트리머 계정 플레이는 후원 연동이 열린 뒤 이용할 수 있어요. 조금만 기다려 주세요.';
 
+// 로그인 후 하던 동작 이어가기(2026-11-24, 공통 지침 §1.2.5): 로그인이 필요해 막힌 버튼(새 게임·이어하기·챕터 불러오기)을
+// 기억했다가, 로그인·스트리머 인증으로 권한이 생기면 같은 버튼을 다시 눌러 준다. 로그인 창을 그냥 닫으면 잊는다.
+let lastGameActionButton = null;
+let resumeAfterLoginButton = null;
+document.addEventListener('click', (event) => {
+  const button = event.target && event.target.closest ? event.target.closest('button') : null;
+  if (button && !button.closest('.onyu-auth-overlay')) lastGameActionButton = button;
+}, true);
+document.addEventListener('onyu-auth-changed', (event) => {
+  const s = event.detail || {};
+  if (!resumeAfterLoginButton || !(s.isAdmin || s.authenticated)) return;
+  const button = resumeAfterLoginButton;
+  resumeAfterLoginButton = null;
+  if (!document.body.contains(button) || button.disabled) return;
+  setTimeout(() => { closeAll(); button.click(); }, 0);
+});
+
 async function ensureGameAccess() {
   await window.onyuAuthReady;
   await refreshAccessState();
   const s = window.onyuAuthState;
   if (!s.isAdmin && !s.authenticated) {
     pendingGameStartAuthorization = false;
+    resumeAfterLoginButton = lastGameActionButton;
     openLoginModal();
     return false;
   }
+  resumeAfterLoginButton = null;
   if (!s.canStartGame) {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
@@ -683,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('onyu-google-login').addEventListener('click', loginWithGoogle);
   document.getElementById('onyu-kakao-login').addEventListener('click', loginWithKakao);
   document.getElementById('onyu-streamer-verify').addEventListener('click', openStreamerModal);
-  document.getElementById('onyu-login-close').addEventListener('click', closeAll);
+  document.getElementById('onyu-login-close').addEventListener('click', () => { resumeAfterLoginButton = null; closeAll(); });
   document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
   document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
   document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
