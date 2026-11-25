@@ -109,6 +109,7 @@
     }
     $('production-inquiry-back-btn').textContent = entry === 'ending' ? '← 엔딩으로' : entry === 'settings' ? '← 설정으로' : '← 타이틀로';
     onyuShowScreen('production-inquiry');
+    $('screen-production-inquiry').scrollTop = 0;
     refreshEligibility();
   }
 
@@ -192,8 +193,7 @@
     }
     $('production-inquiry-back-btn').textContent = '← 타이틀로';
     state.entry = state.entry === 'settings' ? 'settings' : 'done';
-    var inner = document.querySelector('.production-inner');
-    if (inner) inner.scrollTop = 0;
+    $('screen-production-inquiry').scrollTop = 0;
   }
 
   function step(delta) {

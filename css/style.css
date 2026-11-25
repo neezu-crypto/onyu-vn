@@ -436,7 +436,7 @@ button { font-family: inherit; }
 .name-error { font-size: 14px; color: var(--season-accent); margin: 8px 0 0; min-height: 1.2em; }
 
 /* ================= 챕터선택 · 갤러리 · 저장 · 설정 공용 ================= */
-#screen-chapters, #screen-gallery, #screen-save, #screen-settings, #screen-review { background: var(--paper); overflow-y: auto; }
+#screen-chapters, #screen-gallery, #screen-save, #screen-settings, #screen-review, #screen-production-inquiry { background: var(--paper); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
 .sub-topbar {
   /* .screen 자체가 devbar 높이만큼 내려가 있으므로 sticky 기준은 화면 내부의
