@@ -911,6 +911,8 @@ onAuthStateChanged(auth, async (user) => {
       afterSelect: ['onyu-streamer-submit'],
       pendingOnly: ['onyu-streamer-check'],
     });
+    // 미연시 제작 신청: 일반 유저가 제작 대상 스트리머를 고른다(서버가 SOOP에서 다시 확인).
+    attachSoopVerifySearchTo('production-target-nickname', 'production-target-soopid');
   };
   if (window.attachSoopVerifySearch) attachAll();
   else {

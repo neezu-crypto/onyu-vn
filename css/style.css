@@ -948,3 +948,38 @@ button { font-family: inherit; }
   .backlog-hint-mouse { display: none; }
   .backlog-hint-touch { display: inline; }
 }
+
+/* 미연시 제작 신청(2026-11-26 캐시 결제) */
+.production-step { margin: 0 0 18px; padding: 16px 18px; border-radius: 16px; background: rgba(255, 255, 255, .72); box-shadow: 0 4px 16px rgba(120, 70, 90, .08); }
+.production-step-title { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 16px; color: #4a3a40; }
+.production-step-title span { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--season-accent, #b0566f); color: #fff; font-size: 13px; }
+.production-self { margin: 0; font-weight: 800; color: #4a3a40; }
+.production-hidden-input { width: 100%; box-sizing: border-box; min-height: 40px; margin-bottom: 6px; padding: 8px 11px; border: 1px solid rgba(160, 90, 120, .3); border-radius: 10px; font: inherit; }
+.production-note { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(255, 214, 226, .45); font-size: 13px; line-height: 1.6; color: #5a4248; }
+.production-slider-row { display: flex; align-items: center; gap: 10px; }
+.production-slider-row input[type="range"] { flex: 1; accent-color: var(--season-accent, #b0566f); }
+.production-step-btn { width: 40px; height: 40px; flex: 0 0 auto; border: none; border-radius: 50%; background: rgba(160, 90, 120, .14); font-size: 20px; font-weight: 800; cursor: pointer; }
+.production-step-btn:disabled { opacity: .35; cursor: default; }
+.production-estimate { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.production-estimate div { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 12px; background: rgba(255, 240, 245, .9); text-align: center; }
+.production-estimate small { font-size: 11px; color: #8d7a80; }
+.production-estimate b { font-size: 18px; color: var(--season-accent, #b0566f); }
+.production-estimate em { font-style: normal; font-size: 12px; color: #6d5a60; }
+.production-hint { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #6d5a60; }
+.production-small { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: #8d7a80; }
+.production-cash { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.production-cash p { margin: 0; font-size: 14px; }
+.production-cash b.is-short { color: #c0392b; }
+.production-charge-link { padding: 7px 12px; border-radius: 999px; background: rgba(160, 90, 120, .12); color: #7a3a52; font-size: 13px; font-weight: 800; text-decoration: none; }
+.production-charge-link.is-strong { background: var(--season-accent, #b0566f); color: #fff; }
+.production-refresh { padding: 6px 10px; border: 1px solid rgba(160, 90, 120, .3); border-radius: 999px; background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
+.production-check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; line-height: 1.5; color: #4a3a40; cursor: pointer; }
+.production-check input { margin-top: 3px; flex: 0 0 auto; accent-color: var(--season-accent, #b0566f); }
+.production-done-card { margin: 0 0 14px; padding: 16px 18px; border-radius: 16px; background: rgba(255, 255, 255, .8); }
+.production-done-card p { margin: 4px 0; }
+.production-done-card b { font-size: 22px; letter-spacing: 2px; color: var(--season-accent, #b0566f); }
+.production-message { margin: 10px 0; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1px dashed rgba(160, 90, 120, .4); font-size: 14px; line-height: 1.6; user-select: text; }
+@media (max-width: 560px) {
+  .production-step { padding: 14px 14px; }
+  .production-estimate b { font-size: 15px; }
+}

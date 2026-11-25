@@ -1058,7 +1058,8 @@ function onyuShowEndingScreen(endingId) {
   var isLoverEnding = endingId === 'lover';
   document.getElementById('ending-title-btn').hidden = isLoverEnding;
   document.getElementById('ending-review-btn').hidden = !isLoverEnding;
-  document.getElementById('ending-production-inquiry-btn').hidden = !isLoverEnding || !(window.onyuAuthState && window.onyuAuthState.role === 'streamer');
+  // 2026-11-26 누구나 신청(로그인은 누를 때 안내).
+  document.getElementById('ending-production-inquiry-btn').hidden = !isLoverEnding;
   onyuTrack('ending_reached', { endingId: endingId || '' });
   onyuTrack('ending_title_revealed', { endingId: endingId || '' });
   onyuEl.endingOverlay.hidden = false;

@@ -303,34 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     onyuMaybeShowBootSplash(function () { onyuSwapScreen('title'); });
   });
 
-  function resetStreamerProductionInquiryForm() {
-    document.getElementById('streamer-production-inquiry-details').value = '';
-    document.getElementById('streamer-production-inquiry-details').disabled = false;
-    document.getElementById('streamer-production-inquiry-submit').disabled = false;
-    document.getElementById('streamer-production-inquiry-submit').textContent = '제작 문의 보내기';
-    document.getElementById('streamer-production-inquiry-status').textContent = '';
-  }
-
-  document.getElementById('ending-production-inquiry-btn').addEventListener('click', function () {
-    if (!window.ONYU_STATE || window.ONYU_STATE.lastEndingId !== 'lover') return;
-    if (!window.onyuAuthState || window.onyuAuthState.role !== 'streamer') return;
-    resetStreamerProductionInquiryForm();
-    onyuEl.endingOverlay.classList.remove('is-active');
-    onyuEl.endingOverlay.hidden = true;
-    onyuShowScreen('production-inquiry');
-  });
-
-  document.getElementById('production-inquiry-back-btn').addEventListener('click', function () {
-    onyuRunTransition({}, function () {
-      onyuSwapScreen('play');
-      onyuEl.endingOverlay.hidden = false;
-      requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });
-    });
-  });
-
-  document.getElementById('production-inquiry-title-btn').addEventListener('click', function () {
-    document.getElementById('ending-title-btn').click();
-  });
+  // 미연시 제작 신청 화면은 js/production-request.js가 맡는다(2026-11-26 캐시 결제).
 
   document.getElementById('ending-review-btn').addEventListener('click', function () {
     onyuEl.endingOverlay.classList.remove('is-active');
@@ -379,10 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var verifiedStreamer = event.detail && event.detail.role === 'streamer';
     var toggle = document.querySelector('.review-promote-toggle');
     var help = document.getElementById('review-promote-help');
-    var inquiryButton = document.getElementById('ending-production-inquiry-btn');
-    var onLoverEnding = window.ONYU_STATE && window.ONYU_STATE.lastEndingId === 'lover' && onyuEl.endingOverlay && !onyuEl.endingOverlay.hidden;
     if (toggle) toggle.hidden = verifiedStreamer;
-    if (inquiryButton) inquiryButton.hidden = !(verifiedStreamer && onLoverEnding);
     if (help) {
       help.hidden = verifiedStreamer;
       if (verifiedStreamer) help.textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
@@ -452,44 +422,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ? '후기를 저장하지 못했어요: ' + error.message
         : '후기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
       console.error('온이유 플레이 후기 저장 실패:', error);
-    }
-  });
-
-  document.getElementById('streamer-production-inquiry-submit').addEventListener('click', async function () {
-    var button = this;
-    var details = document.getElementById('streamer-production-inquiry-details');
-    var status = document.getElementById('streamer-production-inquiry-status');
-    var description = details.value.trim();
-    if (button.disabled) return;
-    if (!description) {
-      status.textContent = '원하는 이야기와 제작 방향을 적어 주세요.';
-      details.focus();
-      return;
-    }
-    if (description.length > 3000) {
-      status.textContent = '문의 내용은 3,000자 이내로 작성해 주세요.';
-      return;
-    }
-    if (typeof window.onyuSubmitStreamerProductionInquiry !== 'function') {
-      status.textContent = '제작 문의를 준비 중이에요. 잠시 후 다시 시도해 주세요.';
-      return;
-    }
-    button.disabled = true;
-    details.disabled = true;
-    button.textContent = '접수 중…';
-    status.textContent = '';
-    try {
-      await window.onyuSubmitStreamerProductionInquiry({ description: description });
-      button.textContent = '문의 접수 완료';
-      status.textContent = '제작 문의가 접수됐어요. 관리자 확인 후 연락을 기다려 주세요.';
-    } catch (error) {
-      button.disabled = false;
-      details.disabled = false;
-      button.textContent = '제작 문의 보내기';
-      status.textContent = error && error.message
-        ? '문의 접수에 실패했어요: ' + error.message
-        : '문의 접수에 실패했어요. 잠시 후 다시 시도해 주세요.';
-      console.error('미연시 제작 문의 접수 실패:', error);
     }
   });
 
