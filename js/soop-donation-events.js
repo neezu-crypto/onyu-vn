@@ -5,7 +5,7 @@
 (function (global) {
   'use strict';
 
-  function checkEvent(event) {
+  function checkEvent(event, threshold) {
     if (!event || typeof event !== 'object') {
       return { accepted: false, reason: 'invalid-event' };
     }
@@ -24,7 +24,7 @@
     if (!Number.isSafeInteger(count) || count < 1) {
       return { accepted: false, reason: 'invalid-count' };
     }
-    if (count < 50) {
+    if (count < threshold) {
       return { accepted: false, reason: 'below-threshold', count: count };
     }
 
@@ -32,7 +32,9 @@
     return { accepted: true, count: count };
   }
 
-  function createOnyuDonationEventGate(onAccepted) {
+  // threshold: 서버가 세션 등록 때 알려 준 단가(기본 50, 관리자 테스트 계정 1). 서버도 같은 값으로 다시 검사한다.
+  function createOnyuDonationEventGate(onAccepted, options) {
+    var threshold = options && Number.isSafeInteger(options.threshold) && options.threshold >= 1 ? options.threshold : 50;
     var closed = false;
     var consumed = false;
     var pending = false;
@@ -43,7 +45,7 @@
         if (consumed) return { accepted: false, reason: 'session-consumed' };
         if (pending) return { accepted: false, reason: 'event-pending' };
 
-        var result = checkEvent(event);
+        var result = checkEvent(event, threshold);
         if (!result.accepted) return result;
 
         // 서버 처리가 끝날 때까지 후속 이벤트를 막고, 성공한 경우에만 세션을 소비한다.

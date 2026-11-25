@@ -155,7 +155,13 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
             if (!outfitPickerFinished && !selecting) choose(choice.paid, null);
             return true;
           });
-        });
+        }, { threshold: result.threshold });
+        // 서버가 다른 단가(관리자 테스트 1개)를 주면 화면 안내도 맞춘다.
+        if (Number.isSafeInteger(result.threshold) && result.threshold !== choice.price) {
+          var testLabel = '별풍선 ' + result.threshold + '개';
+          onyuEl.outfitPaidBadge.textContent = '시청자에게 ' + testLabel + '를 선물받으면\n의상 선택 가능합니다.';
+          onyuEl.outfitConfirmPrice.textContent = testLabel;
+        }
         donationEventHandler = donationEventGate.handle;
         window.onyuHandleSoopDonationEvent = donationEventHandler;
       }
