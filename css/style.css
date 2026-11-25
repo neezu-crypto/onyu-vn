@@ -722,6 +722,17 @@ button { font-family: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { .outfit-card.is-nudge .outfit-paid-badge { animation: none; outline: 2px solid #fff; } }
 .outfit-card-label { font-size: 15px; font-weight: 700; color: var(--ink); }
+/* 후원으로 꾸민 의상이 열릴 때(2026-11-26) */
+.outfit-card img { transition: filter .8s ease; }
+.outfit-card.is-donation-reveal { animation: onyu-donation-pop .8s ease both; border-color: #ffd36e; box-shadow: 0 0 0 4px rgba(255,211,110,.55), 0 0 42px rgba(255,190,120,.75); }
+@keyframes onyu-donation-pop { 0% { transform: scale(1); } 45% { transform: scale(1.05); } 100% { transform: scale(1.03); } }
+.outfit-card.is-donation-reveal .outfit-paid-badge { display: none; }
+.outfit-donation-burst { position: absolute; left: 50%; top: 45%; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.outfit-donation-burst span { position: absolute; left: 0; top: 0; color: #ffd36e; text-shadow: 0 0 8px rgba(255,160,190,.9); opacity: 0; animation: onyu-donation-spark 1.4s ease-out forwards; }
+@keyframes onyu-donation-spark { 0% { transform: translate(-50%,-50%) scale(.4); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; } }
+.outfit-donation-banner { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 5; padding: 14px 28px; border-radius: 999px; background: linear-gradient(135deg,#ff8fb4,#ffb86b); color: #fff; font-size: clamp(16px, 2.2vw, 26px); font-weight: 900; box-shadow: 0 10px 30px rgba(120,40,70,.35); white-space: nowrap; animation: onyu-donation-banner .45s ease both; }
+@keyframes onyu-donation-banner { from { opacity: 0; transform: translate(-50%,-14px); } to { opacity: 1; transform: translate(-50%,0); } }
+@media (prefers-reduced-motion: reduce) { .outfit-card.is-donation-reveal, .outfit-donation-banner { animation: none; } .outfit-donation-burst { display: none; } }
 .outfit-paid-badge {
   position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
   background: var(--season-accent); color: #fff; font-size: 13.5px; font-weight: 800;

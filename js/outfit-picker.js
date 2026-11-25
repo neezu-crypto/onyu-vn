@@ -152,7 +152,11 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
           }).then(function (result) {
             if (!result || result.accepted !== true) return false;
             // 서버의 세션 1회 확정이 성공했을 때만 꾸민 의상을 자동 선택한다.
-            if (!outfitPickerFinished && !selecting) choose(choice.paid, null);
+            // 후원 반영 연출(약 2.5초) 뒤에 꾸민 의상으로 진행한다. 연출 중 카드 클릭은 막는다.
+            if (!outfitPickerFinished && !selecting) {
+              selecting = true;
+              onyuCelebrateOutfitDonation(reduceMotion, function () { selecting = false; choose(choice.paid, null); });
+            }
             return true;
           });
         }, { threshold: result.threshold });
@@ -269,4 +273,49 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     promptOpen = false;
     closeConfirm();
   };
+}
+
+// 후원으로 꾸민 의상이 열릴 때의 연출(2026-11-26): 블러가 풀리며 카드가 빛나고, 반짝이가 퍼지고,
+// 화면 위에 안내 띠가 뜬 뒤 효과음과 함께 진행한다. 후원자 정보는 표시하지 않는다.
+// 시간 기준(CSS 애니메이션·setTimeout)이라 주사율과 무관하고, 동작 줄이기면 띠와 소리만 쓴다.
+var ONYU_DONATION_REVEAL_MS = 2500;
+function onyuCelebrateOutfitDonation(reduceMotion, done) {
+  var overlay = onyuEl.outfitPickerOverlay;
+  var card = onyuEl.outfitPaidCard;
+  var finished = false;
+  function end() {
+    if (finished) return;
+    finished = true;
+    if (banner.parentNode) banner.parentNode.removeChild(banner);
+    if (burst && burst.parentNode) burst.parentNode.removeChild(burst);
+    card.classList.remove('is-donation-reveal');
+    done();
+  }
+  var banner = document.createElement('div');
+  banner.className = 'outfit-donation-banner';
+  banner.setAttribute('role', 'status');
+  banner.textContent = '🎈 시청자 후원으로 꾸민 의상이 열렸어요!';
+  overlay.appendChild(banner);
+  if (typeof onyuAudioPlaySfx === 'function') onyuAudioPlaySfx('gallery-unlock');
+  var burst = null;
+  card.classList.remove('is-paid');
+  if (!reduceMotion) {
+    card.classList.add('is-donation-reveal');
+    burst = document.createElement('div');
+    burst.className = 'outfit-donation-burst';
+    var marks = ['✦', '♥', '✧', '★', '♡'];
+    for (var i = 0; i < 30; i++) {
+      var spark = document.createElement('span');
+      var angle = (Math.PI * 2 * i) / 30 + Math.random() * 0.3;
+      var distance = 140 + Math.random() * 180;
+      spark.textContent = marks[i % marks.length];
+      spark.style.setProperty('--dx', Math.round(Math.cos(angle) * distance) + 'px');
+      spark.style.setProperty('--dy', Math.round(Math.sin(angle) * distance) + 'px');
+      spark.style.animationDelay = Math.round(Math.random() * 250) + 'ms';
+      spark.style.fontSize = (22 + Math.round(Math.random() * 20)) + 'px';
+      burst.appendChild(spark);
+    }
+    card.appendChild(burst);
+  }
+  setTimeout(end, reduceMotion ? 1500 : ONYU_DONATION_REVEAL_MS);
 }
