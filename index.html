@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>당신이 여기에 온 이유</title>
-<link rel="stylesheet" href="css/style.css?v=20261126-donation-reveal">
+<link rel="stylesheet" href="css/style.css?v=20261126-backlog">
 <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body data-season="spring">
@@ -76,6 +76,7 @@
       <span class="play-chapter-tag" id="play-chapter-tag">CH.01</span>
       <div class="play-icons">
         <button class="play-icon-btn" id="play-ui-toggle-btn" aria-label="UI 숨기기" aria-pressed="false">👁️</button>
+        <button class="play-icon-btn" id="play-backlog-btn" aria-label="지난 대사 보기 (L)" title="지난 대사 보기 (L)">📜</button>
         <button class="play-icon-btn" id="play-save-btn" aria-label="저장">💾</button>
         <button class="play-icon-btn" id="play-settings-btn" aria-label="설정">⚙️</button>
       </div>
@@ -96,6 +97,17 @@
         </div>
         <div class="choice-list" id="play-choice-list"></div>
         <p class="play-situation" id="play-situation"></p>
+      </div>
+    </div>
+
+    <div class="backlog-overlay" id="play-backlog" hidden role="dialog" aria-modal="true" aria-labelledby="play-backlog-title">
+      <div class="backlog-panel">
+        <div class="backlog-head">
+          <h2 id="play-backlog-title">지난 대사</h2>
+          <button type="button" class="backlog-close" id="play-backlog-close" aria-label="닫기">✕</button>
+        </div>
+        <div class="backlog-list" id="play-backlog-list"></div>
+        <p class="backlog-hint">현재 챕터의 대사만 보여요 · 닫기: 빈 곳 클릭, Esc, L</p>
       </div>
     </div>
 
@@ -516,10 +528,10 @@
   <script src="js/save.js?v=20261126-webp"></script>
   <script src="js/audio.js?v=20260918-1"></script>
   <script src="js/particles.js"></script>
-  <script src="js/engine.js?v=20261126-webp"></script>
+  <script src="js/engine.js?v=20261126-backlog"></script>
   <script src="js/screens.js?v=20261003-1"></script>
   <script src="js/menus.js?v=20261126-webp"></script>
-  <script src="js/main.js?v=20261126-webp"></script>
+  <script src="js/main.js?v=20261126-backlog"></script>
   <script src="js/soop-donation-refresh-controller.js?v=20261102-soop-token-refresh-prep"></script>
   <script src="js/soop-donation-events.js?v=20261126-test-threshold"></script>
   <script src="js/soop-chat-connection.js?v=20261116-soop-chat-connect"></script>

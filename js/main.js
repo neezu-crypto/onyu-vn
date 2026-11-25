@@ -260,6 +260,9 @@ document.addEventListener('DOMContentLoaded', function () {
   onyuBootLoadSettings();
 
   onyuEl.bg = document.getElementById('play-bg');
+  onyuEl.backlogOverlay = document.getElementById('play-backlog');
+  onyuEl.backlogList = document.getElementById('play-backlog-list');
+  onyuEl.backlogClose = document.getElementById('play-backlog-close');
   onyuEl.chapterTag = document.getElementById('play-chapter-tag');
   onyuEl.spriteWrap = document.getElementById('play-sprite-wrap');
   onyuEl.spriteImg = document.getElementById('play-sprite-img');
@@ -523,7 +526,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!activeScreen || activeScreen.dataset.screen !== 'play') return;
     var target = e.target;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) return;
-    if (e.key === 'h' || e.key === 'H') {
+    if (onyuBacklogIsOpen()) {
+      if (e.key === 'Escape' || e.key === 'l' || e.key === 'L') { e.preventDefault(); onyuCloseBacklog(); }
+      return;
+    }
+    if ((e.key === 'l' || e.key === 'L') && !onyuUiHidden) {
+      e.preventDefault();
+      onyuOpenBacklog();
+    } else if (e.key === 'h' || e.key === 'H') {
       e.preventDefault();
       onyuToggleUi();
     } else if (e.key === 'Escape' && onyuUiHidden) {
@@ -811,6 +821,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // 화면이 title-save를 통해서도 열리지만, onyuReturnScreen이 'play'인지 'title'인지에
   // 따라 menus.js가 슬롯 클릭 동작을 저장/불러오기로 다르게 배선한다.
   document.getElementById('play-save-btn').addEventListener('click', function () { onyuNavigateTo('save'); });
+  document.getElementById('play-backlog-btn').addEventListener('click', function (e) { e.stopPropagation(); onyuOpenBacklog(); });
+  onyuEl.backlogClose.addEventListener('click', function (e) { e.stopPropagation(); onyuCloseBacklog(); });
+  onyuEl.backlogOverlay.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (e.target === onyuEl.backlogOverlay) onyuCloseBacklog();
+  });
+  // 대사 중 마우스 휠을 위로 굴리면 지난 대사를 연다(미연시 관례).
+  document.getElementById('screen-play').addEventListener('wheel', function (e) {
+    if (e.deltaY < 0 && !onyuBacklogIsOpen() && !onyuUiHidden && !e.target.closest('.backlog-overlay')) onyuOpenBacklog();
+  }, { passive: true });
   document.getElementById('play-settings-btn').addEventListener('click', function () { onyuNavigateTo('settings'); });
 
   document.querySelectorAll('[data-back]').forEach(function (btn) {

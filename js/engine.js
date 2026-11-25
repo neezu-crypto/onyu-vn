@@ -12,7 +12,11 @@ var onyuCurrentBg = null; // 재사용 배경 13종(b1~b13) 중 현재 표시할
 var onyuAutoAdvanceTimer = null; // 설정 "진행 방식: 자동"용 예약 타이머
 var onyuGamePaused = false; // 설정·UI 숨김 중 대사/자동 진행 일시정지
 var onyuUiHidden = false; // 플레이 장면 감상용 UI 숨김 상태(세이브하지 않음)
-var onyuPauseReasons = { settings: false, uiHidden: false, outfitPicker: false };
+var onyuPauseReasons = { settings: false, uiHidden: false, outfitPicker: false, backlog: false };
+// 지난 대사 기록(2026-11-26). 저장 파일에는 넣지 않고 이번 접속의 현재 챕터만 메모리에 둔다.
+var ONYU_BACKLOG_MAX = 200;
+var onyuBacklog = [];
+var onyuBacklogLastNode = null;
 var onyuPendingResumeProgress = null; // save.js가 불러온 장면. 다음 onyuStartChapter에서 한 번만 소비한다.
 
 function onyuTrack(eventName, data) {
@@ -238,6 +242,7 @@ function onyuStartChapter(chapterId) {
   // onyuTransitionDepth가 이미 1 이상이라 onyuRunTransition이 추가 페이드 없이
   // callback을 바로 실행한다(그래서 이중 페이드가 겹치지 않는다).
   onyuRunTransition({}, function () {
+    onyuBacklogReset();
     var idx = onyuChapterIndexById(chapterId);
     if (idx === -1) { console.error('알 수 없는 챕터', chapterId); return; }
     window.onyuGameSessionActive = true;
@@ -452,6 +457,10 @@ function onyuRenderCurrentNode() {
     onyuEl.spriteWrap.classList.toggle('is-hidden', absent);
   }
 
+  if ((node.type === 'narration' || node.type === 'line') && onyuBacklogLastNode !== node) {
+    onyuBacklogLastNode = node;
+    onyuBacklogPush(node.type === 'line' ? (node.speakerLabel || onyuSpeakerLabel(node.speaker)) : '', node.text, '');
+  }
   if (node.type === 'narration') {
     onyuEl.speakerTag.hidden = true;
     onyuStartTypewriter(node.text, node.slow);
@@ -819,6 +828,7 @@ function onyuHandleDialogueClick() {
   // 의상 선택이 열려 있거나 닫히는 중에는 화면의 빈 곳을 눌러도 대사가 진행되지
   // 않게 한다. 선택 확정 후 페이드가 끝나고 오버레이가 숨겨질 때까지 유지한다.
   if (onyuEl.outfitPickerOverlay && !onyuEl.outfitPickerOverlay.hidden) return;
+  if (onyuBacklogIsOpen()) return;
   onyuMaybeRecoverFullscreen();
   if (onyuAdminHoldSuppressClick) {
     onyuAdminHoldSuppressClick = false;
@@ -875,6 +885,7 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
     choiceId: onyuChoiceAnalyticsId(window.ONYU_STATE.currentChapterId, choiceNode),
     optionId: option.id || 'option-' + String((option.__analyticsIndex === undefined ? 0 : option.__analyticsIndex) + 1),
   });
+  onyuBacklogPush('', option.text, 'choice');
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
 
@@ -1052,4 +1063,54 @@ function onyuShowEndingScreen(endingId) {
   onyuTrack('ending_title_revealed', { endingId: endingId || '' });
   onyuEl.endingOverlay.hidden = false;
   requestAnimationFrame(function () { onyuEl.endingOverlay.classList.add('is-active'); });
+}
+
+function onyuBacklogPush(speaker, text, kind) {
+  if (!text) return;
+  onyuBacklog.push({ speaker: speaker || '', text: String(text), kind: kind || '' });
+  if (onyuBacklog.length > ONYU_BACKLOG_MAX) onyuBacklog.splice(0, onyuBacklog.length - ONYU_BACKLOG_MAX);
+}
+function onyuBacklogReset() {
+  onyuBacklog = [];
+  onyuBacklogLastNode = null;
+}
+function onyuBacklogIsOpen() {
+  return !!(onyuEl.backlogOverlay && !onyuEl.backlogOverlay.hidden);
+}
+function onyuOpenBacklog() {
+  var overlay = onyuEl.backlogOverlay;
+  if (!overlay || onyuBacklogIsOpen()) return;
+  if (onyuEl.outfitPickerOverlay && !onyuEl.outfitPickerOverlay.hidden) return;
+  var list = onyuEl.backlogList;
+  list.innerHTML = '';
+  if (!onyuBacklog.length) {
+    var empty = document.createElement('p');
+    empty.className = 'backlog-empty';
+    empty.textContent = '아직 지난 대사가 없어요.';
+    list.appendChild(empty);
+  }
+  onyuBacklog.forEach(function (entry) {
+    var row = document.createElement('div');
+    row.className = 'backlog-row' + (entry.kind === 'choice' ? ' is-choice' : (entry.speaker ? '' : ' is-narration'));
+    if (entry.speaker) {
+      var who = document.createElement('span');
+      who.className = 'backlog-speaker';
+      who.textContent = entry.speaker;
+      row.appendChild(who);
+    }
+    var line = document.createElement('p');
+    line.className = 'backlog-text';
+    line.textContent = entry.kind === 'choice' ? '▶ ' + entry.text : entry.text;
+    row.appendChild(line);
+    list.appendChild(row);
+  });
+  onyuPauseGame('backlog');
+  overlay.hidden = false;
+  list.scrollTop = list.scrollHeight;
+  if (onyuEl.backlogClose) onyuEl.backlogClose.focus({ preventScroll: true });
+}
+function onyuCloseBacklog() {
+  if (!onyuBacklogIsOpen()) return;
+  onyuEl.backlogOverlay.hidden = true;
+  onyuResumeGame('backlog');
 }
