@@ -849,9 +849,17 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user.uid;
   let hasInitialVerifiedValue = false;
   let previousVerifiedValue = false;
+  let visitLogged = false;
   streamerVerifiedUnsubscribe = onValue(ref(db, 'users/' + uid + '/streamerVerified'), async (snapshot) => {
     if (auth.currentUser?.uid !== uid) return;
     const verified = snapshot.val() === true;
+    // 인증 스트리머 접속 Discord 알림(서버가 인증 확인·하루 1번 중복 제거). 익명 기반 스트리머 계정도 포함(2026-11-26).
+    if (verified && !visitLogged) {
+      visitLogged = true;
+      logVerifiedOnyuStreamerVisitFn().catch((error) => {
+        console.warn('온이유 인증 스트리머 접속 알림 기록 실패:', error);
+      });
+    }
     if (hasInitialVerifiedValue && previousVerifiedValue !== verified) {
       await refreshAccessState();
       if (auth.currentUser?.uid !== uid) return;
@@ -871,11 +879,6 @@ onAuthStateChanged(auth, async (user) => {
     const requestId = snapshot.val() && snapshot.val().requestId;
     if (requestId) handleOnyuStreamerSwitchApproval(uid, String(requestId));
   }, (error) => console.error('계정 전환 승인 신호 구독 실패:', error));
-  if (!user.isAnonymous) {
-    logVerifiedOnyuStreamerVisitFn().catch((error) => {
-      console.warn('온이유 인증 스트리머 접속 알림 기록 실패:', error);
-    });
-  }
   await refreshAccessState();
   if (auth.currentUser?.uid !== uid) return;
   if (!readyResolved) { readyResolved = true; readyResolve(); }
