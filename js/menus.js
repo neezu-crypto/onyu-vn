@@ -31,7 +31,7 @@ function onyuSaveThumbnailStyle(snap, chapter) {
   // 문자만 허용하고, 이전 버전 세이브는 챕터 기본 배경으로 복구한다.
   if (typeof bg !== 'string' || !/^[a-z0-9-]+$/i.test(bg)) bg = chapter && chapter.bg;
   if (typeof bg !== 'string' || !/^[a-z0-9-]+$/i.test(bg)) return '';
-  return ' style="background-image: linear-gradient(150deg, rgba(255,255,255,.14), rgba(61,52,54,.24)), url(assets/backgrounds/' + bg + '.png)"';
+  return ' style="background-image: linear-gradient(150deg, rgba(255,255,255,.14), rgba(61,52,54,.24)), url(assets/backgrounds/' + bg + '.webp)"';
 }
 
 /* ---------------- 챕터 선택 · 타임머신 ---------------- */

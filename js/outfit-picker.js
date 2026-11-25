@@ -88,8 +88,8 @@ function onyuMaybeShowOutfitPicker(chapterId, onDone) {
     onDone();
     return;
   }
-  onyuEl.outfitFreeImg.src = 'assets/standing/' + choice.free + '1.png';
-  onyuEl.outfitPaidImg.src = 'assets/standing/' + choice.paid + '1.png';
+  onyuEl.outfitFreeImg.src = 'assets/standing/' + choice.free + '1.webp';
+  onyuEl.outfitPaidImg.src = 'assets/standing/' + choice.paid + '1.webp';
   var priceLabel = '별풍선 ' + choice.price + '개';
   if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('outfit_picker_shown', { chapterId: chapterId });
   // 꾸민 의상은 시청자 후원 조건과 그 결과를 한눈에 이해할 수 있도록 안내한다.

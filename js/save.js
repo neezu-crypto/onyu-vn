@@ -118,6 +118,16 @@ function onyuLoadGalleryRecord() {
     if (!record.cgVariants || typeof record.cgVariants !== 'object') record.cgVariants = {};
     if (!record.endings || typeof record.endings !== 'object') record.endings = {};
     if (!record.bgm || typeof record.bgm !== 'object') record.bgm = {};
+    // 2026-11-26 그림을 PNG→WebP로 바꿈: 예전 기록의 'cg-xx.png' 이름을 새 이름으로 맞춘다.
+    Object.keys(record.cgFiles).forEach(function (id) {
+      if (typeof record.cgFiles[id] === 'string') record.cgFiles[id] = record.cgFiles[id].replace(/\.png$/, '.webp');
+    });
+    Object.keys(record.cgVariants).forEach(function (id) {
+      var v = record.cgVariants[id], next = {};
+      if (!v || typeof v !== 'object') return;
+      Object.keys(v).forEach(function (file) { next[file.replace(/\.png$/, '.webp')] = v[file]; });
+      record.cgVariants[id] = next;
+    });
     return record;
   } catch (e) {
     return { cg: {}, cgFiles: {}, cgVariants: {}, endings: {}, bgm: {} };

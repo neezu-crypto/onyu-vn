@@ -164,7 +164,7 @@ function onyuApplySprite() {
   var spriteSet = chapter.spriteSet
     || window.ONYU_STATE.chosenOutfits[chapter.id] // 사복 후원 픽커(outfit-picker.js)에서 고른 결과
     || (window.onyuResolveSpriteCandidate && window.onyuResolveSpriteCandidate(chapter.id));
-  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, spriteSet) + '.png';
+  onyuEl.spriteImg.src = 'assets/standing/' + onyuSpriteFile(chapter.season, onyuCurrentExpr, spriteSet) + '.webp';
 }
 
 // 재사용 배경 13종 중 하나가 지정된 챕터(chapter.bg)만 사진을 깔고, 지정이 없는
@@ -191,7 +191,7 @@ function onyuApplyBackground() {
 
     onyuEl.bg.style.backgroundImage =
       'linear-gradient(165deg, color-mix(in srgb, ' + seasonSoft + ' 45%, transparent), color-mix(in srgb, ' + paper + ' 20%, transparent) 68%), ' +
-      "url('assets/backgrounds/" + fileKey + ".png')";
+      "url('assets/backgrounds/" + fileKey + ".webp')";
     onyuEl.bg.classList.add('has-photo');
   } else {
     onyuEl.bg.classList.remove('has-photo');

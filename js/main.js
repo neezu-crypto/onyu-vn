@@ -35,7 +35,7 @@ function onyuPreloadAsset(src, collection) {
 
 function onyuPreloadSpriteFile(name) {
   if (!name) return Promise.resolve({ ok: false, src: name });
-  var src = 'assets/standing/' + name + '.png';
+  var src = 'assets/standing/' + name + '.webp';
   if (onyuPreloadedSpriteNames[name]) return onyuPreloadAssetPromises[src] || Promise.resolve({ ok: true, src: src });
   onyuPreloadedSpriteNames[name] = true;
   return onyuPreloadAsset(src, onyuPreloadedSprites);
@@ -51,7 +51,7 @@ var onyuPreloadedBackgrounds = [];
 var onyuPreloadedBackgroundNames = {};
 function onyuPreloadBackgroundFile(name) {
   if (!name) return Promise.resolve({ ok: false, src: name });
-  var src = 'assets/backgrounds/' + name + '.png';
+  var src = 'assets/backgrounds/' + name + '.webp';
   if (onyuPreloadedBackgroundNames[name]) return onyuPreloadAssetPromises[src] || Promise.resolve({ ok: true, src: src });
   onyuPreloadedBackgroundNames[name] = true;
   return onyuPreloadAsset(src, onyuPreloadedBackgrounds);
@@ -91,7 +91,7 @@ function onyuProbeBackgroundVariant(base, season) {
     }
   };
   probe.onerror = function () { onyuBgVariantAvailable[variantKey] = false; };
-  probe.src = 'assets/backgrounds/' + variantKey + '.png';
+  probe.src = 'assets/backgrounds/' + variantKey + '.webp';
 }
 
 // 스탠딩 파일명 접두사(assets/standing/{prefix}1.png)가 실제로 존재하는지 필요한
@@ -108,7 +108,7 @@ function onyuProbeSpritePrefix(prefix) {
     // 존재가 확인된 후보만 실제로 선택·사용할 때 전체 표정 세트를 데운다.
     onyuPreloadSpriteSet(prefix);
   };
-  probe.src = 'assets/standing/' + prefix + '1.png';
+  probe.src = 'assets/standing/' + prefix + '1.webp';
 }
 
 // "후보 없이 이미지만 있으면 바로 쓰는" 단일 스탠딩 세트. 사복처럼 무료/후원 2종
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var probe = new Image();
     probe.onload = function () {
-      coverBg.src = 'assets/cg/cover.png';
+      coverBg.src = 'assets/cg/cover.webp';
       coverBg.hidden = false;
       document.getElementById('screen-title').classList.add('is-cg-cover');
       loading.classList.add('is-hidden');
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // 표지 CG가 없는 배포본에서도 타이틀 폴백이 표시되는 즉시 CH01을 준비한다.
       onyuPreloadChapterAssets('ch01');
     };
-    probe.src = 'assets/cg/cover.png';
+    probe.src = 'assets/cg/cover.webp';
   })();
 
   var continueBtn = document.getElementById('title-continue');
