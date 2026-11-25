@@ -7,7 +7,7 @@
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;padding:32px;line-height:1.7">
 <h1>방송 후원 연동</h1>
 <p id="msg" role="status">SOOP 연결을 확인하는 중입니다…</p>
-<p><a href="index.html">온이유로 돌아가기</a></p>
+<p><a id="back" href="index.html">온이유로 돌아가기</a></p>
 <script type="module">
 // SOOP가 넘긴 1회용 인증 code를 서버에 전달해 토큰으로 교환한다.
 // code는 주소창에서 바로 지우고, 토큰은 이 페이지에서 받거나 저장하지 않는다.
@@ -23,6 +23,14 @@ const state = params.get('state') || '';
 history.replaceState(null, '', location.pathname);
 const nonce = sessionStorage.getItem('onyuSoopOauthNonce') || '';
 sessionStorage.removeItem('onyuSoopOauthNonce');
+// 게임이 연 팝업이면 끝난 뒤 게임 창에 알리고 이 창을 닫는다(게임 창은 그대로 유지).
+const isPopup = sessionStorage.getItem('onyuSoopOauthPopup') === '1';
+sessionStorage.removeItem('onyuSoopOauthPopup');
+if (isPopup) {
+  const back = document.getElementById('back');
+  back.textContent = '이 창 닫기';
+  back.addEventListener('click', (event) => { event.preventDefault(); window.close(); });
+}
 
 if (!code || !nonce || (state && state !== nonce)) {
   msg.textContent = '연결 요청 정보가 없습니다. 게임 설정에서 "SOOP 방송 연결"을 다시 눌러 주세요.';
@@ -44,8 +52,14 @@ if (!code || !nonce || (state && state !== nonce)) {
     }
     try {
       await complete({ code, nonce });
-      msg.textContent = 'SOOP 방송 연결이 완료되었습니다. 게임으로 돌아갑니다.';
-      location.replace('index.html');
+      if (isPopup) {
+        msg.textContent = 'SOOP 방송 연결이 완료되었습니다. 이 창은 곧 닫힙니다.';
+        try { const channel = new BroadcastChannel('onyu-soop-consent'); channel.postMessage({ type: 'connected' }); channel.close(); } catch (_) {}
+        setTimeout(() => window.close(), 800);
+      } else {
+        msg.textContent = 'SOOP 방송 연결이 완료되었습니다. 게임으로 돌아갑니다.';
+        location.replace('index.html');
+      }
     } catch (error) {
       msg.textContent = (error && error.message) || 'SOOP 연결을 완료하지 못했습니다. 게임에서 다시 연결해 주세요.';
     }

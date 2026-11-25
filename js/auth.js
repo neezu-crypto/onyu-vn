@@ -91,13 +91,54 @@ window.stopOnyuSoopTokenRefresh = function () {
   if (soopTokenRefreshController) soopTokenRefreshController.stop();
   soopTokenRefreshController = null;
 };
-// SOOP 동의 화면으로 보낸다. 1회용 nonce는 이 탭의 sessionStorage에만 두고 콜백에서 지운다.
+// SOOP 동의 화면을 적당한 크기의 팝업으로 연다(팝업 차단 시 지금 탭에서 이동).
+// 1회용 nonce는 동의를 진행하는 창의 sessionStorage에만 두고 콜백에서 지운다.
+// 팝업은 클릭 직후 같은 출처의 빈 창으로 먼저 열어야 차단되지 않고, 그 창의 sessionStorage에 값을 넣을 수 있다.
+const ONYU_SOOP_POPUP_KEY = 'onyuSoopOauthPopup';
+const ONYU_SOOP_CHANNEL = 'onyu-soop-consent';
+function openOnyuSoopConsentPopup() {
+  const width = 520;
+  const height = 760;
+  const left = Math.max(0, Math.round((window.screenX || 0) + ((window.outerWidth || width) - width) / 2));
+  const top = Math.max(0, Math.round((window.screenY || 0) + ((window.outerHeight || height) - height) / 2));
+  try {
+    return window.open('about:blank', 'onyuSoopConsent', `popup=yes,width=${width},height=${height},left=${left},top=${top}`);
+  } catch (_) {
+    return null;
+  }
+}
 window.onyuStartSoopChatConsent = async function () {
-  const data = (await startSoopChatConsentFn()).data || {};
-  if (!data.authorizeUrl || !data.nonce) throw new Error('SOOP 연결을 시작하지 못했습니다.');
+  const popup = openOnyuSoopConsentPopup();
+  let data;
+  try {
+    data = (await startSoopChatConsentFn()).data || {};
+    if (!data.authorizeUrl || !data.nonce) throw new Error('SOOP 연결을 시작하지 못했습니다.');
+  } catch (error) {
+    if (popup && !popup.closed) popup.close();
+    throw error;
+  }
+  if (popup && !popup.closed) {
+    try {
+      popup.sessionStorage.setItem(ONYU_SOOP_NONCE_KEY, String(data.nonce));
+      popup.sessionStorage.setItem(ONYU_SOOP_POPUP_KEY, '1');
+      popup.location.replace(String(data.authorizeUrl));
+      return { popup: true };
+    } catch (_) {
+      popup.close();
+    }
+  }
   sessionStorage.setItem(ONYU_SOOP_NONCE_KEY, String(data.nonce));
   window.location.assign(String(data.authorizeUrl));
+  return { popup: false };
 };
+// 팝업의 콜백 페이지가 연결을 마치면 알려 준다. 받으면 연동 상태를 다시 읽어 버튼·채팅 연결을 갱신한다.
+if (typeof BroadcastChannel === 'function') {
+  const soopConsentChannel = new BroadcastChannel(ONYU_SOOP_CHANNEL);
+  soopConsentChannel.addEventListener('message', (event) => {
+    if (!event.data || event.data.type !== 'connected') return;
+    refreshDonationIntegrationControl();
+  });
+}
 
 function disconnectOnyuSoopChat() {
   window.stopOnyuSoopTokenRefresh();
@@ -715,7 +756,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (donationIntegrationToggleEl) donationIntegrationToggleEl.addEventListener('click', toggleDonationIntegrationPreparation);
   if (donationIntegrationConnectEl) donationIntegrationConnectEl.addEventListener('click', async () => {
     donationIntegrationConnectEl.disabled = true;
-    try { await window.onyuStartSoopChatConsent(); }
+    try {
+      const started = await window.onyuStartSoopChatConsent();
+      // 팝업으로 열렸으면 이 화면은 그대로 두고 버튼만 다시 누를 수 있게 한다(팝업을 닫고 다시 시도하는 경우).
+      if (started && started.popup) donationIntegrationConnectEl.disabled = false;
+    }
     catch (error) { window.alert(error && error.message ? error.message : 'SOOP 연결을 시작하지 못했습니다.'); donationIntegrationConnectEl.disabled = false; }
   });
   streamerForm.addEventListener('submit', submitStreamerVerification);
