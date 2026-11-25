@@ -47,6 +47,31 @@ const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOu
 const consumeOutfitDonationSessionFn = httpsCallable(functions, 'onyuConsumeOutfitDonationSession');
 const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
 const startSoopChatConsentFn = httpsCallable(functions, 'onyuStartSoopChatConsent');
+const logDonationDiagnosticsFn = httpsCallable(functions, 'onyuLogDonationDiagnostics');
+
+// 후원 연동 점검 로그(2026-11-26): 실제 후원 테스트 중 이 탭에서 일어난 연동 단계를 서버에 남겨
+// 관리자센터에서 바로 볼 수 있게 한다. 인증 스트리머 탭에서만, 3초 모아 한 번에 보낸다.
+// 시청자 아이디·닉네임·채팅 원문·토큰은 넣지 않는다(후원은 개수·LIVE 여부만).
+const onyuDiagQueue = [];
+let onyuDiagTimer = null;
+function onyuDiag(event, detail) {
+  const s = window.onyuAuthState || {};
+  if (s.role !== 'streamer') return;
+  onyuDiagQueue.push({ event, at: Date.now(), detail: detail || {} });
+  if (onyuDiagQueue.length > 40) onyuDiagQueue.splice(0, onyuDiagQueue.length - 40);
+  if (!onyuDiagTimer) onyuDiagTimer = setTimeout(flushOnyuDiag, 3000);
+}
+function flushOnyuDiag() {
+  onyuDiagTimer = null;
+  if (!onyuDiagQueue.length) return;
+  const entries = onyuDiagQueue.splice(0, 20);
+  logDonationDiagnosticsFn({ entries }).catch(() => {});
+  if (onyuDiagQueue.length) onyuDiagTimer = setTimeout(flushOnyuDiag, 3000);
+}
+function onyuDiagError(error) {
+  return { errorCode: String(error && error.code || ''), error: String(error && error.message || error || '').slice(0, 150) };
+}
+window.onyuDonationDiag = onyuDiag;
 const ONYU_SOOP_NONCE_KEY = 'onyuSoopOauthNonce';
 let soopChatConnection = null;
 let soopTokenRefreshController = null;
@@ -122,12 +147,15 @@ window.onyuStartSoopChatConsent = async function () {
       popup.sessionStorage.setItem(ONYU_SOOP_NONCE_KEY, String(data.nonce));
       popup.sessionStorage.setItem(ONYU_SOOP_POPUP_KEY, '1');
       popup.location.replace(String(data.authorizeUrl));
+      onyuDiag('consent-open', { popup: true });
       return { popup: true };
     } catch (_) {
       popup.close();
     }
   }
   sessionStorage.setItem(ONYU_SOOP_NONCE_KEY, String(data.nonce));
+  onyuDiag('consent-open', { popup: false });
+  flushOnyuDiag();
   window.location.assign(String(data.authorizeUrl));
   return { popup: false };
 };
@@ -136,6 +164,7 @@ if (typeof BroadcastChannel === 'function') {
   const soopConsentChannel = new BroadcastChannel(ONYU_SOOP_CHANNEL);
   soopConsentChannel.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'connected') return;
+    onyuDiag('consent-connected');
     refreshDonationIntegrationControl();
   });
 }
@@ -151,8 +180,10 @@ async function connectOnyuSoopChat() {
   const s = window.onyuAuthState;
   if (soopChatConnection || s.role !== 'streamer' || s.donationIntegrationStatus !== 'active' || s.donationSdkApproved !== true || !s.donationClientId) return false;
   if (typeof window.createOnyuSoopChatConnection !== 'function') return false;
+  onyuDiag('chat-connect-start');
   const tokens = (await refreshSoopChatTokenFn({ reconnect: true })).data || {};
   if (!tokens.ok || !tokens.accessToken) {
+    onyuDiag('chat-token-missing', { reason: String(tokens.reason || tokens.status || '') });
     await refreshDonationIntegrationControl();
     return false;
   }
@@ -161,16 +192,23 @@ async function connectOnyuSoopChat() {
     ChatSDK,
     clientId: s.donationClientId,
     // 열린 의상 선택 화면이 있을 때만 outfit-picker가 이 처리기를 등록한다.
-    onDonation: (summary) => { if (typeof window.onyuHandleSoopDonationEvent === 'function') window.onyuHandleSoopDonationEvent(summary); },
-    onState: (state) => { s.donationChatState = state.state; },
+    onDonation: (summary) => {
+      const pickerOpen = typeof window.onyuHandleSoopDonationEvent === 'function';
+      onyuDiag('donation-received', { count: Number(summary.count) || 0, live: summary.fromVod === false, relay: summary.relaysBroad === true, pickerOpen });
+      if (pickerOpen) window.onyuHandleSoopDonationEvent(summary);
+    },
+    onState: (state) => { s.donationChatState = state.state; onyuDiag('chat-state', { state: String(state.state || ''), errorCode: String(state.code || '') }); },
   });
   soopChatConnection = connection;
   try {
     await connection.connect(tokens.accessToken);
+    onyuDiag('chat-connected');
     window.startOnyuSoopTokenRefresh(connection.sdkForRefresh, Number(tokens.expiresInSeconds), connection.applyAccessToken, (state) => {
+      onyuDiag('token-refresh', { state: String(state.state || ''), reason: String(state.reason || '') });
       if (state.reconnectAllowed === false) { soopChatConnection = null; refreshDonationIntegrationControl(); }
     });
   } catch (error) {
+    onyuDiag('chat-connect-failed', onyuDiagError(error));
     disconnectOnyuSoopChat();
     throw error;
   }
@@ -198,9 +236,25 @@ window.onyuRequestStreamerVerification = async function (payload) {
   const result = await requestStreamerVerificationFn(Object.assign({}, payload || {}, { source: 'onyu-vn' }));
   return result.data || {};
 };
-window.onyuRegisterOutfitDonationSession = async function (payload) { return (await registerOutfitDonationSessionFn(payload || {})).data || {}; };
-window.onyuConsumeOutfitDonationSession = async function (payload) { return (await consumeOutfitDonationSessionFn(payload || {})).data || {}; };
-window.onyuCloseOutfitDonationSession = async function (sessionId) { return (await closeOutfitDonationSessionFn({ sessionId })).data || {}; };
+window.onyuRegisterOutfitDonationSession = async function (payload) {
+  onyuDiag('picker-session-open', { chapter: String(payload && payload.chapterId || '') });
+  try {
+    const data = (await registerOutfitDonationSessionFn(payload || {})).data || {};
+    onyuDiag('picker-session-ready', { ok: !!data.sessionId });
+    return data;
+  } catch (error) { onyuDiag('picker-session-failed', onyuDiagError(error)); throw error; }
+};
+window.onyuConsumeOutfitDonationSession = async function (payload) {
+  try {
+    const data = (await consumeOutfitDonationSessionFn(payload || {})).data || {};
+    onyuDiag('outfit-donation-result', { count: Number(payload && payload.count) || 0, accepted: data.accepted === true, reason: String(data.reason || '') });
+    return data;
+  } catch (error) { onyuDiag('outfit-donation-failed', onyuDiagError(error)); throw error; }
+};
+window.onyuCloseOutfitDonationSession = async function (sessionId) {
+  onyuDiag('picker-session-close');
+  return (await closeOutfitDonationSessionFn({ sessionId })).data || {};
+};
 
 window.onyuListPublicPlayerReviews = async function (payload) {
   const user = auth.currentUser;
@@ -467,6 +521,7 @@ async function refreshDonationIntegrationControl() {
   donationIntegrationRowEl.hidden = false; donationIntegrationToggleEl.disabled = true;
   try {
     const data = await window.onyuGetDonationIntegrationStatus();
+    onyuDiag('integration-status', { status: String(data.status || ''), sdkAvailable: data.sdkAvailable === true, sdkApproved: data.sdkApproved === true });
     const prepared = data.status === 'preparing';
     const active = data.status === 'active' && window.onyuAuthState.donationSdkApproved === true;
     const expiryText = data.expiresAt ? new Date(data.expiresAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '24시간 이내';
@@ -491,6 +546,7 @@ async function refreshDonationIntegrationControl() {
     if (active) connectOnyuSoopChat().catch((error) => {
       // SOOP Chat SDK는 방송 중에만 접속된다(꺼져 있으면 invalid-chat-info / 104 "진행중인 방송이 없습니다").
       const offline = error && (error.code === 'invalid-chat-info' || /\(104\)|진행중인 방송이 없/.test(String(error.message || '')));
+      onyuDiag(offline ? 'chat-offline' : 'chat-error', onyuDiagError(error));
       donationIntegrationStateEl.textContent = offline ? '방송 대기 중' : 'SOOP 연결 실패(다시 열면 재시도)';
       if (offline) donationIntegrationDescriptionEl.textContent = `${expiryText ? `연동 만료: ${expiryText}. ` : ''}지금은 방송 중이 아니에요. 방송을 켠 뒤 게임을 다시 열면 채팅에 연결되고 후원 감지가 시작돼요.`;
     });

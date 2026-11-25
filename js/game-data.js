@@ -155,6 +155,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '순서가 창가 쪽으로 다가올수록, 그녀의 어깨가 눈에 띄게 굳어가는 게 보였다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '자기소개 순서가 다가오는데, 눈에 띄게 굳어 있는 그녀',
         options: [
           {
@@ -288,6 +289,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'onyu', expr: 'calm', text: '어, 내일까지. 사실 집에서 하고 싶었는데.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '그림에 몰입한 그녀 옆에서 어떻게 시간을 보낼지',
         options: [
           {
@@ -394,6 +396,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '결국 우산 하나를 나눠 쓰고 걷게 된 어색한 순간',
         options: [
           {
@@ -558,6 +561,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '단풍을 배경으로 스케치를 하고 싶어하는 그녀',
         options: [
           {
@@ -680,6 +684,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '눈이 내리기 시작하는 걸 먼저 알아챈 순간',
         options: [
           {
@@ -779,6 +784,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '점심시간이 되자, 다들 삼삼오오 급식실로 몰려갔다. 새로 짠 반은 유독 목소리 큰 애들이 많은지, 급식실이 평소보다 더 시끌시끌했다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '점심시간마다 어디서 만날지 정하는 상황',
         options: [
           {
@@ -931,6 +937,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '며칠 뒤, 방학 계획을 구체적으로 정하려고 다시 이야기를 꺼냈다. 창밖 매미 소리가 한층 요란해져 있었다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '어디서 만날지, 무엇을 할지 정하는 상황',
         options: [
           {
@@ -1047,6 +1054,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'player', text: '아니, 방금 왔어.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '어디로 갈지 먼저 물어보는 상황',
         options: [
           {
@@ -1193,6 +1201,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'visitor', text: '우와, 이거 누가 그린 거예요?' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '부스를 구경하러 온 다른 반 친구들 앞에서',
         options: [
           {
@@ -1298,6 +1307,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '순간 어색해진 그녀가 헛기침을 하며 다시 카드를 섞기 시작했다. 귀끝이 살짝 붉어져 있었다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '헤어지기 직전, 작은 선물을 건네는 순간',
         options: [
           {
@@ -1410,6 +1420,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '평소라면 뭐든 미루지 않는 그녀였다. 그런 그녀가 며칠째 신청서를 붙잡고만 있다는 게 마음에 걸렸다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '진로를 두고 조심스럽게 속내를 털어놓는 순간',
         options: [
           {
@@ -1548,6 +1559,7 @@ window.ONYU_CHAPTERS = [
       { type: 'narration', text: '일주일 만에 겨우 잡힌 짧은 만남이었다. 근처 카페 창가 자리에 마주 앉아, 그녀는 얼음이 가득한 음료부터 단숨에 들이켰다.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '오랜만에 잠깐 짬이 난 그녀와의 짧은 만남',
         options: [
           {
@@ -1645,6 +1657,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '갑자기 예민하게 반응하고 후회하는 그녀',
         options: [
           {
@@ -1776,6 +1789,7 @@ window.ONYU_CHAPTERS = [
       { type: 'line', speaker: 'onyu', expr: 'worried', text: '사실 며칠 동안 계속 편지 생각만 했어. 근데 막상 뭐라고 답해야 할지 모르겠더라.' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '조심스럽게 마음을 여는 그녀의 반응',
         options: [
           {
@@ -1882,6 +1896,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '시험장 앞에서 무슨 말을 건넬지',
         options: [
           {
@@ -1947,6 +1962,7 @@ window.ONYU_CHAPTERS = [
       { type: 'cgReveal' },
       {
         type: 'choice',
+        displaySwap: true,
         situation: '3학년의 첫눈이 내리는 날',
         options: [
           {

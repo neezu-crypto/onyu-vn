@@ -472,8 +472,11 @@ function onyuRenderCurrentNode() {
     onyuChoiceInputLocked = true;
     setTimeout(function () { onyuChoiceInputLocked = false; }, ONYU_CHOICE_INPUT_LOCK_MS);
 
-    node.options.forEach(function (opt, i) {
-      opt.__analyticsIndex = i;
+    // displaySwap: 호감도 오르는 선택지가 늘 1번에 있지 않도록 화면 순서만 뒤집는다(2026-11-26).
+    // 데이터 순서(저장의 branch 번호·분석 index)는 그대로라 기존 저장과 호환된다.
+    node.options.forEach(function (opt, i) { opt.__analyticsIndex = i; });
+    var displayOptions = node.displaySwap ? node.options.slice().reverse() : node.options;
+    displayOptions.forEach(function (opt, i) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'choice-bubble' + (reduceMotionForChoice ? '' : ' is-entering');
