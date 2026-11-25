@@ -943,3 +943,8 @@ button { font-family: inherit; }
   .backlog-panel { max-height: 100%; border-radius: 16px; }
   .backlog-text { font-size: 15px; }
 }
+.backlog-hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .backlog-hint-mouse { display: none; }
+  .backlog-hint-touch { display: inline; }
+}
