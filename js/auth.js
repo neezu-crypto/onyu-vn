@@ -52,9 +52,12 @@ const logDonationDiagnosticsFn = httpsCallable(functions, 'onyuLogDonationDiagno
 // 후원 연동 점검 로그(2026-11-26): 실제 후원 테스트 중 이 탭에서 일어난 연동 단계를 서버에 남겨
 // 관리자센터에서 바로 볼 수 있게 한다. 인증 스트리머 탭에서만, 3초 모아 한 번에 보낸다.
 // 시청자 아이디·닉네임·채팅 원문·토큰은 넣지 않는다(후원은 개수·LIVE 여부만).
+// 2026-11-27 끔: 실제 후원 테스트가 끝나 서버 기록을 멈춘다. 다시 점검할 때만 true로 바꾼다(호출 코드는 그대로 둠).
+const ONYU_DIAG_ENABLED = false;
 const onyuDiagQueue = [];
 let onyuDiagTimer = null;
 function onyuDiag(event, detail) {
+  if (!ONYU_DIAG_ENABLED) return;
   const s = window.onyuAuthState || {};
   if (s.role !== 'streamer') return;
   onyuDiagQueue.push({ event, at: Date.now(), detail: detail || {} });
