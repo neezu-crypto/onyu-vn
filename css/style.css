@@ -983,3 +983,15 @@ button { font-family: inherit; }
   .production-step { padding: 14px 14px; }
   .production-estimate b { font-size: 15px; }
 }
+
+/* 후기 저장 뒤 게임 제작 의뢰 안내 카드(2026-11-27) */
+.commission-prompt{margin:14px 0 0;padding:16px;border-radius:16px;background:var(--season-soft,#fff3f7);border:1px solid rgba(0,0,0,.06);text-align:left}
+.commission-prompt-title{margin:0 0 4px;font-weight:800;font-size:16px}
+.commission-prompt-desc{margin:0 0 12px;font-size:14px;line-height:1.55;opacity:.85}
+.commission-prompt-actions{display:flex;gap:8px;flex-wrap:wrap}
+.commission-prompt-go,.commission-prompt-later{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border-radius:12px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.commission-prompt-go{flex:1 1 auto;background:var(--season-accent,#e75a8a);color:#fff;border:0}
+.commission-prompt-later{background:transparent;border:1px solid rgba(0,0,0,.15);color:inherit}
+.commission-prompt.is-in{animation:commissionPromptIn .32s ease-out}
+@keyframes commissionPromptIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (max-width:420px){.commission-prompt-actions{flex-direction:column}.commission-prompt-go,.commission-prompt-later{width:100%}}

@@ -329,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('review-promote').closest('.review-promote-toggle').hidden = !!isVerifiedStreamer;
     document.getElementById('review-promote-help').hidden = !!isVerifiedStreamer;
     if (isVerifiedStreamer) document.getElementById('review-promote-help').textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
+    document.getElementById('commission-prompt').hidden = true;
     onyuShowScreen('review');
   });
 
@@ -357,6 +358,29 @@ document.addEventListener('DOMContentLoaded', function () {
       help.hidden = verifiedStreamer;
       if (verifiedStreamer) help.textContent = '인증된 스트리머의 방송국 정보가 후기에 자동으로 표시됩니다.';
     }
+  });
+
+  // 후기 저장 성공 뒤 게임 제작 의뢰 안내(2026-11-27). [다음에]는 이번만 접고 기억하지 않는다. 서버 호출 없음.
+  function onyuShowCommissionPrompt() {
+    var box = document.getElementById('commission-prompt');
+    var isStreamer = window.onyuAuthState && window.onyuAuthState.role === 'streamer';
+    document.getElementById('commission-prompt-title').textContent = isStreamer ? '내 방송만의 게임도 만들어 볼까요?' : '좋아하는 스트리머에게 게임을 선물해 보세요';
+    document.getElementById('commission-prompt-desc').textContent = isStreamer
+      ? '신청은 무료, 시청자 모금으로 제작해요. 미연시·룰렛·벌칙용 게임 등 7개 장르.'
+      : '신청은 무료, 시청자들과 통합 캐시로 함께 모금해요.';
+    document.getElementById('commission-prompt-go').textContent = isStreamer ? '내 게임 신청하기' : '게임 신청하기';
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(function () {
+      box.hidden = false;
+      if (!reduce) { box.classList.remove('is-in'); void box.offsetWidth; box.classList.add('is-in'); }
+      if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('commission_prompt_shown');
+    }, reduce ? 0 : 400);
+  }
+  document.getElementById('commission-prompt-later').addEventListener('click', function () {
+    document.getElementById('commission-prompt').hidden = true;
+  });
+  document.getElementById('commission-prompt-go').addEventListener('click', function () {
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('commission_prompt_click');
   });
 
   document.getElementById('review-save-btn').addEventListener('click', async function () {
@@ -414,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
       setTimeout(function () { saveBtn.hidden = true; }, 380);
+      onyuShowCommissionPrompt();
     } catch (error) {
       saveBtn.disabled = false;
       saveBtn.textContent = '후기 저장';
