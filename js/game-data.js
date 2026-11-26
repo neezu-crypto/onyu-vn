@@ -125,7 +125,7 @@ window.ONYU_CHAPTERS = [
         situation: '우연히 스케치북 속 그림이 눈에 들어오는 순간',
         options: [
           {
-            branch: 'pos', text: '진심으로 그림이 좋다고 말을 건다', affection: 2, tag: 'L01',
+            branch: 'pos', text: '진심으로 그림이 좋다고 말을 건다', word: '칭찬', affection: 2, tag: 'L01',
             script: [
               { type: 'line', speaker: 'player', text: '이거, 네가 그린 거야?' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(고개를 들며) 어... 응.' },
@@ -143,7 +143,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '대충 한 번 훑어보고 별말 없이 지나간다', affection: -1, tag: 'D01',
+            branch: 'neg', text: '대충 한 번 훑어보고 별말 없이 지나간다', word: '지나침', affection: -1, tag: 'D01',
             script: [
               { type: 'narration', text: '별생각 없이 시선만 스치듯 던지고 지나쳤다. 등 뒤에서 소리 없이 스케치북을 덮는 기척이 들렸다. 그 뒤로 한동안 그 자리에선 연필 소리가 들리지 않았다.' },
             ],
@@ -159,7 +159,7 @@ window.ONYU_CHAPTERS = [
         situation: '자기소개 순서가 다가오는데, 눈에 띄게 굳어 있는 그녀',
         options: [
           {
-            branch: 'pos', text: '순서를 자연스럽게 조절해 부담을 줄여준다', affection: 2, tag: 'L02',
+            branch: 'pos', text: '순서를 자연스럽게 조절해 부담을 줄여준다', word: '배려', affection: 2, tag: 'L02',
             script: [
               { type: 'line', speaker: 'player', text: '(손을 들며) 저 먼저 할게요!' },
               { type: 'narration', text: '일부러 시답잖은 농담을 살짝 섞었다. 다음 차례가 왔을 땐 다들 이미 다른 이야기에 정신이 팔려 있었다. 그녀는 이름만 담백하게 말하고 자리에 앉았다.' },
@@ -171,7 +171,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '오히려 더 길게 말해보라며 부추긴다', affection: -1, tag: 'D02',
+            branch: 'neg', text: '오히려 더 길게 말해보라며 부추긴다', word: '부추김', affection: -1, tag: 'D02',
             script: [
               { type: 'line', speaker: 'player', text: '더 말해봐요, 더!' },
               { type: 'narration', text: '몇몇이 장난스럽게 부추기는 데 슬쩍 편승했다. 얼굴이 붉어진 채로 이름만 겨우 말하고 서둘러 앉는 그녀 — 그 후로 한참 동안 고개를 들지 않았다.' },
@@ -213,7 +213,7 @@ window.ONYU_CHAPTERS = [
         situation: '벚꽃 아래 멈춰 선 그녀, 재촉할까 같이 볼까',
         options: [
           {
-            branch: 'pos', text: '같이 걸음을 멈추고 벚꽃을 바라본다', affection: 2, tag: 'L10',
+            branch: 'pos', text: '같이 걸음을 멈추고 벚꽃을 바라본다', word: '멈춤', affection: 2, tag: 'L10',
             script: [
               { type: 'narration', text: '발걸음을 멈추고 옆에 나란히 섰다. 딱히 할 말은 없었지만, 그것만으로 충분했다.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '너도 이런 거 볼 줄 아는구나.' },
@@ -226,7 +226,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '지각한다고 빨리 가자며 재촉한다', affection: -1, tag: 'D3',
+            branch: 'neg', text: '지각한다고 빨리 가자며 재촉한다', word: '재촉', affection: -1, tag: 'D3',
             script: [
               { type: 'line', speaker: 'player', text: '야, 지각한다. 빨리 가자.' },
               { type: 'narration', text: '손목을 슬쩍 잡아끌었다.' },
@@ -246,7 +246,7 @@ window.ONYU_CHAPTERS = [
         situation: '스케치북을 꺼내 벚꽃을 그리기 시작하는 그녀',
         options: [
           {
-            branch: 'pos', text: '말없이 옆에 앉아 그리는 모습을 지켜본다', affection: 2, tag: 'L03',
+            branch: 'pos', text: '말없이 옆에 앉아 그리는 모습을 지켜본다', word: '지켜봄', affection: 2, tag: 'L03',
             script: [
               { type: 'narration', text: '굳이 말을 걸지 않고 옆에 조용히 앉았다. 연필이 사각거리는 소리만 벤치 주변을 채웠다. 한참 뒤, 그녀가 낮게 중얼거렸다.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '가만히 있어 줘서 고마워.' },
@@ -256,7 +256,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '친구들을 불러 같이 사진 찍자고 소란을 만든다', affection: -1, tag: 'D4',
+            branch: 'neg', text: '친구들을 불러 같이 사진 찍자고 소란을 만든다', word: '소란', affection: -1, tag: 'D4',
             script: [
               { type: 'line', speaker: 'player', text: '(친구들을 부르며) 야, 여기서 사진 찍자!' },
               { type: 'narration', text: '연필을 쥔 손이 뚝 멈췄다.' },
@@ -293,7 +293,7 @@ window.ONYU_CHAPTERS = [
         situation: '그림에 몰입한 그녀 옆에서 어떻게 시간을 보낼지',
         options: [
           {
-            branch: 'pos', text: '말없이 옆자리에 앉아 그리는 모습을 지켜본다', affection: 2, tag: 'L05',
+            branch: 'pos', text: '말없이 옆자리에 앉아 그리는 모습을 지켜본다', word: '곁에 있기', affection: 2, tag: 'L05',
             script: [
               { type: 'narration', text: '말 걸지 않고 옆 의자에 조용히 앉았다. 붓이 캔버스를 스치는 소리, 이따금 물감을 헹구는 소리만 방 안을 채웠다. 한참 만에야 그녀가 붓을 든 채로 흘리듯 말했다.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '너, 되게 안 지루해하네.' },
@@ -304,7 +304,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '심심하다며 자꾸 말을 걸어 흐름을 끊는다', affection: -1, tag: 'D05',
+            branch: 'neg', text: '심심하다며 자꾸 말을 걸어 흐름을 끊는다', word: '말 걸기', affection: -1, tag: 'D05',
             script: [
               { type: 'line', speaker: 'player', text: '야, 그거 뭐 그리는 거야? 다 됐어?' },
               { type: 'narration', text: '붓을 든 손이 몇 번이나 허공에서 멈췄다.' },
@@ -325,7 +325,7 @@ window.ONYU_CHAPTERS = [
         situation: '완성된 그림을 보여주며 감상을 묻는 순간',
         options: [
           {
-            branch: 'pos', text: '어느 부분이 왜 좋았는지 구체적으로 짚어 말한다', affection: 2, tag: 'L06',
+            branch: 'pos', text: '어느 부분이 왜 좋았는지 구체적으로 짚어 말한다', word: '구체적으로', affection: 2, tag: 'L06',
             script: [
               { type: 'line', speaker: 'player', text: '여기, 그림자 진 부분 — 이렇게 어둡게 눌러놓으니까 오히려 창밖 빛이 더 환해 보인다.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈을 크게 뜨며) 그거, 제일 신경 쓴 부분인데.' },
@@ -336,7 +336,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"어, 잘 그렸네" 하고 건성으로 답한다', affection: -1, tag: 'D06',
+            branch: 'neg', text: '"어, 잘 그렸네" 하고 건성으로 답한다', word: '건성', affection: -1, tag: 'D06',
             script: [
               { type: 'line', speaker: 'player', text: '어, 잘 그렸네.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '...그래.' },
@@ -367,7 +367,7 @@ window.ONYU_CHAPTERS = [
         situation: '처마 밑에서 비가 잦아들길 기다리는 동안',
         options: [
           {
-            branch: 'pos', text: '서두르지 않고 비 내리는 풍경을 같이 바라본다', affection: 2, tag: 'L07',
+            branch: 'pos', text: '서두르지 않고 비 내리는 풍경을 같이 바라본다', word: '기다림', affection: 2, tag: 'L07',
             script: [
               { type: 'narration', text: '조급해하지 않고 나란히 서서 빗줄기를 바라봤다. 처마 끝에서 떨어지는 빗방울이 규칙적으로 웅덩이를 두드렸다.' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '비 오는 날, 좋아해.' },
@@ -382,7 +382,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '짜증 내며 빗속으로 먼저 뛰어나간다', affection: -1, tag: 'D07',
+            branch: 'neg', text: '짜증 내며 빗속으로 먼저 뛰어나간다', word: '뛰어가기', affection: -1, tag: 'D07',
             script: [
               { type: 'line', speaker: 'player', text: '아 짜증나, 그냥 맞고 가자.' },
               { type: 'narration', text: '툴툴대다 몇 걸음 못 가 흠뻑 젖고 말았다.' },
@@ -400,7 +400,7 @@ window.ONYU_CHAPTERS = [
         situation: '결국 우산 하나를 나눠 쓰고 걷게 된 어색한 순간',
         options: [
           {
-            branch: 'pos', text: '편안하게 대화를 이어가며 자연스럽게 걷는다', affection: 2, tag: 'L08',
+            branch: 'pos', text: '편안하게 대화를 이어가며 자연스럽게 걷는다', word: '대화', affection: 2, tag: 'L08',
             script: [
               { type: 'line', speaker: 'player', text: '그러고 보니, 우산 없이 나오는 스타일이었어?' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '말 걸어줘서 다행이야. 어색해서 혼났어.' },
@@ -416,7 +416,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '스마트폰만 보며 말없이 걷는다', affection: -1, tag: 'D08',
+            branch: 'neg', text: '스마트폰만 보며 말없이 걷는다', word: '휴대폰', affection: -1, tag: 'D08',
             script: [
               { type: 'narration', text: '딱히 할 말이 없어 스마트폰만 들여다보며 걸었다. 우산을 든 손에 자꾸 힘이 들어가는 게 느껴졌다.' },
               { type: 'narration', text: '집 앞에 도착할 때까지, 그녀는 한마디도 하지 않았다.' },
@@ -453,7 +453,7 @@ window.ONYU_CHAPTERS = [
         situation: '다 같이 소리 지르며 응원하는 분위기 속에서',
         options: [
           {
-            branch: 'pos', text: '잠깐 옆에 앉아 그녀 속도에 맞춰 함께 있는다', affection: 2, tag: 'L09',
+            branch: 'pos', text: '잠깐 옆에 앉아 그녀 속도에 맞춰 함께 있는다', word: '함께 앉기', affection: 2, tag: 'L09',
             script: [
               { type: 'narration', text: '옆에 털썩 앉아 같이 스탠드에 등을 기댔다. 멀리서 응원 함성이 파도처럼 밀려왔다 사라졌다.' },
               { type: 'line', speaker: 'player', text: '나도 잠깐 쉴래.' },
@@ -467,7 +467,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '억지로 끌고 가서 다 같이 응원하자고 등 떠민다', affection: -1, tag: 'D09',
+            branch: 'neg', text: '억지로 끌고 가서 다 같이 응원하자고 등 떠민다', word: '응원 권유', affection: -1, tag: 'D09',
             script: [
               { type: 'line', speaker: 'player', text: '야, 가서 같이 응원하자!' },
               { type: 'narration', text: '손을 잡아끌었다.' },
@@ -483,7 +483,7 @@ window.ONYU_CHAPTERS = [
         situation: '계주 순서가 다가오는데, 그녀가 부담스러워 보이는 순간',
         options: [
           {
-            branch: 'pos', text: '크게 티 내지 않고 슬쩍 부담을 덜어줄 방법을 찾는다', affection: 2, tag: 'L10b',
+            branch: 'pos', text: '크게 티 내지 않고 슬쩍 부담을 덜어줄 방법을 찾는다', word: '슬쩍 돕기', affection: 2, tag: 'L10b',
             script: [
               { type: 'line', speaker: 'player', text: '(담임에게 다가가) 저희 조 순서 좀 바꿔도 될까요?' },
               { type: 'narration', text: '별일 아니라는 듯 자연스럽게 처리했다.' },
@@ -497,7 +497,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '다들 보란 듯이 큰 소리로 그녀 순서를 알린다', affection: -1, tag: 'D10',
+            branch: 'neg', text: '다들 보란 듯이 큰 소리로 그녀 순서를 알린다', word: '크게 알리기', affection: -1, tag: 'D10',
             script: [
               { type: 'line', speaker: 'player', text: '(크게 외치며) 다음 온이유 차례래!' },
               { type: 'narration', text: '여기저기서 시선이 몰렸다.' },
@@ -535,7 +535,7 @@ window.ONYU_CHAPTERS = [
         situation: '반 친구들은 소란스러운 놀이 구역으로 몰려가고',
         options: [
           {
-            branch: 'pos', text: '조용한 산책로 쪽으로 같이 걷자고 제안한다', affection: 2, tag: 'L11',
+            branch: 'pos', text: '조용한 산책로 쪽으로 같이 걷자고 제안한다', word: '산책로', affection: 2, tag: 'L11',
             script: [
               { type: 'line', speaker: 'player', text: '저쪽 산책로는 어때, 사람도 별로 없어 보이고.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(살짝 놀라며) 어떻게 알았어, 거기 가고 싶었는데.' },
@@ -547,7 +547,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '다 같이 시끄러운 쪽으로 가자고 이끈다', affection: -1, tag: 'D11',
+            branch: 'neg', text: '다 같이 시끄러운 쪽으로 가자고 이끈다', word: '놀이 구역', affection: -1, tag: 'D11',
             script: [
               { type: 'line', speaker: 'player', text: '야, 저기 놀이 구역 가자!' },
               { type: 'narration', text: '대답도 듣지 않고 앞장서 걸었다.' },
@@ -565,7 +565,7 @@ window.ONYU_CHAPTERS = [
         situation: '단풍을 배경으로 스케치를 하고 싶어하는 그녀',
         options: [
           {
-            branch: 'pos', text: '시간을 넉넉히 두고 그리게 기다려준다', affection: 2, tag: 'L12',
+            branch: 'pos', text: '시간을 넉넉히 두고 그리게 기다려준다', word: '기다림', affection: 2, tag: 'L12',
             script: [
               { type: 'line', speaker: 'player', text: '천천히 그려, 시간 많아.' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '진짜? 오래 걸릴 수도 있는데.' },
@@ -576,7 +576,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '버스 시간 늦는다며 재촉한다', affection: -1, tag: 'D12',
+            branch: 'neg', text: '버스 시간 늦는다며 재촉한다', word: '재촉', affection: -1, tag: 'D12',
             script: [
               { type: 'line', speaker: 'player', text: '빨리 좀 그려, 버스 시간 늦어.' },
               { type: 'narration', text: '손목시계를 자꾸 들여다봤다.' },
@@ -611,7 +611,7 @@ window.ONYU_CHAPTERS = [
         situation: '막힌 문제를 붙잡고 혼자 끙끙대는 그녀',
         options: [
           {
-            branch: 'pos', text: '아는 부분을 차분히 같이 짚어가며 설명해준다', affection: 2, tag: 'L13',
+            branch: 'pos', text: '아는 부분을 차분히 같이 짚어가며 설명해준다', word: '같이 풀기', affection: 2, tag: 'L13',
             script: [
               { type: 'line', speaker: 'player', text: '어디 봐봐.' },
               { type: 'narration', text: '문제집을 슬쩍 끌어와 같이 들여다봤다.' },
@@ -625,7 +625,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '별일 아니라는 듯 "그냥 넘어가" 하고 만다', affection: -1, tag: 'D13',
+            branch: 'neg', text: '별일 아니라는 듯 "그냥 넘어가" 하고 만다', word: '넘어가', affection: -1, tag: 'D13',
             script: [
               { type: 'line', speaker: 'player', text: '그냥 넘어가, 어차피 한 문제야.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(연필을 내려놓으며) ...그런가, 그렇겠지.' },
@@ -642,7 +642,7 @@ window.ONYU_CHAPTERS = [
         situation: '시험 스트레스로 예민해진 순간, 사소한 말다툼 직전',
         options: [
           {
-            branch: 'pos', text: '한 발 물러나 차분한 톤으로 다시 말을 건넨다', affection: 2, tag: 'L14',
+            branch: 'pos', text: '한 발 물러나 차분한 톤으로 다시 말을 건넨다', word: '진정', affection: 2, tag: 'L14',
             script: [
               { type: 'narration', text: '한 박자 쉬고, 목소리를 낮췄다.' },
               { type: 'line', speaker: 'player', text: '미안, 몰랐어. 많이 피곤하지.' },
@@ -653,7 +653,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '똑같이 날 선 말투로 맞받아친다', affection: -1, tag: 'D14',
+            branch: 'neg', text: '똑같이 날 선 말투로 맞받아친다', word: '맞대응', affection: -1, tag: 'D14',
             script: [
               { type: 'line', speaker: 'player', text: '너나 한숨 좀 그만 쉬어.' },
               { type: 'narration', text: '그녀의 표정이 순간 굳었다.' },
@@ -688,7 +688,7 @@ window.ONYU_CHAPTERS = [
         situation: '눈이 내리기 시작하는 걸 먼저 알아챈 순간',
         options: [
           {
-            branch: 'pos', text: '잠깐 멈춰 서서 그녀와 함께 첫눈을 맞는다', affection: 2, tag: 'L15',
+            branch: 'pos', text: '잠깐 멈춰 서서 그녀와 함께 첫눈을 맞는다', word: '첫눈 맞기', affection: 2, tag: 'L15',
             script: [
               { type: 'narration', text: '발걸음을 멈추고 나란히 서서 눈을 올려다봤다. 눈송이가 속눈썹 위로 하나둘 내려앉았다.' },
               { type: 'line', speaker: 'player', text: '첫눈 좋아해?' },
@@ -700,7 +700,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '춥다며 서둘러 안으로 들어가 버린다', affection: -1, tag: 'D15',
+            branch: 'neg', text: '춥다며 서둘러 안으로 들어가 버린다', word: '안으로', affection: -1, tag: 'D15',
             script: [
               { type: 'line', speaker: 'player', text: '춥다, 빨리 들어가자.' },
               { type: 'narration', text: '대답도 안 듣고 성큼성큼 걸었다.' },
@@ -715,7 +715,7 @@ window.ONYU_CHAPTERS = [
         situation: '눈 쌓인 운동장을 가로질러 갈지, 돌아갈지',
         options: [
           {
-            branch: 'pos', text: '그녀가 원하는 대로 눈길을 천천히 함께 걷는다', affection: 2, tag: 'L16',
+            branch: 'pos', text: '그녀가 원하는 대로 눈길을 천천히 함께 걷는다', word: '눈길 걷기', affection: 2, tag: 'L16',
             script: [
               { type: 'line', speaker: 'player', text: '천천히 갈까?' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '(눈을 밟으며) 어차피 집 가봤자 할 것도 없어.' },
@@ -728,7 +728,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '빠른 길로만 혼자 앞장서서 걷는다', affection: -1, tag: 'D16',
+            branch: 'neg', text: '빠른 길로만 혼자 앞장서서 걷는다', word: '지름길', affection: -1, tag: 'D16',
             script: [
               { type: 'line', speaker: 'player', text: '이쪽이 빠른 길이야, 따라와.' },
               { type: 'narration', text: '눈길을 신경도 안 쓰고 성큼성큼 앞서갔다. 발자국이 어지럽게 눈밭을 헤집어놓았다.' },
@@ -761,7 +761,7 @@ window.ONYU_CHAPTERS = [
         situation: '새 반 친구들과 아직 서먹한 그녀 이야기를 듣는 순간',
         options: [
           {
-            branch: 'pos', text: '조급해하지 말라며 진지하게 들어준다', affection: 2, tag: 'L17',
+            branch: 'pos', text: '조급해하지 말라며 진지하게 들어준다', word: '경청', affection: 2, tag: 'L17',
             script: [
               { type: 'line', speaker: 'player', text: '천천히 해도 돼. 급할 거 없잖아.' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '(몸을 일으키며) ...그런가.' },
@@ -772,7 +772,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"금방 친해질 텐데 뭘" 하고 가볍게 넘긴다', affection: -1, tag: 'D17',
+            branch: 'neg', text: '"금방 친해질 텐데 뭘" 하고 가볍게 넘긴다', word: '낙관', affection: -1, tag: 'D17',
             script: [
               { type: 'line', speaker: 'player', text: '금방 친해질 텐데 뭘 그래.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(다시 엎드리며) ...그렇겠지.' },
@@ -788,7 +788,7 @@ window.ONYU_CHAPTERS = [
         situation: '점심시간마다 어디서 만날지 정하는 상황',
         options: [
           {
-            branch: 'pos', text: '그녀가 편한 조용한 자리로 맞춰준다', affection: 2, tag: 'L18',
+            branch: 'pos', text: '그녀가 편한 조용한 자리로 맞춰준다', word: '조용한 자리', affection: 2, tag: 'L18',
             script: [
               { type: 'line', speaker: 'player', text: '창가 구석 자리 어때, 사람도 별로 없던데.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 살짝 커지며) 어떻게 거기를.' },
@@ -799,7 +799,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '매번 시끌벅적한 급식실 중앙 자리를 고집한다', affection: -1, tag: 'D18',
+            branch: 'neg', text: '매번 시끌벅적한 급식실 중앙 자리를 고집한다', word: '북적한 자리', affection: -1, tag: 'D18',
             script: [
               { type: 'line', speaker: 'player', text: '오늘도 중앙 자리 가자, 애들 다 거기 있어.' },
               { type: 'narration', text: '대답도 안 듣고 자리를 맡으러 뛰어갔다.' },
@@ -838,7 +838,7 @@ window.ONYU_CHAPTERS = [
         situation: '동아리 전시 주제를 정하는 회의 시간',
         options: [
           {
-            branch: 'pos', text: '그녀의 아이디어를 진지하게 듣고 힘을 실어준다', affection: 2, tag: 'L19',
+            branch: 'pos', text: '그녀의 아이디어를 진지하게 듣고 힘을 실어준다', word: '지지', affection: 2, tag: 'L19',
             script: [
               { type: 'line', speaker: 'player', text: '그거 좋다. 부연설명 좀 해줄 수 있어?' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 반짝이며) 진짜? 음, 그러니까...' },
@@ -849,7 +849,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '별생각 없이 다수 의견 쪽으로 몰아간다', affection: -1, tag: 'D19',
+            branch: 'neg', text: '별생각 없이 다수 의견 쪽으로 몰아간다', word: '다수결', affection: -1, tag: 'D19',
             script: [
               { type: 'line', speaker: 'player', text: '그냥 다수결로 하죠, 다른 의견 없어요?' },
               { type: 'narration', text: '다른 목소리에 묻혀 그녀의 제안은 흐지부지 넘어갔다.' },
@@ -865,7 +865,7 @@ window.ONYU_CHAPTERS = [
         situation: '작업이 늦어져 동아리실에 둘만 남게 된 저녁',
         options: [
           {
-            branch: 'pos', text: '조용히 옆에서 같이 마무리 작업을 돕는다', affection: 2, tag: 'L20',
+            branch: 'pos', text: '조용히 옆에서 같이 마무리 작업을 돕는다', word: '마무리 돕기', affection: 2, tag: 'L20',
             script: [
               { type: 'line', speaker: 'player', text: '나 뭐 도와줄 거 없어?' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '그럼 이거 색칠 좀 해줄래.' },
@@ -876,7 +876,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '지루하다며 먼저 가겠다고 한다', affection: -1, tag: 'D20',
+            branch: 'neg', text: '지루하다며 먼저 가겠다고 한다', word: '먼저 가기', affection: -1, tag: 'D20',
             script: [
               { type: 'line', speaker: 'player', text: '나 먼저 갈게, 할 것도 없고.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(붓을 멈추고) ...어, 그래.' },
@@ -912,7 +912,7 @@ window.ONYU_CHAPTERS = [
         situation: '그녀가 조심스럽게 방학 계획을 묻는 순간',
         options: [
           {
-            branch: 'pos', text: '그녀와 시간을 맞출 수 있는 계획을 먼저 이야기한다', affection: 2, tag: 'L21',
+            branch: 'pos', text: '그녀와 시간을 맞출 수 있는 계획을 먼저 이야기한다', word: '계획 맞추기', affection: 2, tag: 'L21',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '저기, 방학 때 뭐 할 거야?' },
               { type: 'line', speaker: 'player', text: '딱히 없는데, 너랑 시간 맞춰볼까.' },
@@ -924,7 +924,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '별생각 없다는 듯 무성의하게 답한다', affection: -1, tag: 'D21',
+            branch: 'neg', text: '별생각 없다는 듯 무성의하게 답한다', word: '무계획', affection: -1, tag: 'D21',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '저기, 방학 때 뭐 할 거야?' },
               { type: 'line', speaker: 'player', text: '글쎄, 그때 가서 생각해보지 뭐.' },
@@ -941,7 +941,7 @@ window.ONYU_CHAPTERS = [
         situation: '어디서 만날지, 무엇을 할지 정하는 상황',
         options: [
           {
-            branch: 'pos', text: '시원한 실내에서 같이 게임하거나 쉴 수 있는 곳을 제안한다', affection: 2, tag: 'L22',
+            branch: 'pos', text: '시원한 실내에서 같이 게임하거나 쉴 수 있는 곳을 제안한다', word: '실내 놀이', affection: 2, tag: 'L22',
             script: [
               { type: 'line', speaker: 'player', text: 'PC방 가서 같이 게임할래? 에어컨 빵빵한 데로.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 반짝이며) 진심이야?' },
@@ -952,7 +952,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '정한 것 없이 즉흥적으로 아무 데나 가자고 한다', affection: -1, tag: 'D22',
+            branch: 'neg', text: '정한 것 없이 즉흥적으로 아무 데나 가자고 한다', word: '즉흥', affection: -1, tag: 'D22',
             script: [
               { type: 'line', speaker: 'player', text: '그냥 아무 데나 가지 뭐, 나가서 정하자.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(한숨) 이 더위에 밖에서 정하자고?' },
@@ -984,7 +984,7 @@ window.ONYU_CHAPTERS = [
         situation: '예상치 못한 만남에 반가움을 어떻게 표현할지',
         options: [
           {
-            branch: 'pos', text: '자연스럽게 웃으며 잠깐 같이 걷자고 한다', affection: 2, tag: 'L23',
+            branch: 'pos', text: '자연스럽게 웃으며 잠깐 같이 걷자고 한다', word: '같이 걷기', affection: 2, tag: 'L23',
             script: [
               { type: 'line', speaker: 'player', text: '(다가가며) 어, 여기서 다 만나네.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(돌아보며) 어? 진짜 방학인데도 마주치네.' },
@@ -997,7 +997,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '어색해서 서둘러 인사만 하고 지나친다', affection: -1, tag: 'D23',
+            branch: 'neg', text: '어색해서 서둘러 인사만 하고 지나친다', word: '인사만', affection: -1, tag: 'D23',
             script: [
               { type: 'line', speaker: 'player', text: '(어색하게) 어, 안녕. 그럼 나 이만.' },
               { type: 'narration', text: '인사만 하고 서둘러 다른 코너로 발걸음을 옮겼다.' },
@@ -1012,7 +1012,7 @@ window.ONYU_CHAPTERS = [
         situation: '매대에서 발견한 게임 관련 굿즈나 잡지를 두고',
         options: [
           {
-            branch: 'pos', text: '그녀가 좋아할 만한 걸 발견하고 알려준다', affection: 2, tag: 'L24',
+            branch: 'pos', text: '그녀가 좋아할 만한 걸 발견하고 알려준다', word: '굿즈 소개', affection: 2, tag: 'L24',
             script: [
               { type: 'line', speaker: 'player', text: '이거 롤 관련 잡지 아니야? 신간인데.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 커지며) 어, 진짜네. 나 이거 몰랐어.' },
@@ -1024,7 +1024,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '관심 없다는 듯 그냥 지나친다', affection: -1, tag: 'D24',
+            branch: 'neg', text: '관심 없다는 듯 그냥 지나친다', word: '지나침', affection: -1, tag: 'D24',
             script: [
               { type: 'line', speaker: 'player', text: '이런 거 뭐 하러 사, 그냥 가자.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(매대를 슬쩍 보다 손을 떼며) ...그래, 가자.' },
@@ -1058,7 +1058,7 @@ window.ONYU_CHAPTERS = [
         situation: '어디로 갈지 먼저 물어보는 상황',
         options: [
           {
-            branch: 'pos', text: '그녀가 좋아할 만한 곳을 미리 알아봐 제안한다', affection: 2, tag: 'L25',
+            branch: 'pos', text: '그녀가 좋아할 만한 곳을 미리 알아봐 제안한다', word: '미리 계획', affection: 2, tag: 'L25',
             script: [
               { type: 'line', speaker: 'player', text: '저번에 롤 신작 캐릭터 팝업스토어 생겼다던데, 가볼래?' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 커지며) 그거 어떻게 알았어?' },
@@ -1069,7 +1069,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '정한 거 없이 아무 데나 가자며 즉흥적으로 끈다', affection: -1, tag: 'D25',
+            branch: 'neg', text: '정한 거 없이 아무 데나 가자며 즉흥적으로 끈다', word: '즉흥', affection: -1, tag: 'D25',
             script: [
               { type: 'line', speaker: 'player', text: '몰라, 그냥 걷다가 아무 데나 들어가자.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(당황하며) 그래도 뭔가 정해놓지 그랬어.' },
@@ -1085,7 +1085,7 @@ window.ONYU_CHAPTERS = [
         situation: '"이거 데이트 같은 거 아니지?" 하고 얼버무리는 그녀',
         options: [
           {
-            branch: 'pos', text: '얼버무리지 않고 담담히 진심을 이야기한다', affection: 2, tag: 'L26',
+            branch: 'pos', text: '얼버무리지 않고 담담히 진심을 이야기한다', word: '진심', affection: 2, tag: 'L26',
             script: [
               { type: 'line', speaker: 'player', text: '데이트 맞는 것 같은데.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(당황하며) 어, 그렇게 바로 말하면...' },
@@ -1099,7 +1099,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '괜히 겉으로만 아니라며 딴청을 부린다', affection: -1, tag: 'D26',
+            branch: 'neg', text: '괜히 겉으로만 아니라며 딴청을 부린다', word: '딴청', affection: -1, tag: 'D26',
             script: [
               { type: 'line', speaker: 'player', text: '에이, 데이트는 무슨. 그냥 노는 거지.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(표정이 살짝 굳으며) ...그렇지, 그냥 노는 거지.' },
@@ -1136,7 +1136,7 @@ window.ONYU_CHAPTERS = [
         situation: '부스 콘셉트를 두고 의견이 갈리는 순간',
         options: [
           {
-            branch: 'pos', text: '그녀의 그림이 잘 드러나는 방향으로 힘을 실어준다', affection: 2, tag: 'L27',
+            branch: 'pos', text: '그녀의 그림이 잘 드러나는 방향으로 힘을 실어준다', word: '그녀 편', affection: 2, tag: 'L27',
             script: [
               { type: 'line', speaker: 'player', text: '그거 좋다. 조명이랑 배치도 그림 위주로 잡으면 되겠네.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 커지며) 진짜 그렇게 생각해?' },
@@ -1147,7 +1147,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '그녀 의견은 제쳐두고 다른 의견을 밀어붙인다', affection: -1, tag: 'D27',
+            branch: 'neg', text: '그녀 의견은 제쳐두고 다른 의견을 밀어붙인다', word: '다른 의견', affection: -1, tag: 'D27',
             script: [
               { type: 'line', speaker: 'player', text: '그것보단 다른 애 의견이 낫지 않아?' },
               { type: 'narration', text: '그녀의 제안은 그대로 묻혔다.' },
@@ -1162,7 +1162,7 @@ window.ONYU_CHAPTERS = [
         situation: '마감이 촉박해 다들 예민해진 저녁',
         options: [
           {
-            branch: 'pos', text: '분위기를 살피며 차분하게 역할을 나눈다', affection: 2, tag: 'L28',
+            branch: 'pos', text: '분위기를 살피며 차분하게 역할을 나눈다', word: '역할 나누기', affection: 2, tag: 'L28',
             script: [
               { type: 'line', speaker: 'player', text: '자, 소리 지르지 말고. 나눠서 하자 — 나는 배경, 넌 인물.' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '(한숨 돌리며) 그래, 그게 낫겠다.' },
@@ -1171,7 +1171,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '급하다고 다그치며 몰아붙인다', affection: -1, tag: 'D28',
+            branch: 'neg', text: '급하다고 다그치며 몰아붙인다', word: '다그침', affection: -1, tag: 'D28',
             script: [
               { type: 'line', speaker: 'player', text: '빨리 좀 해, 시간 없어.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(붓을 멈추고) ...알아, 나도.' },
@@ -1205,7 +1205,7 @@ window.ONYU_CHAPTERS = [
         situation: '부스를 구경하러 온 다른 반 친구들 앞에서',
         options: [
           {
-            branch: 'pos', text: '그녀의 작품을 진심으로, 자세히 소개한다', affection: 2, tag: 'L29',
+            branch: 'pos', text: '그녀의 작품을 진심으로, 자세히 소개한다', word: '작품 소개', affection: 2, tag: 'L29',
             script: [
               { type: 'line', speaker: 'player', text: '얘가 그린 거예요. 여기 명암 처리 진짜 잘 봐야 돼요.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(당황하며) 그렇게까지 자세히 안 해도...' },
@@ -1217,7 +1217,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"그냥 그림이야" 하고 대충 넘긴다', affection: -1, tag: 'D29',
+            branch: 'neg', text: '"그냥 그림이야" 하고 대충 넘긴다', word: '대충', affection: -1, tag: 'D29',
             script: [
               { type: 'line', speaker: 'player', text: '아, 그냥 동아리에서 그린 그림이에요.' },
               { type: 'narration', text: '대충 흘려 넘긴 소개에, 학생들도 금세 흥미를 잃고 지나갔다.' },
@@ -1233,7 +1233,7 @@ window.ONYU_CHAPTERS = [
         situation: '부스 정리 후, 뒤풀이는 어디서',
         options: [
           {
-            branch: 'pos', text: '동아리 친구들과 조용히 마무리 시간을 갖는다', affection: 2, tag: 'L30',
+            branch: 'pos', text: '동아리 친구들과 조용히 마무리 시간을 갖는다', word: '동아리끼리', affection: 2, tag: 'L30',
             script: [
               { type: 'line', speaker: 'player', text: '근처 카페에서 조용히 마무리하는 건 어때요?' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(안도하며) 그게 낫겠다.' },
@@ -1244,7 +1244,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '시끌벅적한 뒤풀이 자리로 끌고 간다', affection: -1, tag: 'D30',
+            branch: 'neg', text: '시끌벅적한 뒤풀이 자리로 끌고 간다', word: '뒤풀이', affection: -1, tag: 'D30',
             script: [
               { type: 'line', speaker: 'player', text: '다 같이 노래방 가죠!' },
               { type: 'narration', text: '그녀는 마지못해 따라갔지만, 내내 구석 자리에서 말이 없었다.' },
@@ -1276,7 +1276,7 @@ window.ONYU_CHAPTERS = [
         situation: '어디서 시간을 보낼지 정하는 순간',
         options: [
           {
-            branch: 'pos', text: '사람 적은 조용한 카페나 전시를 제안한다', affection: 2, tag: 'L31',
+            branch: 'pos', text: '사람 적은 조용한 카페나 전시를 제안한다', word: '조용한 카페', affection: 2, tag: 'L31',
             script: [
               { type: 'line', speaker: 'player', text: '저 골목에 보드게임 카페 생겼던데, 조용하고 사람도 별로 없대.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 커지며) 오, 거기 게임 종류 많아?' },
@@ -1289,7 +1289,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '사람 몰리는 번화가 한복판을 고집한다', affection: -1, tag: 'D31',
+            branch: 'neg', text: '사람 몰리는 번화가 한복판을 고집한다', word: '번화가', affection: -1, tag: 'D31',
             script: [
               { type: 'line', speaker: 'player', text: '크리스마스인데 번화가 가서 분위기 좀 느껴야지.' },
               { type: 'narration', text: '인파에 밀려 제대로 걷기도 힘들 지경이었다.' },
@@ -1311,7 +1311,7 @@ window.ONYU_CHAPTERS = [
         situation: '헤어지기 직전, 작은 선물을 건네는 순간',
         options: [
           {
-            branch: 'pos', text: '직접 고르거나 만든 정성이 담긴 것을 건넨다', affection: 2, tag: 'L32',
+            branch: 'pos', text: '직접 고르거나 만든 정성이 담긴 것을 건넨다', word: '손수 선물', affection: 2, tag: 'L32',
             script: [
               { type: 'line', speaker: 'player', text: '(봉투를 건네며) 이거, 크리스마스 선물.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(놀라며) 뭐야, 준비했어?' },
@@ -1323,7 +1323,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '급하게 아무거나 사 온 티가 나는 걸 건넨다', affection: -1, tag: 'D32',
+            branch: 'neg', text: '급하게 아무거나 사 온 티가 나는 걸 건넨다', word: '급한 선물', affection: -1, tag: 'D32',
             script: [
               { type: 'line', speaker: 'player', text: '(편의점 봉투를 건네며) 자, 크리스마스 선물.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(봉투 안을 보고) ...이거 방금 편의점에서 산 거지?' },
@@ -1354,7 +1354,7 @@ window.ONYU_CHAPTERS = [
         situation: '올 한 해 기억에 남는 순간을 묻는 그녀',
         options: [
           {
-            branch: 'pos', text: '함께 쌓아온 순간들을 하나하나 꺼내며 이야기한다', affection: 2, tag: 'L33',
+            branch: 'pos', text: '함께 쌓아온 순간들을 하나하나 꺼내며 이야기한다', word: '추억 꺼내기', affection: 2, tag: 'L33',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '너는 올해 뭐가 제일 기억에 남아?' },
               { type: 'line', speaker: 'player', text: '음, 축제 때 부스 꾸미던 거? 아니면 방학 때 우연히 마주친 거.' },
@@ -1364,7 +1364,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '딱히 기억나는 게 없다는 듯 무심하게 답한다', affection: -1, tag: 'D33',
+            branch: 'neg', text: '딱히 기억나는 게 없다는 듯 무심하게 답한다', word: '무심', affection: -1, tag: 'D33',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '너는 올해 뭐가 제일 기억에 남아?' },
               { type: 'line', speaker: 'player', text: '글쎄, 딱히 기억나는 거 없는데.' },
@@ -1382,7 +1382,7 @@ window.ONYU_CHAPTERS = [
         situation: '내년에 3학년이 된다는 부담을 슬쩍 내비치는 순간',
         options: [
           {
-            branch: 'pos', text: '진지하게 그녀의 걱정을 들어준다', affection: 2, tag: 'L34',
+            branch: 'pos', text: '진지하게 그녀의 걱정을 들어준다', word: '경청', affection: 2, tag: 'L34',
             script: [
               { type: 'line', speaker: 'player', text: '뭐가 제일 걱정돼?' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '그냥, 다 처음이니까. 잘할 수 있을지 모르겠어.' },
@@ -1391,7 +1391,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"다 잘될 거야" 하고 가볍게 흘려듣는다', affection: -1, tag: 'D34',
+            branch: 'neg', text: '"다 잘될 거야" 하고 가볍게 흘려듣는다', word: '괜찮을 거야', affection: -1, tag: 'D34',
             script: [
               { type: 'line', speaker: 'player', text: '에이, 다 잘될 거야. 걱정을 왜 해.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(표정이 살짝 굳으며) ...그래, 그렇겠지.' },
@@ -1424,7 +1424,7 @@ window.ONYU_CHAPTERS = [
         situation: '진로를 두고 조심스럽게 속내를 털어놓는 순간',
         options: [
           {
-            branch: 'pos', text: '끝까지 진지하게 듣고 그녀의 꿈을 존중해준다', affection: 2, tag: 'L35',
+            branch: 'pos', text: '끝까지 진지하게 듣고 그녀의 꿈을 존중해준다', word: '꿈 존중', affection: 2, tag: 'L35',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '사실, 미대 실기 준비를 해볼까 진지하게 생각 중이야.' },
               { type: 'line', speaker: 'player', text: '그래? 어쩌다가.' },
@@ -1434,7 +1434,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"그냥 편한 길로 가" 하며 가볍게 조언한다', affection: -1, tag: 'D35',
+            branch: 'neg', text: '"그냥 편한 길로 가" 하며 가볍게 조언한다', word: '편한 길', affection: -1, tag: 'D35',
             script: [
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '사실, 미대 실기 준비를 해볼까 진지하게 생각 중이야.' },
               { type: 'line', speaker: 'player', text: '그거 힘들다던데, 그냥 무난한 데로 가는 게 낫지 않아?' },
@@ -1452,7 +1452,7 @@ window.ONYU_CHAPTERS = [
         situation: '부모님 반대 등 현실적인 걱정을 말하는 순간',
         options: [
           {
-            branch: 'pos', text: '섣불리 답을 주지 않고 그녀 편에서 같이 고민한다', affection: 2, tag: 'L36',
+            branch: 'pos', text: '섣불리 답을 주지 않고 그녀 편에서 같이 고민한다', word: '같이 고민', affection: 2, tag: 'L36',
             script: [
               { type: 'line', speaker: 'player', text: '그 얘기 듣고 넌 어떤 생각이 들었어?' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '...솔직히 나도 확신은 없어. 그냥 겁만 나는 건지, 진짜 안 맞는 건지도 헷갈리고.' },
@@ -1464,7 +1464,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '대수롭지 않다는 듯 서둘러 결론부터 내린다', affection: -1, tag: 'D36',
+            branch: 'neg', text: '대수롭지 않다는 듯 서둘러 결론부터 내린다', word: '결론부터', affection: -1, tag: 'D36',
             script: [
               { type: 'line', speaker: 'player', text: '부모님 말씀도 일리 있네. 그냥 그쪽으로 안 가는 게 낫겠다.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 피하며) ...너까지 그렇게 말하니까 할 말이 없네.' },
@@ -1494,7 +1494,7 @@ window.ONYU_CHAPTERS = [
         situation: '갑자기 일정이 바뀌어 약속이 취소되는 순간',
         options: [
           {
-            branch: 'pos', text: '괜찮다며 그녀의 사정을 먼저 배려한다', affection: 2, tag: 'L37',
+            branch: 'pos', text: '괜찮다며 그녀의 사정을 먼저 배려한다', word: '이해', affection: 2, tag: 'L37',
             script: [
               { type: 'line', speaker: 'player', text: '어쩔 수 없지, 그런 거면 당연히 그쪽이 먼저지.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(눈이 살짝 커지며) ...화 안 내?' },
@@ -1503,7 +1503,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '서운함을 대놓고 티 내며 몰아붙인다', affection: -1, tag: 'D37',
+            branch: 'neg', text: '서운함을 대놓고 티 내며 몰아붙인다', word: '서운함', affection: -1, tag: 'D37',
             script: [
               { type: 'line', speaker: 'player', text: '또? 요즘 맨날 이런 식이네.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 내리며) ...나도 이러고 싶어서 이러는 거 아니야.' },
@@ -1521,7 +1521,7 @@ window.ONYU_CHAPTERS = [
         situation: '지친 얼굴로 잠깐 쉬러 나온 그녀와 마주친 순간',
         options: [
           {
-            branch: 'pos', text: '부담 주지 않고 조용히 곁에 있어준다', affection: 2, tag: 'L38',
+            branch: 'pos', text: '부담 주지 않고 조용히 곁에 있어준다', word: '조용히 곁에', affection: 2, tag: 'L38',
             script: [
               { type: 'line', speaker: 'player', text: '그냥 옆에 좀 앉아 있어도 돼? 아무 말 안 할게.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(피식 웃으며) 뭐야 그게. ...근데, 그래 줘.' },
@@ -1533,7 +1533,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '이것저것 캐물으며 계속 말을 건다', affection: -1, tag: 'D38',
+            branch: 'neg', text: '이것저것 캐물으며 계속 말을 건다', word: '캐묻기', affection: -1, tag: 'D38',
             script: [
               { type: 'line', speaker: 'player', text: '학원 어때? 힘들지? 선생님은 어떤 사람이야?' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(지친 목소리로) ...지금 그거 다 대답할 힘이 없어.' },
@@ -1563,7 +1563,7 @@ window.ONYU_CHAPTERS = [
         situation: '오랜만에 잠깐 짬이 난 그녀와의 짧은 만남',
         options: [
           {
-            branch: 'pos', text: '짧은 시간이라도 온전히 집중해서 함께한다', affection: 2, tag: 'L39',
+            branch: 'pos', text: '짧은 시간이라도 온전히 집중해서 함께한다', word: '집중', affection: 2, tag: 'L39',
             script: [
               { type: 'line', speaker: 'player', text: '시간 얼마 없으니까, 딴생각 말고 이 시간에만 집중하자.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃으며) 그거 좋다. 딱 그렇게만 하자.' },
@@ -1575,7 +1575,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '아쉬움을 티 내며 더 있다 가라고 붙잡는다', affection: -1, tag: 'D39',
+            branch: 'neg', text: '아쉬움을 티 내며 더 있다 가라고 붙잡는다', word: '붙잡기', affection: -1, tag: 'D39',
             script: [
               { type: 'line', speaker: 'player', text: '벌써 가야 돼? 조금만 더 있다 가.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시계를 보며) ...나도 그러고 싶은데, 늦으면 안 돼서.' },
@@ -1594,7 +1594,7 @@ window.ONYU_CHAPTERS = [
         situation: '학원 숙제로 지친 그녀가 그림 이야기를 꺼내는 순간',
         options: [
           {
-            branch: 'pos', text: '힘든 와중에도 이어가는 노력을 진심으로 알아준다', affection: 2, tag: 'L40',
+            branch: 'pos', text: '힘든 와중에도 이어가는 노력을 진심으로 알아준다', word: '노력 인정', affection: 2, tag: 'L40',
             script: [
               { type: 'line', speaker: 'player', text: '진짜 많이 늘었네. 이 정도면 매일 손목 나갈 만하다.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 반짝이며) 그치? 알아봐 주니까 좋다.' },
@@ -1603,7 +1603,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"그렇게까지 해야 하나" 하고 가볍게 말한다', affection: -1, tag: 'D40',
+            branch: 'neg', text: '"그렇게까지 해야 하나" 하고 가볍게 말한다', word: '의문', affection: -1, tag: 'D40',
             script: [
               { type: 'line', speaker: 'player', text: '그렇게까지 힘들게 해야 되는 거야? 적당히 해도 되지 않아?' },
               { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(스케치북을 덮으며) ...적당히 해서 될 거였으면 애초에 시작도 안 했어.' },
@@ -1632,7 +1632,7 @@ window.ONYU_CHAPTERS = [
         situation: '애써 괜찮은 척하는 그녀의 모습을 알아챈 순간',
         options: [
           {
-            branch: 'pos', text: '무리하지 말라고 솔직하게 걱정을 전한다', affection: 2, tag: 'L41',
+            branch: 'pos', text: '무리하지 말라고 솔직하게 걱정을 전한다', word: '걱정 전하기', affection: 2, tag: 'L41',
             script: [
               { type: 'line', speaker: 'player', text: '괜찮다는 말, 나한테까지 안 해도 돼. 힘들면 힘들다고 해.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(잠시 침묵하다) ...사실 요즘 진짜 힘들어. 근데 이 정도로 힘들다고 하기도 좀 그래서.' },
@@ -1641,7 +1641,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '눈치채지 못한 척 평소처럼 대한다', affection: -1, tag: 'D41',
+            branch: 'neg', text: '눈치채지 못한 척 평소처럼 대한다', word: '모른 척', affection: -1, tag: 'D41',
             script: [
               { type: 'line', speaker: 'player', text: '그래? 그럼 다행이고. 아무튼 오늘 뭐 했는데?' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(무미건조하게) ...그냥, 뭐. 매일 똑같지.' },
@@ -1661,7 +1661,7 @@ window.ONYU_CHAPTERS = [
         situation: '갑자기 예민하게 반응하고 후회하는 그녀',
         options: [
           {
-            branch: 'pos', text: '서운해하지 않고 이해한다는 태도를 보인다', affection: 2, tag: 'L42',
+            branch: 'pos', text: '서운해하지 않고 이해한다는 태도를 보인다', word: '이해', affection: 2, tag: 'L42',
             script: [
               { type: 'line', speaker: 'player', text: '괜찮아, 요즘 많이 지쳤나 보다.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(당황하며) ...미안. 나도 모르게 그런 말이 나왔어. 너한테 할 말은 아니었는데.' },
@@ -1673,7 +1673,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '왜 그렇게까지 화를 내냐며 맞받아친다', affection: -1, tag: 'D42',
+            branch: 'neg', text: '왜 그렇게까지 화를 내냐며 맞받아친다', word: '맞대응', affection: -1, tag: 'D42',
             script: [
               { type: 'line', speaker: 'player', text: '뭘 그렇게까지 화를 내? 나도 어이없네.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 떨구며) ...미안해. 근데 그렇게 받아치면 나도 할 말이 없다.' },
@@ -1703,7 +1703,7 @@ window.ONYU_CHAPTERS = [
         situation: '진로 고민을 조심스럽게 털어놓는 그녀',
         options: [
           {
-            branch: 'pos', text: '끝까지 차분히 듣고 나서 진지하게 답한다', affection: 2, tag: 'L43',
+            branch: 'pos', text: '끝까지 차분히 듣고 나서 진지하게 답한다', word: '끝까지 듣기', affection: 2, tag: 'L43',
             script: [
               { type: 'line', speaker: 'player', text: '왜 바꾸고 싶어졌는데? 끝까지 얘기해봐.' },
               { type: 'line', speaker: 'onyu', expr: 'calm', text: '포트폴리오 방향이 거기랑 더 잘 맞는 것 같아서. 그리고... (한참 이야기를 이어간다)' },
@@ -1712,7 +1712,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '제대로 듣지도 않고 성급하게 조언부터 한다', affection: -1, tag: 'D43',
+            branch: 'neg', text: '제대로 듣지도 않고 성급하게 조언부터 한다', word: '섣부른 조언', affection: -1, tag: 'D43',
             script: [
               { type: 'line', speaker: 'player', text: '어차피 다 거기서 거기 아니야? 그냥 원래 생각한 대로 가.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(말을 멈추며) ...아직 다 얘기도 안 했는데.' },
@@ -1731,7 +1731,7 @@ window.ONYU_CHAPTERS = [
         situation: '그 뒤로 며칠간 서먹해진 분위기',
         options: [
           {
-            branch: 'pos', text: '손편지에 그때의 진심을 담아 전한다', affection: 2, tag: 'L44',
+            branch: 'pos', text: '손편지에 그때의 진심을 담아 전한다', word: '손편지', affection: 2, tag: 'L44',
             script: [
               { type: 'narration', text: '말로는 풀기 어려울 것 같아, 편지지를 사서 그날 못 다 들은 미안함과 진심을 꾹꾹 눌러 적었다. 다음 날, 그녀의 책상 위에 조용히 편지를 올려두었다.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(편지를 발견하고 멈칫하며) ...이게 뭐야.' },
@@ -1741,7 +1741,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '아무 일 없었다는 듯 가볍게 넘어가려 한다', affection: -1, tag: 'D44',
+            branch: 'neg', text: '아무 일 없었다는 듯 가볍게 넘어가려 한다', word: '넘어가기', affection: -1, tag: 'D44',
             script: [
               { type: 'line', speaker: 'player', text: '왜 요즘 그렇게 새침해? 그냥 원래대로 지내자.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 피하며) ...나는 딱히 티 낸 적 없는데.' },
@@ -1766,7 +1766,7 @@ window.ONYU_CHAPTERS = [
         situation: '어떻게 먼저 말을 걸지 고민하는 순간',
         options: [
           {
-            branch: 'pos', text: '그날의 진심을 담아 솔직하게 사과한다', affection: 2, tag: 'L45',
+            branch: 'pos', text: '그날의 진심을 담아 솔직하게 사과한다', word: '사과', affection: 2, tag: 'L45',
             script: [
               { type: 'line', speaker: 'player', text: '그때 제대로 안 듣고 성급하게 말해서 미안해. 편지에 못다 한 말도 있는데, 지금 직접 하고 싶어서.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠시 눈을 마주치다) ...편지, 다 읽었어. 몇 번을 다시 읽었는지 몰라.' },
@@ -1775,7 +1775,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '아무 일 없었다는 듯 어물쩍 넘어가려 한다', affection: -1, tag: 'D45',
+            branch: 'neg', text: '아무 일 없었다는 듯 어물쩍 넘어가려 한다', word: '어물쩍', affection: -1, tag: 'D45',
             script: [
               { type: 'line', speaker: 'player', text: '어제 일은 그냥 잊자. 우리 사이에 뭘 그런 걸로.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(시선을 내리며) ...그렇게 넘어가면, 편지는 왜 준 거야?' },
@@ -1793,7 +1793,7 @@ window.ONYU_CHAPTERS = [
         situation: '조심스럽게 마음을 여는 그녀의 반응',
         options: [
           {
-            branch: 'pos', text: '서두르지 않고 그녀의 속도에 맞춰 기다린다', affection: 2, tag: 'L46',
+            branch: 'pos', text: '서두르지 않고 그녀의 속도에 맞춰 기다린다', word: '기다림', affection: 2, tag: 'L46',
             script: [
               { type: 'line', speaker: 'player', text: '답 안 해도 돼. 그냥 마음 편해지면 그걸로 됐어.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(놀란 듯 바라보며) ...재촉 안 해?' },
@@ -1805,7 +1805,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '화해했으니 됐다며 성급하게 넘어가려 한다', affection: -1, tag: 'D46',
+            branch: 'neg', text: '화해했으니 됐다며 성급하게 넘어가려 한다', word: '서두름', affection: -1, tag: 'D46',
             script: [
               { type: 'line', speaker: 'player', text: '이제 화해했으니까 됐네. 다음 얘기 하자.' },
               { type: 'line', speaker: 'onyu', expr: 'surprised', text: '(당황하며) ...나 아직 하고 싶은 말 다 못 했는데.' },
@@ -1832,7 +1832,7 @@ window.ONYU_CHAPTERS = [
         situation: '오랜만에 무얼 하고 싶은지 물어보는 순간',
         options: [
           {
-            branch: 'pos', text: '그녀가 평소 좋아하던 걸 기억해 제안한다', affection: 2, tag: 'L47',
+            branch: 'pos', text: '그녀가 평소 좋아하던 걸 기억해 제안한다', word: '취향 기억', affection: 2, tag: 'L47',
             script: [
               { type: 'line', speaker: 'player', text: '너 롤 좋아하잖아. 오랜만에 피시방 가서 같이 하는 거 어때?' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 확 밝아지며) 진짜? 완전 좋지!' },
@@ -1841,7 +1841,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '정한 것 없이 즉흥적으로 여기저기 끌고 다닌다', affection: -1, tag: 'D47',
+            branch: 'neg', text: '정한 것 없이 즉흥적으로 여기저기 끌고 다닌다', word: '즉흥', affection: -1, tag: 'D47',
             script: [
               { type: 'line', speaker: 'player', text: '일단 여기부터 가보자. 정하고 말고 할 것도 없지.' },
               { type: 'line', speaker: 'onyu', expr: 'pouty', text: '(끌려가며) ...나한테 물어본 의미가 없잖아.' },
@@ -1864,7 +1864,7 @@ window.ONYU_CHAPTERS = [
         situation: '하루를 마무리하며 서로에게 솔직해지는 순간',
         options: [
           {
-            branch: 'pos', text: '가볍지 않게, 진지한 마음을 그대로 전한다', affection: 2, tag: 'L48',
+            branch: 'pos', text: '가볍지 않게, 진지한 마음을 그대로 전한다', word: '진지하게', affection: 2, tag: 'L48',
             script: [
               { type: 'line', speaker: 'player', text: '나도 오늘 진짜 좋았어. 요즘 계속 이런 시간이 그리웠거든.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(잠시 눈을 마주치다) ...나도, 사실. 요즘 너무 나만 힘든 척했나 싶기도 하고.' },
@@ -1873,7 +1873,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '분위기가 어색해 농담으로 얼버무린다', affection: -1, tag: 'D48',
+            branch: 'neg', text: '분위기가 어색해 농담으로 얼버무린다', word: '농담', affection: -1, tag: 'D48',
             script: [
               { type: 'line', speaker: 'player', text: '고맙긴, 오늘 내가 캐리했지.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(어색하게 웃으며) ...그렇게 넘기는 거야?' },
@@ -1900,7 +1900,7 @@ window.ONYU_CHAPTERS = [
         situation: '시험장 앞에서 무슨 말을 건넬지',
         options: [
           {
-            branch: 'pos', text: '부담 주지 않는 담백한 응원의 말을 건넨다', affection: 2, tag: 'L49',
+            branch: 'pos', text: '부담 주지 않는 담백한 응원의 말을 건넨다', word: '담백한 응원', affection: 2, tag: 'L49',
             script: [
               { type: 'line', speaker: 'player', text: '지금까지 해온 대로만 하고 와. 그거면 충분해.' },
               { type: 'line', speaker: 'onyu', expr: 'shy', text: '(작게 숨을 내쉬며) ...그 말이 딱 필요했어. 고마워.' },
@@ -1909,7 +1909,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '긴장하게 만드는 거창한 말을 늘어놓는다', affection: -1, tag: 'D49',
+            branch: 'neg', text: '긴장하게 만드는 거창한 말을 늘어놓는다', word: '거창한 말', affection: -1, tag: 'D49',
             script: [
               { type: 'line', speaker: 'player', text: '오늘 진짜 인생 걸린 날이잖아. 후회 없이 다 쏟아붓고 와!' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(표정이 굳으며) ...안 그래도 떨리는데, 그런 말은 좀.' },
@@ -1926,7 +1926,7 @@ window.ONYU_CHAPTERS = [
         situation: '시험이 끝나고 지쳐 나온 그녀를 맞이하는 순간',
         options: [
           {
-            branch: 'pos', text: '결과를 묻지 않고 먼저 고생했다고 다독인다', affection: 2, tag: 'L50',
+            branch: 'pos', text: '결과를 묻지 않고 먼저 고생했다고 다독인다', word: '다독임', affection: 2, tag: 'L50',
             script: [
               { type: 'line', speaker: 'player', text: '진짜 고생 많았어. 오늘 하루 종일 힘들었을 텐데.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(눈시울이 붉어지며) ...그 말이 왜 이렇게 눈물 나게 하지.' },
@@ -1935,7 +1935,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '시험이 어땠는지부터 다급하게 캐묻는다', affection: -1, tag: 'D50',
+            branch: 'neg', text: '시험이 어땠는지부터 다급하게 캐묻는다', word: '결과 묻기', affection: -1, tag: 'D50',
             script: [
               { type: 'line', speaker: 'player', text: '어땠어? 잘 봤어? 시간은 안 모자랐어?' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(지친 목소리로) ...지금 그것부터 묻는 거야?' },
@@ -1966,7 +1966,7 @@ window.ONYU_CHAPTERS = [
         situation: '3학년의 첫눈이 내리는 날',
         options: [
           {
-            branch: 'pos', text: '잠깐 멈춰 서서 첫눈을 같이 맞이한다', affection: 2, tag: 'L51',
+            branch: 'pos', text: '잠깐 멈춰 서서 첫눈을 같이 맞이한다', word: '첫눈 맞기', affection: 2, tag: 'L51',
             script: [
               { type: 'line', speaker: 'player', text: '그러네, 잠깐 서서 좀 보고 가자.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(눈이 반짝이며) 역시, 이런 건 그냥 지나치면 안 되지.' },
@@ -1977,7 +1977,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '춥다며 갑자기 다른 곳으로 이끈다', affection: -1, tag: 'D51',
+            branch: 'neg', text: '춥다며 갑자기 다른 곳으로 이끈다', word: '자리 옮기기', affection: -1, tag: 'D51',
             script: [
               { type: 'line', speaker: 'player', text: '춥다, 얼른 들어가자.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(아쉬운 얼굴로 끌려가며) ...조금만 더 보면 안 됐을까.' },
@@ -1994,7 +1994,7 @@ window.ONYU_CHAPTERS = [
         situation: '지난 3년을 돌아보게 되는 밤',
         options: [
           {
-            branch: 'pos', text: '함께 쌓아온 순간들을 하나하나 꺼내본다', affection: 2, tag: 'L52',
+            branch: 'pos', text: '함께 쌓아온 순간들을 하나하나 꺼내본다', word: '추억 꺼내기', affection: 2, tag: 'L52',
             script: [
               { type: 'line', speaker: 'player', text: '처음 만났을 때 기억나? 그때 완전 낯가렸잖아.' },
               { type: 'line', speaker: 'onyu', expr: 'smile', text: '(웃음 섞인 목소리로) 야, 그건 너도 마찬가지였거든? 근데 진짜 많은 일이 있었네.' },
@@ -2003,7 +2003,7 @@ window.ONYU_CHAPTERS = [
             ],
           },
           {
-            branch: 'neg', text: '"그냥 지나간 거지 뭐" 하고 가볍게 웃어넘긴다', affection: -1, tag: 'D52',
+            branch: 'neg', text: '"그냥 지나간 거지 뭐" 하고 가볍게 웃어넘긴다', word: '웃어넘김', affection: -1, tag: 'D52',
             script: [
               { type: 'line', speaker: 'player', text: '뭐, 3년이야 다 그냥 지나간 거지.' },
               { type: 'line', speaker: 'onyu', expr: 'worried', text: '(살짝 서운한 티를 내며) ...그렇게 간단하게 정리할 일인가.' },

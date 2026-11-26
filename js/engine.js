@@ -494,7 +494,7 @@ function onyuRenderCurrentNode() {
       fill.className = 'choice-fill';
       var label = document.createElement('span');
       label.className = 'choice-label';
-      label.textContent = opt.text;
+      label.textContent = opt.word || opt.text;
       btn.appendChild(fill);
       btn.appendChild(label);
       btn.addEventListener('click', function (evt) { onyuSelectChoice(node, opt, evt, btn, fill); });
@@ -885,7 +885,7 @@ function onyuSelectChoice(choiceNode, option, evt, clickedBtn, fillEl) {
     choiceId: onyuChoiceAnalyticsId(window.ONYU_STATE.currentChapterId, choiceNode),
     optionId: option.id || 'option-' + String((option.__analyticsIndex === undefined ? 0 : option.__analyticsIndex) + 1),
   });
-  onyuBacklogPush('', option.text, 'choice');
+  onyuBacklogPush('', option.word || option.text, 'choice');
   window.ONYU_STATE.affection += option.affection;
   onyuFrameStack.push({ list: option.script, i: 0 });
 
