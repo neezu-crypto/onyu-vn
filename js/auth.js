@@ -12,6 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
+import { createSeriesLogin } from './series-login.js?v=20261128-kit3';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAZcjQPHphENs-Bb7IfdL2qTtOMhJrRP54',
@@ -29,9 +30,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const functions = getFunctions(app, 'us-central1');
-const googleProvider = new GoogleAuthProvider();
-const linkGoogleAccountFn = httpsCallable(functions, 'linkGoogleAccount');
-const linkKakaoAccountFn = httpsCallable(functions, 'linkKakaoAccount');
 const requestStreamerVerificationFn = httpsCallable(functions, 'requestStreamerVerification');
 // 게임별 서버 함수 이름은 js/game-config.js의 ONYU_SERVER_FUNCTIONS(엔진 분리 1단계).
 const SERVER_FUNCTIONS = window.ONYU_SERVER_FUNCTIONS;
@@ -312,8 +310,6 @@ let readyResolve;
 let readyResolved = false;
 window.onyuAuthReady = new Promise((resolve) => { readyResolve = resolve; });
 
-const loginOverlay = document.getElementById('onyu-login-overlay');
-const streamerOverlay = document.getElementById('onyu-streamer-overlay');
 const confirmOverlay = document.getElementById('onyu-confirm-overlay');
 const authStatusEl = document.getElementById('onyu-auth-status');
 const authBtn = document.getElementById('onyu-auth-btn');
@@ -326,15 +322,6 @@ const donationIntegrationStateEl = document.getElementById('onyu-donation-integr
 const donationIntegrationDescriptionEl = document.getElementById('onyu-donation-integration-description');
 const donationIntegrationToggleEl = document.getElementById('onyu-donation-integration-toggle');
 const donationIntegrationConnectEl = document.getElementById('onyu-donation-integration-connect');
-const streamerMessageEl = document.getElementById('onyu-streamer-message');
-const streamerForm = document.getElementById('onyu-streamer-form');
-const streamerNicknameInput = document.getElementById('onyu-streamer-nickname');
-const streamerSoopIdInput = document.getElementById('onyu-streamer-soopid');
-const streamerSubmitBtn = document.getElementById('onyu-streamer-submit');
-const streamerNote = document.getElementById('onyu-streamer-note');
-const streamerNoteCodeBtn = document.getElementById('onyu-streamer-note-code');
-const streamerNoteStatus = document.getElementById('onyu-streamer-note-status');
-let streamerRequestSubmitted = false;
 let streamerVerifiedUnsubscribe = null;
 let switchApprovalUnsubscribe = null;
 let switchHandoffInProgress = false;
@@ -364,31 +351,9 @@ async function handleOnyuStreamerSwitchApproval(uid, requestId) {
   }
 }
 
-function setStreamerSubmitState(submitted, pending) {
-  streamerRequestSubmitted = submitted;
-  if (!streamerSubmitBtn) return;
-  streamerSubmitBtn.disabled = submitted || !!pending;
-  streamerSubmitBtn.textContent = pending ? '신청 중...' : submitted ? '신청 완료' : '인증 신청';
-}
-
-function showStreamerNote(data, previousCode) {
-  const canSendNote = data.noteEligible === true || (!data.isSwitch && data.noteEligible !== false);
-  streamerNote.hidden = !canSendNote;
-  if (!canSendNote) return;
-  const code = Number(data.verificationCodeExpiresAt) > Date.now()
-    ? data.verificationCode || previousCode || '' : '';
-  streamerNoteCodeBtn.textContent = code || '코드 없음';
-  streamerNoteCodeBtn.disabled = !code;
-  streamerNoteStatus.textContent = code ? '' : '코드가 없거나 만료됐어요. 새 코드를 발급해주세요.';
-  streamerNoteCodeBtn.onclick = async () => {
-    try { await navigator.clipboard.writeText(code); streamerNoteStatus.textContent = '복사했어요. 쪽지 본문에 붙여넣어 보내주세요.'; }
-    catch (_) { streamerNoteStatus.textContent = '코드를 선택해 직접 복사해주세요.'; }
-  };
-}
-
 function show(el) { if (el) el.hidden = false; }
 function hide(el) { if (el) el.hidden = true; }
-function closeAll() { hide(loginOverlay); hide(streamerOverlay); hide(confirmOverlay); }
+function closeAll() { hide(confirmOverlay); seriesLogin.close(); }
 
 function confirmAuthSwitch(message) {
   return new Promise((resolve) => {
@@ -585,164 +550,31 @@ async function toggleAdminMode() {
   return window.onyuAuthState.accessMode;
 }
 
-function openLoginModal() { closeAll(); show(loginOverlay); }
-function openStreamerModal() {
-  closeAll();
-  streamerForm.reset();
-  setStreamerSubmitState(streamerRequestSubmitted);
-  streamerNote.hidden = !streamerRequestSubmitted;
-  streamerMessageEl.textContent = '방송 닉네임과 SOOP 아이디로 스트리머 인증을 신청할 수 있어요. 인증이 완료되면 별도의 이용권 없이 무료로 플레이할 수 있어요.';
-  show(streamerOverlay);
-}
-
-async function loginWithGoogle() {
-  try {
-    if (auth.currentUser && auth.currentUser.isAnonymous) {
-      await linkWithPopup(auth.currentUser, googleProvider);
-    } else {
-      await signInWithPopup(auth, googleProvider);
-    }
-    await linkGoogleAccountFn();
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'google' });
-    closeAll();
+// 로그인 창은 시리즈 공통 부품(series-kit login-modal, 2026-11-28): Google·카카오·스트리머 인증(신청/확인).
+// 이미 보호된 다른 계정이면 창 안에서 확인 후 전환·새로고침, 같은 계정 연결·인증은 접근 권한만 다시 확인한다.
+const seriesLogin = createSeriesLogin({
+  auth, functions, source: 'onyu-vn',
+  soopSearchScript: './js/soop-verify-search.js?v=20261118-svs1',
+  title: '계정을 보호해 주세요',
+  intro: 'Google·카카오 계정이나 스트리머 인증으로 로그인하면 무료로 플레이할 수 있어요.',
+  reloadAfterSwitch: true,
+  onChange: async () => {
+    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'series' });
     await refreshAccessState();
-  } catch (e) {
-    if (e && e.code === 'auth/credential-already-in-use') {
-      closeAll();
-      if (!(await confirmAuthSwitch('이미 보호된 Google 계정입니다. 이 기기에서도 그 계정으로 이어서 진행할까요?\n(현재 익명 세션의 기록은 옮겨지지 않습니다.)'))) return;
-      try {
-        await signInWithPopup(auth, googleProvider);
-        await linkGoogleAccountFn();
-        window.location.reload();
-      } catch (e2) {
-        console.error('Google 계정 전환 실패:', e2);
-        alert('Google 계정 전환에 실패했습니다.');
-      }
-      return;
-    }
-    if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
-    console.error('Google 로그인 실패:', e);
-    alert('Google 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-  }
-}
-
-async function loginWithKakao() {
-  if (typeof Kakao === 'undefined' || !Kakao.isInitialized()) {
-    alert('카카오 로그인을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
-    return;
-  }
-  Kakao.Auth.login({
-    success: async (authObj) => {
-      try {
-        const result = await linkKakaoAccountFn({ kakaoAccessToken: authObj.access_token });
-        if (result.data.action === 'switch') {
-        closeAll();
-          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'kakao' });
-          if (!(await confirmAuthSwitch('이미 보호된 Kakao 계정입니다. 이 기기에서도 그 계정으로 이어서 진행할까요?\n(현재 익명 세션의 기록은 옮겨지지 않습니다.)'))) return;
-          await signInWithCustomToken(auth, result.data.customToken);
-          window.location.reload();
-        } else {
-          closeAll();
-          if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('login_success', { provider: 'kakao' });
-          await refreshAccessState();
-          alert(result.data.action === 'already-linked' ? '이미 연동된 계정입니다.' : 'Kakao 계정 연동이 완료됐습니다.');
-        }
-      } catch (e) {
-        console.error('Kakao 로그인 실패:', e);
-        alert('Kakao 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-      }
-    },
-    fail: () => {},
-  });
-}
-
-async function submitStreamerVerification(event) {
-  event.preventDefault();
-  if (streamerRequestSubmitted) return;
-  const nickname = streamerNicknameInput.value.trim();
-  const soopId = streamerSoopIdInput.value.trim();
-  if (!nickname) { alert('방송 닉네임을 입력해 주세요.'); return; }
-  if (!/^[a-z0-9]{2,20}$/.test(soopId)) { alert('SOOP 아이디는 영문 소문자/숫자 2~20자로 입력해 주세요.'); return; }
-  setStreamerSubmitState(false, true);
-  try {
-    const result = await requestStreamerVerificationFn({ nickname, soopId, source: 'onyu-vn' });
-    if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('streamer_verification_requested');
-    const data = result.data || {};
-    if (data.action === 'switch') {
-      closeAll();
-      await signInWithCustomToken(auth, data.customToken);
-      window.location.reload();
-    } else if (data.action === 'already-verified' || data.action === 'auto-approved') {
-      closeAll();
-      await refreshAccessState();
-      alert('이미 스트리머 인증이 완료된 계정입니다.');
-    } else {
-      setStreamerSubmitState(true);
-      showStreamerNote(data, '');
-      streamerMessageEl.textContent = data.isSwitch
-        ? (data.noteEligible
-          ? '기존 인증 스트리머의 SOOP 아이디로 쪽지 코드를 보내면 확인 후 이 기기에서도 기존 계정으로 전환됩니다.'
-          : '계정 전환 신청이 관리자에게 전달됐어요. 기존 인증 정보가 자동 쪽지 확인 조건을 충족하지 않아 수동 검수합니다.')
-        : '인증 신청이 접수됐어요. SOOP 쪽지의 발신자 아이디와 코드를 대조해 자동 승인합니다.';
-    }
-  } catch (e) {
-    setStreamerSubmitState(false);
-    console.error('스트리머 인증 신청 실패:', e);
-    alert('스트리머 인증 신청에 실패했습니다: ' + (e.message || e));
-  }
-}
-
-async function checkStreamerVerification() {
-  try {
-    const previousText = streamerNoteCodeBtn.textContent.trim();
-    const previousCode = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(previousText) ? previousText : '';
-    const result = await requestStreamerVerificationFn({ source: 'onyu-vn', checkOnly: true });
-    const data = result.data || {};
-    if (data.action === 'already-verified' || data.action === 'auto-approved') {
-      closeAll();
-      await refreshAccessState();
-      alert('스트리머 인증이 완료됐습니다.');
-    } else if (data.action === 'switch') {
-      closeAll();
-      await signInWithCustomToken(auth, data.customToken);
-      window.location.reload();
-    } else {
-      if (data.action === 'pending') { setStreamerSubmitState(true); showStreamerNote(data, previousCode); }
-      streamerMessageEl.textContent = '아직 관리자 확인 전이에요. 잠시 후 다시 확인해 주세요.';
-    }
-  } catch (e) {
-    if (!streamerRequestSubmitted) setStreamerSubmitState(false);
-    alert('인증 상태 확인에 실패했습니다: ' + (e.message || e));
-  }
-}
-
-async function renewStreamerVerificationCode() {
-  try {
-    const result = await requestStreamerVerificationFn({ source: 'onyu-vn' });
-    const data = result.data || {};
-    if (data.action !== 'pending') return checkStreamerVerification();
-    showStreamerNote(data, '');
-  } catch (e) { streamerNoteStatus.textContent = '새 코드 발급에 실패했습니다: ' + (e.message || e); }
-}
+  },
+});
+function openLoginModal(options) { hide(confirmOverlay); seriesLogin.open(options || {}); }
+function openStreamerModal() { openLoginModal({ streamer: true }); }
 
 const STREAMER_DONATION_PENDING_NOTICE = 'SOOP 후원 연동을 준비 중입니다.\n스트리머 계정 플레이는 후원 연동이 열린 뒤 이용할 수 있어요. 조금만 기다려 주세요.';
 
 // 로그인 후 하던 동작 이어가기(2026-11-24, 공통 지침 §1.2.5): 로그인이 필요해 막힌 버튼(새 게임·이어하기·챕터 불러오기)을
-// 기억했다가, 로그인·스트리머 인증으로 권한이 생기면 같은 버튼을 다시 눌러 준다. 로그인 창을 그냥 닫으면 잊는다.
+// 기억했다가, 로그인·스트리머 인증으로 권한이 생기면 같은 버튼을 다시 눌러 준다. 로그인 창을 그냥 닫으면 잊는다(공통 창의 then).
 let lastGameActionButton = null;
-let resumeAfterLoginButton = null;
 document.addEventListener('click', (event) => {
   const button = event.target && event.target.closest ? event.target.closest('button') : null;
-  if (button && !button.closest('.onyu-auth-overlay')) lastGameActionButton = button;
+  if (button && !button.closest('.onyu-auth-overlay') && !button.closest('dialog.sk-login')) lastGameActionButton = button;
 }, true);
-document.addEventListener('onyu-auth-changed', (event) => {
-  const s = event.detail || {};
-  if (!resumeAfterLoginButton || !(s.isAdmin || s.authenticated)) return;
-  const button = resumeAfterLoginButton;
-  resumeAfterLoginButton = null;
-  if (!document.body.contains(button) || button.disabled) return;
-  setTimeout(() => { closeAll(); button.click(); }, 0);
-});
 
 async function ensureGameAccess() {
   await window.onyuAuthReady;
@@ -750,11 +582,15 @@ async function ensureGameAccess() {
   const s = window.onyuAuthState;
   if (!s.isAdmin && !s.authenticated) {
     pendingGameStartAuthorization = false;
-    resumeAfterLoginButton = lastGameActionButton;
-    openLoginModal();
+    const button = lastGameActionButton;
+    hide(confirmOverlay);
+    seriesLogin.open({ then: () => {
+      const now = window.onyuAuthState;
+      if (!(now.isAdmin || now.authenticated) || !button || !document.body.contains(button) || button.disabled) return;
+      setTimeout(() => button.click(), 0);
+    } });
     return false;
   }
-  resumeAfterLoginButton = null;
   if (!s.canStartGame) {
     pendingGameStartAuthorization = false;
     if (typeof window.onyuTelemetryTrack === 'function') window.onyuTelemetryTrack('game_access_denied');
@@ -807,13 +643,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.onyuAuthState.authenticated || window.onyuAuthState.role === 'streamer') openLoginModal();
     else openLoginModal();
   });
-  document.getElementById('onyu-google-login').addEventListener('click', loginWithGoogle);
-  document.getElementById('onyu-kakao-login').addEventListener('click', loginWithKakao);
-  document.getElementById('onyu-streamer-verify').addEventListener('click', openStreamerModal);
-  document.getElementById('onyu-login-close').addEventListener('click', () => { resumeAfterLoginButton = null; closeAll(); });
-  document.getElementById('onyu-streamer-close').addEventListener('click', closeAll);
-  document.getElementById('onyu-streamer-check').addEventListener('click', checkStreamerVerification);
-  document.getElementById('onyu-streamer-renew').addEventListener('click', renewStreamerVerificationCode);
   if (donationIntegrationToggleEl) donationIntegrationToggleEl.addEventListener('click', toggleDonationIntegrationPreparation);
   if (donationIntegrationConnectEl) donationIntegrationConnectEl.addEventListener('click', async () => {
     donationIntegrationConnectEl.disabled = true;
@@ -824,10 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     catch (error) { window.alert(error && error.message ? error.message : 'SOOP 연결을 시작하지 못했습니다.'); donationIntegrationConnectEl.disabled = false; }
   });
-  streamerForm.addEventListener('submit', submitStreamerVerification);
-  [loginOverlay, streamerOverlay].forEach((overlay) => {
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAll(); });
-  });
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 });
 
@@ -868,13 +694,7 @@ onAuthStateChanged(auth, async (user) => {
     if (hasInitialVerifiedValue && previousVerifiedValue !== verified) {
       await refreshAccessState();
       if (auth.currentUser?.uid !== uid) return;
-      if (verified) {
-        streamerRequestSubmitted = true;
-        setStreamerSubmitState(true);
-        if (streamerSubmitBtn) streamerSubmitBtn.textContent = '인증 완료';
-        streamerNote.hidden = true;
-        streamerMessageEl.textContent = '✅ 관리자가 승인했어요. 스트리머 인증 권한이 새로고침 없이 적용됐습니다.';
-      }
+
     }
     previousVerifiedValue = verified;
     hasInitialVerifiedValue = true;
@@ -913,12 +733,6 @@ onAuthStateChanged(auth, async (user) => {
     });
   };
   const attachAll = () => {
-  attachSoopVerifySearchTo('onyu-streamer-nickname', 'onyu-streamer-soopid', {
-      root: 'onyu-streamer-overlay',
-      isPending: () => !document.getElementById('onyu-streamer-note').hidden,
-      afterSelect: ['onyu-streamer-submit'],
-      pendingOnly: ['onyu-streamer-check'],
-    });
     // 미연시 제작 신청: 일반 유저가 제작 대상 스트리머를 고른다(서버가 SOOP에서 다시 확인).
     attachSoopVerifySearchTo('production-target-nickname', 'production-target-soopid');
   };
