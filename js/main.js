@@ -67,16 +67,6 @@ function onyuPreloadCgFile(file) {
   return onyuPreloadAsset(src, onyuPreloadedCgs);
 }
 
-// 일부 배경엔 계절 요소가 원화 자체에 그려져 있어(예: 교문 배경의 벚꽃) 다른
-// 계절 챕터에 재사용하면 텍스트와 안 맞는 경우가 실사로 확인됐다(2026-09-14) —
-// 가장 두드러진 곳들에 계절 전용 변형을 준비 중. 챕터 진입 시 해당 챕터에
-// 필요한 변형 파일만 probe해서 onyuBgVariantAvailable에 캐시해두고,
-// engine.js의 onyuApplyBackground()가 렌더 시점에 동기적으로 참조한다 — 파일이
-// 아직 없으면(404) 조용히 기본 배경으로 폴백한다.
-var ONYU_BG_SEASON_VARIANTS = {
-  b2: ['winter'], b3: ['winter'], // CH08·CH27(교문) / CH26(하굣길) — 실제 적용됨
-  b5: ['winter'], b6: ['autumn'], b8: ['winter'], b9: ['winter'], // CH07/CH05/CH17/CH16 — 프롬프트만 준비, 이미지 대기 중
-};
 var onyuBgVariantAvailable = {};
 function onyuProbeBackgroundVariant(base, season) {
   var variantKey = base + '-' + season;
@@ -111,12 +101,6 @@ function onyuProbeSpritePrefix(prefix) {
   probe.src = 'assets/standing/' + prefix + '1.webp';
 }
 
-// "후보 없이 이미지만 있으면 바로 쓰는" 단일 스탠딩 세트. 사복처럼 무료/후원 2종
-// 중 골라야 하는 챕터는 outfit-picker.js의 ONYU_OUTFIT_CHOICES가 따로 담당한다.
-var ONYU_SPRITE_CANDIDATES = {
-  ch27: ['GR-'], // 졸업식 — 졸업 가운, 후보 없이 하나뿐
-};
-
 function onyuPreloadChapterAssets(chapterId, options) {
   options = options || {};
   var chapters = window.ONYU_CHAPTERS || [];
@@ -131,7 +115,7 @@ function onyuPreloadChapterAssets(chapterId, options) {
     ? window.ONYU_STATE.chosenOutfits[chapterId] : null;
   var candidate = ONYU_SPRITE_CANDIDATES[chapterId] && ONYU_SPRITE_CANDIDATES[chapterId][0];
   var prefix = chapter.spriteSet || chosen || candidate
-    || ((chapter.season === 'autumn' || chapter.season === 'winter') ? 'w' : 's');
+    || ONYU_SEASON_SPRITE_PREFIX[chapter.season] || ONYU_SEASON_SPRITE_PREFIX.default;
   if (candidate && !chosen && !chapter.spriteSet) onyuProbeSpritePrefix(prefix);
   else pending.push(onyuPreloadSpriteSet(prefix));
 

@@ -3,10 +3,6 @@
  * + 설정값. 저장/불러오기 화면(Phase 3)에서 이 모듈의 함수를 그대로 쓴다.
  */
 
-var ONYU_AUTOSAVE_KEY = 'onyu_autosave_v1';
-var ONYU_SLOT_KEY_PREFIX = 'onyu_slot_v1_';
-var ONYU_GALLERY_KEY = 'onyu_gallery_v1';
-var ONYU_SETTINGS_KEY = 'onyu_settings_v1';
 
 function onyuSnapshotState() {
   var s = window.ONYU_STATE;

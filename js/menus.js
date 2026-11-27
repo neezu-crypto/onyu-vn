@@ -3,18 +3,6 @@
  * 전부 title 화면에서만 진입한다(플레이 중엔 저장·설정만 상단바 아이콘으로 진입).
  */
 
-var ONYU_SEASON_COLORS = {
-  spring: { accent: '#b8607e', soft: '#fbe7ee' },
-  summer: { accent: '#3f8177', soft: '#e1f0ec' },
-  autumn: { accent: '#a8632b', soft: '#f5e6d3' },
-  winter: { accent: '#5d7f95', soft: '#e8eef2' },
-};
-
-var ONYU_ENDING_DEFS = [
-  { id: 'friend', name: '곁에 남은 사람' },
-  { id: 'crush', name: '여백' },
-  { id: 'lover', name: '온 이유' },
-];
 var onyuPublicReviewsCache = [];
 var onyuPublicReviewsCursor = null;
 var onyuPublicReviewsHasMore = false;
@@ -48,7 +36,8 @@ function onyuRenderChapterList() {
   var container = document.getElementById('chapters-list');
   container.innerHTML = '';
 
-  [1, 2, 3].forEach(function (grade) {
+  ONYU_CHAPTER_GROUPS.forEach(function (group) {
+    var grade = group.grade;
     var chapters = window.ONYU_CHAPTERS.filter(function (c) { return c.grade === grade; });
     if (!chapters.length) return;
 
@@ -56,7 +45,7 @@ function onyuRenderChapterList() {
     row.className = 'year-row';
     var label = document.createElement('p');
     label.className = 'year-row-label';
-    label.textContent = grade + '학년';
+    label.textContent = group.label;
     row.appendChild(label);
 
     var grid = document.createElement('div');

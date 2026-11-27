@@ -33,21 +33,23 @@ const googleProvider = new GoogleAuthProvider();
 const linkGoogleAccountFn = httpsCallable(functions, 'linkGoogleAccount');
 const linkKakaoAccountFn = httpsCallable(functions, 'linkKakaoAccount');
 const requestStreamerVerificationFn = httpsCallable(functions, 'requestStreamerVerification');
-const getViewerAccessFn = httpsCallable(functions, 'onyuGetViewerAccess');
-const startSessionFn = httpsCallable(functions, 'onyuStartSession');
-const submitPlayerReviewFn = httpsCallable(functions, 'onyuSubmitReview');
-const submitStreamerProductionInquiryFn = httpsCallable(functions, 'onyuSubmitStreamerProductionInquiry');
-const listPublicPlayerReviewsFn = httpsCallable(functions, 'onyuVnListPublicReviews');
-const trackEventsFn = httpsCallable(functions, 'onyuTrackEvents');
-const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, 'onyuVnLogVerifiedStreamerVisit');
-const getDonationIntegrationStatusFn = httpsCallable(functions, 'onyuGetDonationIntegrationStatus');
-const refreshSoopChatTokenFn = httpsCallable(functions, 'onyuRefreshSoopChatToken');
-const setDonationIntegrationPreparationFn = httpsCallable(functions, 'onyuSetDonationIntegrationPreparation');
-const registerOutfitDonationSessionFn = httpsCallable(functions, 'onyuRegisterOutfitDonationSession');
-const consumeOutfitDonationSessionFn = httpsCallable(functions, 'onyuConsumeOutfitDonationSession');
-const closeOutfitDonationSessionFn = httpsCallable(functions, 'onyuCloseOutfitDonationSession');
-const startSoopChatConsentFn = httpsCallable(functions, 'onyuStartSoopChatConsent');
-const logDonationDiagnosticsFn = httpsCallable(functions, 'onyuLogDonationDiagnostics');
+// 게임별 서버 함수 이름은 js/game-config.js의 ONYU_SERVER_FUNCTIONS(엔진 분리 1단계).
+const SERVER_FUNCTIONS = window.ONYU_SERVER_FUNCTIONS;
+const getViewerAccessFn = httpsCallable(functions, SERVER_FUNCTIONS.getViewerAccess);
+const startSessionFn = httpsCallable(functions, SERVER_FUNCTIONS.startSession);
+const submitPlayerReviewFn = httpsCallable(functions, SERVER_FUNCTIONS.submitPlayerReview);
+const submitStreamerProductionInquiryFn = httpsCallable(functions, SERVER_FUNCTIONS.submitStreamerProductionInquiry);
+const listPublicPlayerReviewsFn = httpsCallable(functions, SERVER_FUNCTIONS.listPublicPlayerReviews);
+const trackEventsFn = httpsCallable(functions, SERVER_FUNCTIONS.trackEvents);
+const logVerifiedOnyuStreamerVisitFn = httpsCallable(functions, SERVER_FUNCTIONS.logVerifiedOnyuStreamerVisit);
+const getDonationIntegrationStatusFn = httpsCallable(functions, SERVER_FUNCTIONS.getDonationIntegrationStatus);
+const refreshSoopChatTokenFn = httpsCallable(functions, SERVER_FUNCTIONS.refreshSoopChatToken);
+const setDonationIntegrationPreparationFn = httpsCallable(functions, SERVER_FUNCTIONS.setDonationIntegrationPreparation);
+const registerOutfitDonationSessionFn = httpsCallable(functions, SERVER_FUNCTIONS.registerOutfitDonationSession);
+const consumeOutfitDonationSessionFn = httpsCallable(functions, SERVER_FUNCTIONS.consumeOutfitDonationSession);
+const closeOutfitDonationSessionFn = httpsCallable(functions, SERVER_FUNCTIONS.closeOutfitDonationSession);
+const startSoopChatConsentFn = httpsCallable(functions, SERVER_FUNCTIONS.startSoopChatConsent);
+const logDonationDiagnosticsFn = httpsCallable(functions, SERVER_FUNCTIONS.logDonationDiagnostics);
 
 // 후원 연동 점검 로그(2026-11-26): 실제 후원 테스트 중 이 탭에서 일어난 연동 단계를 서버에 남겨
 // 관리자센터에서 바로 볼 수 있게 한다. 인증 스트리머 탭에서만, 3초 모아 한 번에 보낸다.

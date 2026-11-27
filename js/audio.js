@@ -6,62 +6,6 @@
  * 전환에서는 두 플레이어를 겹쳐 1.2초 크로스페이드한다.
  */
 
-var ONYU_BGM_TRACKS = {
-  title: 'assets/bgm/T title-theme.mp3',
-  // everyday-1/2는 같은 무드의 대체 버전이다. 챕터에 진입할 때마다 둘 중 하나를
-  // 추첨해 같은 일상 무드라도 챕터별로 다른 곡이 나올 수 있게 한다.
-  everyday: ['assets/bgm/01 everyday-1.mp3', 'assets/bgm/01 everyday-2.mp3'],
-  flutter: 'assets/bgm/02 flutter.mp3',
-  focus: 'assets/bgm/03 focus.mp3',
-  friction: 'assets/bgm/04 friction.mp3',
-  festival: 'assets/bgm/05 festival.mp3',
-  reconcile: 'assets/bgm/06 reconcile.mp3',
-  'ending-friend': 'assets/bgm/07 ending-friend.mp3',
-  'ending-crush': 'assets/bgm/08 ending-crush.mp3',
-  'ending-lover': 'assets/bgm/09 ending-lover.mp3',
-};
-
-// 갤러리에 표시할 BGM 목록. everyday는 같은 무드의 두 파일을 별도 곡으로
-// 기록해, 실제로 한 번 재생한 버전만 다시 들을 수 있게 한다.
-var ONYU_BGM_GALLERY_TRACKS = [
-  { id: 'title', key: 'title', title: '타이틀 테마', subtitle: '타이틀 화면' },
-  { id: 'everyday-1', key: 'everyday', variantIndex: 0, title: '평범한 하루 1', subtitle: '일상 무드' },
-  { id: 'everyday-2', key: 'everyday', variantIndex: 1, title: '평범한 하루 2', subtitle: '일상 무드' },
-  { id: 'flutter', key: 'flutter', title: '설렘', subtitle: '설렘 무드' },
-  { id: 'focus', key: 'focus', title: '집중', subtitle: '집중 무드' },
-  { id: 'friction', key: 'friction', title: '마찰', subtitle: '갈등 무드' },
-  { id: 'festival', key: 'festival', title: '축제', subtitle: '축제 무드' },
-  { id: 'reconcile', key: 'reconcile', title: '화해', subtitle: '화해 무드' },
-  { id: 'ending-friend', key: 'ending-friend', title: '우정 엔딩', subtitle: '엔딩 BGM' },
-  { id: 'ending-crush', key: 'ending-crush', title: '썸 엔딩', subtitle: '엔딩 BGM' },
-  { id: 'ending-lover', key: 'ending-lover', title: '연인 엔딩', subtitle: '엔딩 BGM' },
-];
-
-var ONYU_BGM_BY_CHAPTER = {
-  ch01: 'everyday', ch03: 'everyday', ch06: 'everyday',
-  ch09: 'everyday', ch10: 'everyday', ch11: 'everyday', ch14: 'everyday',
-  ch17: 'everyday', ch20: 'everyday',
-  ch02: 'flutter', ch04: 'flutter', ch08: 'flutter', ch12: 'flutter', ch13: 'flutter',
-  ch16: 'flutter', ch24: 'flutter',
-  ch07: 'focus', ch18: 'focus', ch19: 'focus', ch25: 'focus',
-  ch21: 'friction', ch22: 'friction',
-  ch05: 'festival', ch15: 'festival',
-  ch23: 'reconcile', ch26: 'reconcile', ch27: 'reconcile',
-};
-
-var ONYU_SFX_TRACKS = {
-  'choice-select': 'assets/sfx/choice-select.mp3',
-  'ending-title-reveal': 'assets/sfx/ending-title-reveal.mp3',
-  'gallery-unlock': 'assets/sfx/gallery-unlock.mp3',
-  'save-success': 'assets/sfx/save-success.mp3',
-  'ui-toggle': 'assets/sfx/ui-toggle.mp3',
-  'name-submit-error': 'assets/sfx/name-submit-error.mp3',
-  'name-submit-ok': 'assets/sfx/name-submit-ok.mp3',
-  'chapter-chime': 'assets/sfx/chapter-chime.mp3',
-  'menu-transition': 'assets/sfx/menu-transition.mp3',
-  'choice-appear': 'assets/sfx/choice-appear.mp3',
-};
-
 (function () {
   var players = [];
   var preloaders = {};

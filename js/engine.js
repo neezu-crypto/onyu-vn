@@ -148,16 +148,8 @@ var onyuChoiceInputLocked = false;
 
 var onyuEl = {}; // DOM 참조는 main.js가 부팅 시 채운다
 
-// onyu-vn-standing-prompts.html 기준 S1~S6 / W1~W6 표정 순서
-var ONYU_EXPR_INDEX = { calm: 1, smile: 2, surprised: 3, shy: 4, worried: 5, pouty: 6 };
-
-function onyuSpeakerLabel(key) {
-  if (key === 'player') return window.ONYU_STATE.playerName || '플레이어';
-  return window.SPEAKER_LABELS[key] || key;
-}
-
 function onyuSpriteFile(season, expr, spriteSet) {
-  var prefix = spriteSet || ((season === 'autumn' || season === 'winter') ? 'w' : 's');
+  var prefix = spriteSet || ONYU_SEASON_SPRITE_PREFIX[season] || ONYU_SEASON_SPRITE_PREFIX.default;
   var n = ONYU_EXPR_INDEX[expr] || 1;
   return prefix + n;
 }
@@ -467,7 +459,7 @@ function onyuRenderCurrentNode() {
   } else if (node.type === 'line') {
     onyuEl.speakerTag.hidden = false;
     onyuEl.speakerTag.textContent = node.speakerLabel || onyuSpeakerLabel(node.speaker);
-    if (node.speaker === 'onyu' && node.expr) {
+    if (node.speaker === ONYU_HEROINE_SPEAKER && node.expr) {
       onyuCurrentExpr = node.expr;
       onyuApplySprite();
     }
