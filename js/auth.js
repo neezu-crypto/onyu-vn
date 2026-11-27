@@ -12,7 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
-import { createSeriesLogin } from './series-login.js?v=20261128-kit3';
+import { createSeriesLogin } from './series-login.js?v=20261128-kit4';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAZcjQPHphENs-Bb7IfdL2qTtOMhJrRP54',
